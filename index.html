@@ -190,6 +190,97 @@
       animation: pulseGlow 2.4s infinite ease-in-out;
     }
 
+    #modalCartoConfig,
+    #modalBackendArchitecture {
+      z-index: 2100;
+    }
+
+    #timelineControls,
+    #timelineReadout,
+    #celestialTargetControl {
+      min-width: 0;
+    }
+
+    #timeMinutesSlider {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .section-description {
+      margin-top: 0.5rem;
+      padding-left: 0.625rem;
+      border-left: 2px solid rgba(148, 163, 184, 0.35);
+      color: #94a3b8;
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+
+    @media (min-width: 1280px) {
+      #masterTimeLayout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: stretch;
+      }
+
+      #timePresets {
+        min-width: 0;
+      }
+
+      #timelineControls {
+        display: grid;
+        grid-template-columns: auto auto minmax(0, 1fr);
+        align-items: center;
+      }
+
+      #timelineReadout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      #timelineReadoutHeader {
+        display: grid;
+        grid-template-columns: max-content minmax(0, 1fr);
+        align-items: center;
+        column-gap: 0.75rem;
+      }
+
+      #lblCurrentTimeDisplay {
+        white-space: nowrap;
+      }
+
+      #lblSkyPhaseDescription {
+        min-width: 0;
+        text-align: right;
+        line-height: 1.35;
+      }
+
+      #timeMinutesSlider {
+        grid-column: 1 / -1;
+      }
+
+      #celestialTargetControl {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        grid-column: 1 / -1;
+      }
+
+      #celestialTargetControl select {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+
+    @media (min-width: 1536px) {
+      #masterTimeLayout {
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.15fr) minmax(0, 0.9fr);
+      }
+
+      #celestialTargetControl {
+        grid-column: auto;
+      }
+    }
+
     @media (max-width: 639px) {
       header {
         height: auto !important;
@@ -219,8 +310,64 @@
         min-width: 0;
       }
 
+      #quickSpotSearchInput {
+        font-size: 16px;
+      }
+
+      .mobile-directory-button {
+        width: 2.25rem;
+        height: 2.25rem;
+        padding: 0;
+        justify-content: center;
+      }
+
       header > div > div:last-child {
         grid-area: actions;
+        gap: 0.375rem;
+      }
+
+      #modalSettings,
+      #modalCartoConfig,
+      #modalBackendArchitecture {
+        align-items: flex-start;
+        overflow-y: auto;
+      }
+
+      #modalSettings > div,
+      #modalCartoConfig > div,
+      #modalBackendArchitecture > div {
+        max-height: calc(100vh - 1rem);
+        max-height: calc(100dvh - 1rem);
+        margin-block: auto;
+      }
+
+      #settingsModalBody {
+        padding: 0.75rem;
+      }
+
+      #settingsCartoControls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      #settingsCartoControls > input {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-width: 0;
+      }
+
+      #settingsCartoControls > button {
+        min-width: 0;
+        padding-inline: 0.5rem;
+      }
+
+      #settingsBackendSection {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      #settingsBackendSection > button {
+        width: 100%;
       }
 
       section.sticky {
@@ -274,6 +421,264 @@
         max-width: 100%;
         width: 100%;
       }
+
+      #masterTimeLayout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.75rem;
+      }
+
+      #timePresets {
+        min-width: 0;
+      }
+
+      #timelineControls {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 0.5rem;
+        padding: 0.75rem;
+      }
+
+      #selectPlaybackSpeed {
+        width: 100%;
+        min-width: 0;
+        font-size: 0.75rem !important;
+      }
+
+      #timelineReadout {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        min-width: 0;
+      }
+
+      #timelineReadoutHeader {
+        display: grid;
+        grid-template-columns: max-content minmax(0, 1fr);
+        align-items: center;
+        column-gap: 0.75rem;
+        row-gap: 0.5rem;
+      }
+
+      #lblCurrentTimeDisplay {
+        white-space: nowrap;
+      }
+
+      #lblSkyPhaseDescription {
+        min-width: 0;
+        text-align: right;
+        line-height: 1.35;
+      }
+
+      #timeMinutesSlider {
+        grid-column: 1 / -1;
+      }
+
+      #celestialTargetControl {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        min-width: 0;
+      }
+
+      #spotsGridContainer {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+      }
+
+      #spotsGridContainer .spot-card-item {
+        aspect-ratio: 1 / 1;
+        height: calc((100vw - 4.5625rem) / 2);
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+        padding: 0.625rem;
+      }
+
+      #spotsGridContainer .spot-card-item > div:first-child {
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      #spotsGridContainer .spot-card-item > div:first-child > div:first-child {
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+
+      #spotsGridContainer .spot-card-item > div:first-child > div:first-child > span {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #spotsGridContainer .spot-card-item h4 {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        line-height: 1.3;
+      }
+
+      #spotsGridContainer .spot-card-item p {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        overflow: hidden;
+        font-size: 10px;
+        line-height: 1.35;
+      }
+
+      #spotsGridContainer .spot-card-item > div:last-child {
+        gap: 0.25rem;
+        font-size: 9px;
+      }
+
+      #weatherMatrixTable {
+        table-layout: fixed;
+        width: max-content;
+        min-width: 100%;
+      }
+
+      #weatherMatrixTable .matrix-row-label {
+        width: 6rem;
+        min-width: 6rem;
+        max-width: 6rem;
+        padding-inline: 0.5rem;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        line-height: 1.3;
+      }
+
+      #weatherMatrixTable .matrix-hour-cell {
+        min-width: 3rem;
+        padding-inline: 0.25rem;
+      }
+
+      #mapTileControls {
+        flex-wrap: nowrap;
+        gap: 0;
+        max-width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      #mapTileControls::-webkit-scrollbar {
+        display: none;
+      }
+
+      #mapTileControls .map-tile-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        padding-inline: 0.5rem;
+        font-size: 10px;
+      }
+
+      #cameraSetupIntro {
+        min-width: 0;
+      }
+
+      #cameraSetupTitle {
+        align-items: flex-start;
+        font-size: 1rem;
+        line-height: 1.4;
+      }
+
+      #cameraSetupDescription {
+        font-size: 0.75rem;
+      }
+
+      #footerInner {
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+
+      #footerBrand {
+        text-align: center;
+        line-height: 1.5;
+      }
+
+      #footerMeta {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+        text-align: left;
+      }
+
+      #footerMeta .footer-meta-item {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding-block: 0.5rem;
+        border-top: 1px solid rgba(51, 65, 85, 0.65);
+        line-height: 1.4;
+      }
+
+      #footerMeta .footer-meta-item strong {
+        max-width: 62%;
+        text-align: right;
+        overflow-wrap: anywhere;
+      }
+
+      #cameraSetupControls {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      #setupEventControl {
+        display: grid;
+        grid-template-columns: auto auto minmax(0, 1fr);
+        width: 100%;
+        min-width: 0;
+      }
+
+      #selectSetupEventType {
+        min-width: 0;
+        width: 100%;
+        font-size: 0.875rem !important;
+      }
+
+      #gearModeControls {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        width: 100%;
+      }
+
+      #gearModeControls .gear-tab-btn {
+        min-width: 0;
+        justify-content: center;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.5rem 0.25rem;
+        text-align: center;
+        line-height: 1.25;
+      }
+
+      input:not([type="range"]),
+      select,
+      textarea {
+        font-size: 16px !important;
+      }
+    }
+
+    @media (max-width: 359px) {
+      header > div {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+          "brand"
+          "actions"
+          "search";
+      }
+
+      header > div > div:last-child {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      section.sticky {
+        top: 8.75rem;
+      }
     }
   </style>
 </head>
@@ -312,15 +717,8 @@
             id="quickSpotSearchInput"
             type="text"
             placeholder="Tìm điểm săn ảnh..."
-            class="w-full pl-8 pr-24 py-1.5 text-xs sm:text-sm rounded-xl bg-slate-900/90 border border-slate-700/80 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500 transition"
+            class="w-full pl-8 pr-3 py-1.5 text-xs sm:text-sm rounded-xl bg-slate-900/90 border border-slate-700/80 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500 transition"
           />
-          <button
-            id="btnOpenSpotsDirectory"
-            class="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-lg bg-violet-600/25 hover:bg-violet-600/40 text-violet-300 border border-violet-500/30 text-[11px] font-medium flex items-center gap-1 transition"
-          >
-            <i data-lucide="compass" class="w-3 h-3"></i>
-            <span class="hidden sm:inline">Danh bạ</span>
-          </button>
           <!-- Dropdown search results (Local + Global Map Geocoder) -->
           <div id="quickSearchDropdown" class="hidden absolute left-0 right-0 top-full mt-1.5 liquid-glass rounded-xl border border-slate-700 shadow-2xl max-h-80 overflow-y-auto z-50 divide-y divide-slate-800/60"></div>
         </div>
@@ -336,6 +734,16 @@
 
       <!-- Right Action Buttons: Astronomical Calendar, Contribute, User Guide, Settings -->
       <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <button
+          id="btnOpenSpotsDirectory"
+          title="Danh bạ điểm săn ảnh"
+          aria-label="Danh bạ điểm săn ảnh"
+          class="mobile-directory-button px-2 py-1.5 rounded-xl bg-violet-600/25 hover:bg-violet-600/40 text-violet-300 border border-violet-500/30 text-[11px] font-medium flex items-center gap-1 transition"
+        >
+          <i data-lucide="compass" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Danh bạ</span>
+        </button>
+
         <!-- Astronomical Events Calendar Button -->
         <button
           id="btnOpenAstroCalendarModal"
@@ -474,10 +882,10 @@
   <!-- MASTER TIME CONTROLLER & CELESTIAL TARGET BAR -->
   <section class="max-w-[1600px] w-full mx-auto px-3 sm:px-6 py-2">
     <div class="glass-card rounded-2xl p-3 sm:p-4 border border-slate-800">
-      <div class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
+      <div id="masterTimeLayout" class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
         
         <!-- Date Picker + Quick Time Jump Presets -->
-        <div class="flex flex-wrap items-center gap-2">
+        <div id="timePresets" class="flex flex-wrap items-center gap-2">
           <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-700/80 rounded-xl px-2.5 py-1.5">
             <i data-lucide="calendar" class="w-4 h-4 text-violet-400"></i>
             <input
@@ -508,7 +916,7 @@
         </div>
 
         <!-- Minute-by-Minute Time Slider & Playback Controls -->
-        <div class="flex-1 flex items-center gap-3 bg-slate-900/75 px-3.5 py-2 rounded-xl border border-slate-800">
+        <div id="timelineControls" class="flex-1 flex items-center gap-3 bg-slate-900/75 px-3.5 py-2 rounded-xl border border-slate-800">
           <button
             id="btnPlayTimeline"
             class="w-9 h-9 rounded-xl bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center shadow-md shadow-violet-600/30 transition shrink-0"
@@ -527,8 +935,8 @@
             <option value="60" selected>60 phút/giây</option>
           </select>
 
-          <div class="flex-1 flex flex-col gap-1">
-            <div class="flex items-center justify-between text-xs">
+          <div id="timelineReadout" class="flex-1 flex flex-col gap-1">
+            <div id="timelineReadoutHeader" class="flex items-center justify-between gap-2 text-xs">
               <span class="font-mono font-bold text-sm sm:text-base text-cyan-300" id="lblCurrentTimeDisplay">21:00 GMT+7</span>
               <span class="text-[11px] text-slate-400" id="lblSkyPhaseDescription">Đêm thiên văn (Mặt trời -42.5°)</span>
             </div>
@@ -545,7 +953,7 @@
         </div>
 
         <!-- Deep Sky / Celestial Object Selector -->
-        <div class="flex items-center gap-2">
+        <div id="celestialTargetControl" class="flex items-center gap-2">
           <label for="selectCelestialTarget" class="text-xs font-medium text-slate-400 whitespace-nowrap flex items-center gap-1">
             <i data-lucide="telescope" class="w-4 h-4 text-fuchsia-400"></i>
             <span>Thiên thể:</span>
@@ -612,7 +1020,7 @@
           </div>
 
           <!-- Multi-Provider Basemap Style Switcher (Watermark-Free + Carto API) -->
-          <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[11px] flex-wrap">
+          <div id="mapTileControls" class="flex flex-nowrap items-center divide-x divide-slate-700 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[11px] overflow-x-auto">
             <button data-map-tile="astro_dark" class="map-tile-btn px-2.5 py-0.5 rounded bg-violet-600 text-white font-medium" title="Bản đồ tối thiên văn OSM Dark Matter (Hiển thị đầy đủ địa danh VN, không watermark)">Astro Dark</button>
             <button data-map-tile="satellite" class="map-tile-btn px-2.5 py-0.5 rounded text-slate-400 hover:text-white" title="Ảnh vệ tinh Esri World Imagery + Nhãn địa danh">Vệ Tinh</button>
             <button data-map-tile="esri_dark" class="map-tile-btn px-2.5 py-0.5 rounded text-slate-400 hover:text-white" title="Bản đồ nền tối Esri World Dark Gray GIS">Esri Dark</button>
@@ -732,7 +1140,7 @@
                 <i data-lucide="compass" class="w-4 h-4 text-fuchsia-400"></i>
                 Vòm Thiên Đỉnh 360° &amp; Quỹ Đạo Độ Cao 24h
               </h3>
-              <p class="text-[11px] text-slate-400">
+              <p class="section-description">
                 Tâm = Thiên đỉnh (90°) · Vòng ngoài = Chân trời (0°) · Đã cộng khúc xạ khí quyển
               </p>
             </div>
@@ -834,7 +1242,7 @@
             <i data-lucide="layers" class="w-4 h-4 text-cyan-400"></i>
             Ma Trận Phân Tầng Mây, Điểm Sương &amp; Chỉ Số Săn Ảnh (Open-Meteo Hourly)
           </h3>
-          <p class="text-xs text-slate-400">
+          <p class="section-description">
             Nhấp vào bất kỳ cột giờ nào để đồng bộ Bản đồ Phương vị &amp; Vòm Thiên Đỉnh tới thời điểm đó · Cảnh báo đọng sương lens khi <code class="text-rose-300 font-mono">Nhiệt độ - Điểm sương ≤ 2.5°C</code>
           </p>
         </div>
@@ -847,7 +1255,7 @@
 
       <!-- Horizontal Scrollable Weather & Astro Matrix Table -->
       <div class="overflow-x-auto rounded-xl border border-slate-800/90 bg-slate-950/60">
-        <table class="w-full text-left border-collapse select-none">
+        <table id="weatherMatrixTable" class="w-full text-left border-collapse select-none">
           <tbody id="weatherMatrixBody" class="divide-y divide-slate-800/70 text-[11px] font-mono">
             <!-- Populated dynamically with 24 hourly columns for the active day -->
           </tbody>
@@ -885,7 +1293,7 @@
     <!-- ASTROPHOTOGRAPHY & LANDSCAPE CAMERA SETUP ADVISOR (FULL-FRAME / IPHONE 18 PRO / ANDROID FLAGSHIP) -->
     <section id="cameraSetupSection" class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-800">
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-slate-800">
-        <div>
+        <div id="cameraSetupIntro">
           <div class="flex items-center gap-2 flex-wrap">
             <span class="px-2.5 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 text-[10px] font-mono uppercase tracking-wider">
               AI Astro &amp; Gear Advisor
@@ -894,19 +1302,19 @@
               📍 Tà Xùa · Bortle 3.5 · 1,865m
             </span>
           </div>
-          <h3 class="text-base sm:text-lg font-bold text-white mt-1 flex items-center gap-2">
+          <h3 id="cameraSetupTitle" class="text-base sm:text-lg font-bold text-white mt-1 flex items-center gap-2">
             <i data-lucide="camera" class="w-5 h-5 text-fuchsia-400"></i>
             Hướng Dẫn Setup Chụp Thiên Văn &amp; Săn Ảnh Theo Địa Điểm
           </h3>
-          <p class="text-xs text-slate-400">
+          <p id="cameraSetupDescription" class="section-description">
             Thông số tiêu cự, khẩu độ, tốc độ phơi sáng (Quy tắc NPF/500) &amp; ISO được tính toán tự động theo cấp độ tối Bortle và điều kiện thời tiết tại điểm đang chọn.
           </p>
         </div>
 
         <!-- Event Type Selector + Gear Platform Switcher -->
-        <div class="flex flex-wrap items-center gap-2">
+        <div id="cameraSetupControls" class="flex flex-wrap items-center gap-2">
           <!-- Astronomical Event / Scene Selector -->
-          <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-1.5">
+          <div id="setupEventControl" class="flex items-center gap-1.5 bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-1.5">
             <i data-lucide="sparkles" class="w-3.5 h-3.5 text-violet-400"></i>
             <span class="text-[11px] text-slate-400">Sự kiện:</span>
             <select id="selectSetupEventType" class="bg-transparent text-xs font-semibold text-violet-200 focus:outline-none">
@@ -919,7 +1327,7 @@
           </div>
 
           <!-- 3-Way Device Platform Switcher -->
-          <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+          <div id="gearModeControls" class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
             <button
               data-gear-mode="fullframe"
               class="gear-tab-btn px-3 py-1.5 rounded-lg font-semibold bg-violet-600 text-white flex items-center gap-1.5 transition"
@@ -959,7 +1367,7 @@
             <i data-lucide="mountain-snow" class="w-5 h-5 text-violet-400"></i>
             Danh Bạ Điểm Săn Ngân Hà, Bình Minh &amp; Biển Mây Việt Nam
           </h3>
-          <p class="text-xs text-slate-400">
+          <p class="section-description">
             Chọn nhanh tọa độ các điểm săn ảnh nổi tiếng khắp 3 miền hoặc thêm địa điểm bí mật của riêng bạn
           </p>
         </div>
@@ -1393,7 +1801,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         </button>
       </div>
 
-      <div class="p-5 overflow-y-auto space-y-5 text-xs">
+      <div id="settingsModalBody" class="p-5 overflow-y-auto space-y-5 text-xs">
         <!-- Section 1: Theme & Field Night-Vision Switcher -->
         <div class="p-4 rounded-2xl bg-white/5 border border-white/15 space-y-3">
           <div class="flex items-center justify-between">
@@ -1449,7 +1857,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
             </span>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div id="settingsCartoControls" class="flex items-center gap-2">
             <input
               id="settingsCartoKeyInput"
               type="text"
@@ -1474,7 +1882,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         </div>
 
         <!-- Section 3: Full-Stack Backend Source & API Documentation -->
-        <div class="p-4 rounded-2xl bg-white/5 border border-white/15 flex items-center justify-between gap-3">
+        <div id="settingsBackendSection" class="p-4 rounded-2xl bg-white/5 border border-white/15 flex items-center justify-between gap-3">
           <div>
             <h4 class="text-sm font-bold text-white flex items-center gap-1.5">
               <i data-lucide="server" class="w-4 h-4 text-cyan-400"></i>
@@ -1498,14 +1906,14 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
 
   <!-- FOOTER -->
   <footer class="border-t border-slate-800/80 py-4 px-4 sm:px-6 text-center text-xs text-slate-500">
-    <div class="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-      <div>
+    <div id="footerInner" class="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div id="footerBrand">
         <strong class="text-slate-300">StarWatch</strong> — Chạm vào Vũ Trụ · Bắt trọn Khoảnh Khắc Bầu Trời
       </div>
-      <div class="flex items-center gap-4">
-        <span>Khí tượng: <strong class="text-slate-400">Open-Meteo API</strong></span>
-        <span>Thiên văn: <strong class="text-slate-400">VSOP87 / Stellarium Refraction Engine</strong></span>
-        <span>Ô nhiễm sáng: <strong class="text-slate-400">VIIRS Bortle Scale</strong></span>
+      <div id="footerMeta" class="flex items-center gap-4">
+        <span class="footer-meta-item"><span>Khí tượng:</span> <strong class="text-slate-400">Open-Meteo API</strong></span>
+        <span class="footer-meta-item"><span>Thiên văn:</span> <strong class="text-slate-400">VSOP87 / Stellarium Refraction Engine</strong></span>
+        <span class="footer-meta-item"><span>Ô nhiễm sáng:</span> <strong class="text-slate-400">VIIRS Bortle Scale</strong></span>
       </div>
     </div>
   </footer>
@@ -3483,7 +3891,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
 
       const buildRow = (labelHtml, renderCellFn) => `
         <tr class="hover:bg-slate-900/40 transition">
-          <td class="sticky left-0 z-10 bg-slate-950/95 px-3 py-2 font-sans font-semibold text-xs text-slate-200 border-r border-slate-800 whitespace-nowrap">
+          <td class="matrix-row-label sticky left-0 z-10 bg-slate-950/95 px-3 py-2 font-sans font-semibold text-xs text-slate-200 border-r border-slate-800">
             ${labelHtml}
           </td>
           ${dayHours.map((hw, hIdx) => {
@@ -3498,7 +3906,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       tbody.innerHTML = [
         // Row 0: Hour Header
         `<tr class="bg-slate-900/90 text-slate-300">
-          <th class="sticky left-0 z-10 bg-slate-900 px-3 py-2 text-xs font-sans font-bold border-r border-slate-800">Giờ (GMT+7)</th>
+          <th class="matrix-row-label sticky left-0 z-10 bg-slate-900 px-3 py-2 text-xs font-sans font-bold border-r border-slate-800">Giờ (GMT+7)</th>
           ${dayHours.map((hw, hIdx) => {
             const isSelectedCol = hIdx === activeHour;
             return `<th data-hour-col="${hIdx}" class="matrix-hour-cell px-2 py-2 text-center cursor-pointer ${isSelectedCol ? 'bg-violet-600 text-white font-bold' : 'hover:bg-slate-800'}">
