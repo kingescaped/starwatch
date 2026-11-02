@@ -320,6 +320,10 @@
         font-size: 16px;
       }
 
+      html.mobile-search-active section.sticky {
+        position: static !important;
+      }
+
       .mobile-directory-button {
         width: 2.25rem;
         height: 2.25rem;
@@ -4317,6 +4321,39 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       const searchInput = document.getElementById('quickSpotSearchInput');
       const searchDropdown = document.getElementById('quickSearchDropdown');
       let geocodeDebounceTimer = null;
+      let searchFocusScrollY = null;
+
+      const restoreSearchFocusScroll = () => {
+        if (searchFocusScrollY === null || document.activeElement !== searchInput) return;
+        window.scrollTo(0, searchFocusScrollY);
+      };
+
+      const captureSearchFocusScroll = () => {
+        if (window.matchMedia('(max-width: 639px)').matches) {
+          searchFocusScrollY = window.scrollY;
+        }
+      };
+
+      searchInput.addEventListener('pointerdown', captureSearchFocusScroll);
+      searchInput.addEventListener('touchstart', captureSearchFocusScroll, { passive: true });
+
+      searchInput.addEventListener('focus', () => {
+        if (!window.matchMedia('(max-width: 639px)').matches) return;
+        if (searchFocusScrollY === null) searchFocusScrollY = window.scrollY;
+        document.documentElement.classList.add('mobile-search-active');
+        requestAnimationFrame(restoreSearchFocusScroll);
+      });
+
+      searchInput.addEventListener('blur', () => {
+        document.documentElement.classList.remove('mobile-search-active');
+        searchFocusScrollY = null;
+      });
+
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => {
+          requestAnimationFrame(restoreSearchFocusScroll);
+        });
+      }
 
       searchInput.addEventListener('input', (e) => {
         const rawQuery = e.target.value.trim();
