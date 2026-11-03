@@ -302,19 +302,25 @@
         overflow-x: clip;
       }
 
-      header {
+      body {
+        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+      }
+
+      header.glass-card {
         height: auto !important;
         min-height: 3.5rem;
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
       }
 
       header > div {
         display: grid !important;
-        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr);
         grid-template-areas:
-          "brand actions"
-          "search search";
+          "brand"
+          "search";
         gap: 0.5rem;
       }
 
@@ -345,9 +351,135 @@
         justify-content: center;
       }
 
-      header > div > div:last-child {
-        grid-area: actions;
-        gap: 0.375rem;
+      #mobileToolNav {
+        position: fixed;
+        z-index: 1200;
+        left: 50%;
+        bottom: calc(0.75rem + env(safe-area-inset-bottom));
+        display: flex;
+        width: min(24rem, calc(100vw - 2rem));
+        min-height: 4.25rem;
+        align-items: center;
+        justify-content: space-around;
+        gap: 0.25rem;
+        padding: 0.4rem;
+        transform: translateX(-50%);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 1.5rem;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(148, 163, 184, 0.04) 45%, rgba(139, 92, 246, 0.16)),
+          rgba(15, 23, 42, 0.76);
+        box-shadow:
+          0 12px 36px rgba(0, 0, 0, 0.38),
+          inset 0 1px 1px rgba(255, 255, 255, 0.24),
+          inset 0 -1px 1px rgba(139, 92, 246, 0.16);
+        backdrop-filter: blur(26px) saturate(180%);
+        -webkit-backdrop-filter: blur(26px) saturate(180%);
+      }
+
+      html.light-theme #mobileToolNav {
+        border-color: rgba(255, 255, 255, 0.72);
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(241, 245, 249, 0.72) 55%, rgba(224, 231, 255, 0.8)),
+          rgba(255, 255, 255, 0.72);
+        box-shadow:
+          0 12px 32px rgba(15, 23, 42, 0.16),
+          inset 0 1px 1px rgba(255, 255, 255, 0.95);
+      }
+
+      html.light-theme #mobileToolNav > button {
+        color: #334155;
+      }
+
+      html.light-theme #mobileToolNav #btnOpenSpotsDirectory {
+        color: #5b21b6;
+      }
+
+      #mobileToolNav > button {
+        display: flex;
+        min-width: 0;
+        min-height: 3.35rem;
+        flex: 1 1 0;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        padding: 0.35rem 0.15rem;
+        border: 0;
+        border-radius: 1rem;
+        background: transparent;
+        color: #cbd5e1;
+        text-align: center;
+      }
+
+      #mobileToolNav > button > i {
+        width: 1.125rem;
+        height: 1.125rem;
+        flex: 0 0 auto;
+      }
+
+      #mobileToolNav > button > span {
+        display: block;
+        max-width: 100%;
+        overflow: hidden;
+        font-size: 0.5625rem;
+        font-weight: 600;
+        line-height: 1;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #mobileToolNav #btnOpenSpotsDirectory {
+        order: 3;
+        color: #e9d5ff;
+        background: linear-gradient(145deg, rgba(139, 92, 246, 0.32), rgba(99, 102, 241, 0.2));
+        box-shadow:
+          inset 0 1px 1px rgba(255, 255, 255, 0.22),
+          0 0 18px rgba(139, 92, 246, 0.16);
+      }
+
+      #mobileToolNav #btnOpenAstroCalendarModal {
+        order: 1;
+      }
+
+      #mobileToolNav #btnOpenAstroCalendarModal > span {
+        font-size: 0;
+      }
+
+      #mobileToolNav #btnOpenAstroCalendarModal > span::after {
+        content: "Lịch";
+        font-size: 0.5625rem;
+      }
+
+      #mobileToolNav #btnOpenContributeModal {
+        order: 2;
+      }
+
+      #mobileToolNav #btnOpenContributeModal > span {
+        font-size: 0;
+      }
+
+      #mobileToolNav #btnOpenContributeModal > span::after {
+        content: "Đóng góp";
+        font-size: 0.5625rem;
+      }
+
+      #mobileToolNav #btnOpenGuideModal {
+        order: 4;
+      }
+
+      #mobileToolNav #btnOpenSettingsModal {
+        order: 5;
+      }
+
+      #mobileToolNav #btnOpenSpotsDirectory > i {
+        width: 1.35rem;
+        height: 1.35rem;
+      }
+
+      #mobileToolNav > button:focus-visible {
+        outline: 2px solid #c4b5fd;
+        outline-offset: 2px;
       }
 
       #modalSettings,
@@ -754,17 +886,11 @@
         grid-template-columns: minmax(0, 1fr);
         grid-template-areas:
           "brand"
-          "actions"
           "search";
       }
 
-      header > div > div:last-child {
-        width: 100%;
-        justify-content: space-between;
-      }
-
       section.sticky {
-        top: 8.75rem;
+        top: 6.5rem;
       }
     }
   </style>
@@ -819,8 +945,8 @@
         </button>
       </div>
 
-      <!-- Right Action Buttons: Astronomical Calendar, Contribute, User Guide, Settings -->
-      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <!-- Tool actions: horizontal on desktop, liquid-glass tab bar on mobile -->
+      <nav id="mobileToolNav" aria-label="Công cụ StarWatch" class="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <button
           id="btnOpenSpotsDirectory"
           title="Danh bạ điểm săn ảnh"
@@ -870,7 +996,8 @@
           <i data-lucide="settings" class="w-3.5 h-3.5 text-amber-400"></i>
           <span class="hidden sm:inline">Cài đặt</span>
         </button>
-      </div>
+
+      </nav>
 
     </div>
   </header>
