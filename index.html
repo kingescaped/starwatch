@@ -87,6 +87,195 @@
       border: 1px solid var(--border-color);
     }
 
+    html.light-theme {
+      color-scheme: light;
+    }
+
+    html.light-theme ::-webkit-scrollbar-track {
+      background: #e2e8f0;
+    }
+
+    html.light-theme ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+    }
+
+    html.light-theme :is(
+      [class~="bg-slate-950"],
+      [class~="bg-slate-900"],
+      [class*="bg-slate-950/"],
+      [class*="bg-slate-900/"],
+      [class~="bg-gray-950"],
+      [class~="bg-gray-900"],
+      [class*="bg-gray-950/"],
+      [class*="bg-gray-900/"]
+    ) {
+      background-color: #ffffff !important;
+    }
+
+    html.light-theme :is(
+      [class~="bg-slate-800"],
+      [class~="bg-slate-700"],
+      [class*="bg-slate-800/"],
+      [class*="bg-slate-700/"],
+      [class~="bg-gray-800"],
+      [class~="bg-gray-700"],
+      [class*="bg-gray-800/"],
+      [class*="bg-gray-700/"]
+    ) {
+      background-color: #e2e8f0 !important;
+    }
+
+    html.light-theme :is(
+      [class*="border-white/"],
+      [class*="border-slate-700"],
+      [class*="border-slate-800"],
+      [class*="border-gray-700"],
+      [class*="border-gray-800"]
+    ) {
+      border-color: #cbd5e1 !important;
+    }
+
+    html.light-theme [class*="bg-white/"] {
+      background-color: rgba(15, 23, 42, 0.04) !important;
+    }
+
+    html.light-theme :is(
+      [class~="text-white"],
+      [class*="text-slate-50"],
+      [class*="text-slate-100"],
+      [class*="text-slate-200"],
+      [class*="text-slate-300"],
+      [class*="text-gray-50"],
+      [class*="text-gray-100"],
+      [class*="text-gray-200"],
+      [class*="text-gray-300"]
+    ) {
+      color: #334155 !important;
+    }
+
+    html.light-theme :is(
+      [class*="text-slate-400"],
+      [class*="text-gray-400"]
+    ) {
+      color: #475569 !important;
+    }
+
+    html.light-theme :is(
+      [class*="text-violet-200"],
+      [class*="text-violet-300"],
+      [class*="text-violet-400"],
+      [class*="text-purple-200"],
+      [class*="text-purple-300"],
+      [class*="text-purple-400"],
+      [class*="text-fuchsia-200"],
+      [class*="text-fuchsia-300"],
+      [class*="text-fuchsia-400"]
+    ) {
+      color: #6b21a8 !important;
+    }
+
+    html.light-theme :is(
+      [class*="text-cyan-200"],
+      [class*="text-cyan-300"],
+      [class*="text-cyan-400"],
+      [class*="text-sky-200"],
+      [class*="text-sky-300"],
+      [class*="text-sky-400"],
+      [class*="text-teal-200"],
+      [class*="text-teal-300"],
+      [class*="text-teal-400"]
+    ) {
+      color: #0e7490 !important;
+    }
+
+    html.light-theme :is(
+      [class*="text-blue-200"],
+      [class*="text-blue-300"],
+      [class*="text-blue-400"],
+      [class*="text-indigo-200"],
+      [class*="text-indigo-300"],
+      [class*="text-indigo-400"]
+    ) {
+      color: #1d4ed8 !important;
+    }
+
+    html.light-theme :is(
+      [class*="text-emerald-200"],
+      [class*="text-emerald-300"],
+      [class*="text-emerald-400"],
+      [class*="text-green-200"],
+      [class*="text-green-300"],
+      [class*="text-green-400"],
+      [class*="text-lime-200"],
+      [class*="text-lime-300"],
+      [class*="text-lime-400"]
+    ) {
+      color: #15803d !important;
+    }
+
+    html.light-theme :is(
+      [class*="text-amber-200"],
+      [class*="text-amber-300"],
+      [class*="text-amber-400"],
+      [class*="text-yellow-200"],
+      [class*="text-yellow-300"],
+      [class*="text-yellow-400"],
+      [class*="text-orange-200"],
+      [class*="text-orange-300"],
+      [class*="text-orange-400"]
+    ) {
+      color: #92400e !important;
+    }
+
+    html.light-theme :is(
+      [class*="text-pink-200"],
+      [class*="text-pink-300"],
+      [class*="text-pink-400"],
+      [class*="text-rose-200"],
+      [class*="text-rose-300"],
+      [class*="text-rose-400"],
+      [class*="text-red-200"],
+      [class*="text-red-300"],
+      [class*="text-red-400"]
+    ) {
+      color: #b91c1c !important;
+    }
+
+    html.light-theme :is(input, textarea, select) {
+      color-scheme: light;
+    }
+
+    html.light-theme :is(input, textarea, select):not([type="range"]) {
+      border-color: #cbd5e1;
+    }
+
+    html.light-theme input::placeholder,
+    html.light-theme textarea::placeholder {
+      color: #64748b;
+      opacity: 1;
+    }
+
+    html.light-theme header h1 {
+      background-image: linear-gradient(90deg, #6d28d9, #0e7490) !important;
+    }
+
+    html.light-theme #btnOpenAppInfo .lucide {
+      color: #ffffff !important;
+    }
+
+    html.light-theme [class~="bg-violet-600"][class~="text-white"],
+    html.light-theme [class~="bg-violet-600"] [class~="text-white"] {
+      color: #ffffff !important;
+    }
+
+    html.light-theme .leaflet-popup-content-wrapper,
+    html.light-theme .leaflet-popup-tip {
+      background: rgba(255, 255, 255, 0.98) !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2) !important;
+    }
+
     /* Liquid Glass Aesthetic for Modals & Pop-ups */
     .liquid-glass {
       background: linear-gradient(
@@ -189,6 +378,36 @@
     }
     .pulse-ring {
       animation: pulseGlow 2.4s infinite ease-in-out;
+    }
+
+    @media (max-width: 639px) and (prefers-reduced-motion: no-preference) {
+      .mobile-tool-popup-entering {
+        animation: mobileToolBackdropIn 180ms ease-out both;
+      }
+
+      .mobile-tool-popup-entering > :first-child {
+        animation: mobileToolPopupFromTool 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      @keyframes mobileToolBackdropIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @keyframes mobileToolPopupFromTool {
+        0% {
+          opacity: 0.35;
+          transform: translate(var(--mobile-popup-start-x, 0), var(--mobile-popup-start-y, 0)) scale(0.06);
+        }
+        68% {
+          opacity: 1;
+          transform: translate(0, 0) scale(1.015);
+        }
+        100% {
+          opacity: 1;
+          transform: translate(0, 0) scale(1);
+        }
+      }
     }
 
     html.modal-scroll-locked {
@@ -391,10 +610,6 @@
         color: #334155;
       }
 
-      html.light-theme #mobileToolNav #btnOpenSpotsDirectory {
-        color: #5b21b6;
-      }
-
       #mobileToolNav > button {
         display: flex;
         min-width: 0;
@@ -410,6 +625,21 @@
         background: transparent;
         color: #cbd5e1;
         text-align: center;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      #mobileToolNav > button:active {
+        color: #e9d5ff;
+        background: linear-gradient(145deg, rgba(139, 92, 246, 0.32), rgba(99, 102, 241, 0.2));
+        box-shadow:
+          inset 0 1px 1px rgba(255, 255, 255, 0.22),
+          0 0 18px rgba(139, 92, 246, 0.16);
+      }
+
+      html.light-theme #mobileToolNav > button:active {
+        color: #5b21b6;
+        background: linear-gradient(145deg, rgba(196, 181, 253, 0.68), rgba(224, 231, 255, 0.76));
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.95);
       }
 
       #mobileToolNav > button > i {
@@ -431,11 +661,6 @@
 
       #mobileToolNav #btnOpenSpotsDirectory {
         order: 3;
-        color: #e9d5ff;
-        background: linear-gradient(145deg, rgba(139, 92, 246, 0.32), rgba(99, 102, 241, 0.2));
-        box-shadow:
-          inset 0 1px 1px rgba(255, 255, 255, 0.22),
-          0 0 18px rgba(139, 92, 246, 0.16);
       }
 
       #mobileToolNav #btnOpenAstroCalendarModal {
@@ -480,6 +705,28 @@
       #mobileToolNav > button:focus-visible {
         outline: 2px solid #c4b5fd;
         outline-offset: 2px;
+      }
+
+      @media (hover: none) {
+        #mobileToolNav > button:hover {
+          background: transparent;
+          box-shadow: none;
+          color: inherit;
+        }
+
+        #mobileToolNav > button:active {
+          color: #e9d5ff;
+          background: linear-gradient(145deg, rgba(139, 92, 246, 0.32), rgba(99, 102, 241, 0.2));
+          box-shadow:
+            inset 0 1px 1px rgba(255, 255, 255, 0.22),
+            0 0 18px rgba(139, 92, 246, 0.16);
+        }
+
+        html.light-theme #mobileToolNav > button:active {
+          color: #5b21b6;
+          background: linear-gradient(145deg, rgba(196, 181, 253, 0.68), rgba(224, 231, 255, 0.76));
+          box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.95);
+        }
       }
 
       #modalSettings,
@@ -872,6 +1119,29 @@
         font-size: 0.625rem;
         white-space: normal;
         overflow-wrap: anywhere;
+      }
+
+      html.light-theme #celestialTargetControl {
+        border-color: #cbd5e1;
+        background: #ffffff;
+      }
+
+      html.light-theme #celestialTargetControl label,
+      html.light-theme #setupEventControl > span {
+        color: #475569;
+      }
+
+      html.light-theme #celestialTargetControl select,
+      html.light-theme #selectSetupEventType {
+        border-color: #cbd5e1;
+        background-color: #ffffff !important;
+        color: #6b21a8 !important;
+      }
+
+      html.light-theme #gearModeControls .gear-tab-btn:not(.bg-violet-600) {
+        border-color: #cbd5e1;
+        background: #e2e8f0 !important;
+        color: #334155 !important;
       }
 
       input:not([type="range"]),
@@ -3826,6 +4096,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       const sun = getSunPosition(dt, spot.lat, spot.lon);
       const moon = getMoonPosition(dt, spot.lat, spot.lon);
       const target = getCelestialTargetPosition(dt, spot.lat, spot.lon, state.selectedTargetKey);
+      const isLightTheme = document.documentElement.classList.contains('light-theme');
 
       // Convert (Altitude 0..90, Azimuth 0..360 from North clockwise) to Polar (x, y)
       const altAzToXY = (altDeg, azDeg) => {
@@ -3885,7 +4156,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       }
 
       // 3. Concentric Altitude Rings (0° Horizon, 30°, 60°, 90° Zenith)
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.28)';
+      ctx.strokeStyle = isLightTheme ? 'rgba(203, 213, 225, 0.48)' : 'rgba(148, 163, 184, 0.28)';
       ctx.lineWidth = 1;
 
       // Outer 0° Horizon Ring
@@ -3901,7 +4172,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.stroke();
 
-        ctx.fillStyle = 'rgba(148, 163, 184, 0.6)';
+        ctx.fillStyle = isLightTheme ? 'rgba(203, 213, 225, 0.82)' : 'rgba(148, 163, 184, 0.6)';
         ctx.font = '500 9px "JetBrains Mono", monospace';
         ctx.fillText(`${altRing}°`, cx + 4, cy - r + 10);
       });
@@ -3940,7 +4211,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         const lx = cx + (maxR + 13) * Math.cos(rad);
         const ly = cy + (maxR + 13) * Math.sin(rad);
         ctx.font = c.label.length === 1 ? '700 11px Inter, sans-serif' : '500 9px Inter, sans-serif';
-        ctx.fillStyle = c.color;
+        ctx.fillStyle = isLightTheme ? (c.label === 'B' ? '#dc2626' : '#334155') : c.color;
         ctx.fillText(c.label, lx, ly);
       });
 
@@ -4872,12 +5143,39 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         });
       });
 
+      const openToolModal = (modal, trigger) => {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        const panel = modal.firstElementChild;
+        if (
+          !panel ||
+          !window.matchMedia('(max-width: 639px)').matches ||
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) return;
+
+        const triggerRect = trigger.getBoundingClientRect();
+        const panelRect = panel.getBoundingClientRect();
+        panel.style.setProperty('--mobile-popup-start-x', `${triggerRect.left + triggerRect.width / 2 - (panelRect.left + panelRect.width / 2)}px`);
+        panel.style.setProperty('--mobile-popup-start-y', `${triggerRect.top + triggerRect.height / 2 - (panelRect.top + panelRect.height / 2)}px`);
+        modal.classList.remove('mobile-tool-popup-entering');
+        void modal.offsetWidth;
+        modal.classList.add('mobile-tool-popup-entering');
+        const handleAnimationEnd = (event) => {
+          if (event.animationName !== 'mobileToolPopupFromTool') return;
+          panel.removeEventListener('animationend', handleAnimationEnd);
+          modal.classList.remove('mobile-tool-popup-entering');
+          panel.style.removeProperty('--mobile-popup-start-x');
+          panel.style.removeProperty('--mobile-popup-start-y');
+        };
+        panel.addEventListener('animationend', handleAnimationEnd);
+      };
+
       // Astronomical Events Calendar Modal
       const modalAstroCal = document.getElementById('modalAstroCalendar');
-      document.getElementById('btnOpenAstroCalendarModal').addEventListener('click', () => {
+      document.getElementById('btnOpenAstroCalendarModal').addEventListener('click', (event) => {
         renderAstroCalendarModal();
-        modalAstroCal.classList.remove('hidden');
-        modalAstroCal.classList.add('flex');
+        openToolModal(modalAstroCal, event.currentTarget);
       });
       document.getElementById('btnCloseAstroCalendarModal').addEventListener('click', () => {
         modalAstroCal.classList.add('hidden');
@@ -4900,9 +5198,8 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         modalGuide.classList.add('hidden');
         modalGuide.classList.remove('flex');
       };
-      document.getElementById('btnOpenGuideModal').addEventListener('click', () => {
-        modalGuide.classList.remove('hidden');
-        modalGuide.classList.add('flex');
+      document.getElementById('btnOpenGuideModal').addEventListener('click', (event) => {
+        openToolModal(modalGuide, event.currentTarget);
       });
       document.getElementById('btnCloseGuideModal').addEventListener('click', closeGuide);
       document.getElementById('btnAcknowledgeGuide').addEventListener('click', closeGuide);
@@ -4943,11 +5240,10 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       // Unified Settings Modal
       const modalSettings = document.getElementById('modalSettings');
       const settingsCartoInput = document.getElementById('settingsCartoKeyInput');
-      document.getElementById('btnOpenSettingsModal').addEventListener('click', () => {
+      document.getElementById('btnOpenSettingsModal').addEventListener('click', (event) => {
         if (settingsCartoInput) settingsCartoInput.value = CARTO_CONFIG.apiKey;
         updateCartoTelemetryUI();
-        modalSettings.classList.remove('hidden');
-        modalSettings.classList.add('flex');
+        openToolModal(modalSettings, event.currentTarget);
       });
       document.getElementById('btnCloseSettingsModal').addEventListener('click', () => {
         modalSettings.classList.add('hidden');
@@ -4994,6 +5290,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
           const mode = btn.getAttribute('data-theme-mode');
           const htmlEl = document.documentElement;
           htmlEl.classList.remove('light-theme', 'red-vision-theme');
+          htmlEl.classList.toggle('dark', mode !== 'light');
           if (mode === 'light') htmlEl.classList.add('light-theme');
           if (mode === 'red') htmlEl.classList.add('red-vision-theme');
 
@@ -5006,22 +5303,21 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
 
       // Contribute New Spot Modal
       const modalContribute = document.getElementById('modalContributeSpot');
-      const openContribute = () => {
+      const openContribute = (trigger) => {
         if (state.activeSpot) {
           document.getElementById('inputSpotLat').value = state.activeSpot.lat;
           document.getElementById('inputSpotLon').value = state.activeSpot.lon;
           document.getElementById('inputSpotElevation').value = state.activeSpot.elevation;
           document.getElementById('inputSpotBortle').value = state.activeSpot.bortle;
         }
-        modalContribute.classList.remove('hidden');
-        modalContribute.classList.add('flex');
+        openToolModal(modalContribute, trigger);
       };
       const closeContribute = () => {
         modalContribute.classList.add('hidden');
         modalContribute.classList.remove('flex');
       };
 
-      document.getElementById('btnOpenContributeModal').addEventListener('click', openContribute);
+      document.getElementById('btnOpenContributeModal').addEventListener('click', (event) => openContribute(event.currentTarget));
       document.getElementById('btnCloseContributeModal').addEventListener('click', closeContribute);
       document.getElementById('btnCancelContribute').addEventListener('click', closeContribute);
 
