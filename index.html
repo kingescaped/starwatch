@@ -3253,6 +3253,9 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
     let referenceLabelLayer = null;
     let activeSpotMarker = null;
     let spotClusterMarkers = [];
+    let mapResizeObserver = null;
+    let mapResizeFrame = null;
+    let mapWasMobileViewport = window.matchMedia('(max-width: 639px)').matches;
 
     // Major urban light-pollution centers in Vietnam for realistic VIIRS Bortle field calculation
     const VIETNAM_LIGHT_DOMES = [
@@ -3286,9 +3289,30 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       return Number(Math.min(9.0, Math.max(2.0, bortle)).toFixed(1));
     }
 
+    function syncLeafletMapSize() {
+      if (!leafletMap) return;
+      const container = leafletMap.getContainer();
+      const size = leafletMap.getSize();
+      const isMobileViewport = window.matchMedia('(max-width: 639px)').matches;
+
+      if (size.x !== container.clientWidth || size.y !== container.clientHeight) {
+        leafletMap.invalidateSize({ pan: false, debounceMoveend: true });
+      }
+
+      if (isMobileViewport && !mapWasMobileViewport && state.activeSpot &&
+          !leafletMap.getBounds().contains([state.activeSpot.lat, state.activeSpot.lon])) {
+        leafletMap.panTo([state.activeSpot.lat, state.activeSpot.lon], { animate: false });
+      }
+      mapWasMobileViewport = isMobileViewport;
+      drawMapCanvasOverlays();
+    }
+
     function initVietnamMap() {
+      const isMobileViewport = window.matchMedia('(max-width: 639px)').matches;
       leafletMap = L.map('vietnamLeafletMap', {
-        center: [16.6, 106.4],
+        center: isMobileViewport && state.activeSpot
+          ? [state.activeSpot.lat, state.activeSpot.lon]
+          : [16.6, 106.4],
         zoom: 6,
         minZoom: 5,
         maxZoom: 17,
@@ -3302,6 +3326,17 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       leafletMap.on('move zoom viewreset resize', () => {
         drawMapCanvasOverlays();
       });
+
+      if ('ResizeObserver' in window) {
+        mapResizeObserver = new ResizeObserver(() => {
+          if (mapResizeFrame !== null) cancelAnimationFrame(mapResizeFrame);
+          mapResizeFrame = requestAnimationFrame(() => {
+            mapResizeFrame = null;
+            syncLeafletMapSize();
+          });
+        });
+        mapResizeObserver.observe(leafletMap.getContainer());
+      }
 
       // Click anywhere on Vietnam map to inspect custom location & fetch live Open-Meteo forecast
       leafletMap.on('click', (e) => {
@@ -3329,7 +3364,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       });
 
       renderAllSpotMarkersOnMap();
-      setTimeout(() => drawMapCanvasOverlays(), 250);
+      setTimeout(syncLeafletMapSize, 250);
     }
 
     function estimateTerrainElevation(lat, lon) {
@@ -3448,7 +3483,11 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       spotClusterMarkers.forEach(m => leafletMap.removeLayer(m));
       spotClusterMarkers = [];
 
-      state.spots.forEach(spot => {
+      const spotsToRender = state.activeSpot && !state.spots.some(spot => spot.id === state.activeSpot.id)
+        ? [...state.spots, state.activeSpot]
+        : state.spots;
+
+      spotsToRender.forEach(spot => {
         const isSelected = state.activeSpot && state.activeSpot.id === spot.id;
         const iconHtml = `
           <div class="relative flex items-center justify-center">
@@ -4894,7 +4933,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       });
 
       window.addEventListener('resize', () => {
-        drawMapCanvasOverlays();
+        syncLeafletMapSize();
         drawTopDownSkyDome();
       });
     }
