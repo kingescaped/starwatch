@@ -3008,7 +3008,6 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       activeCalendarFilter: 'all'
     };
 
-    const LOCATION_CONSENT_STORAGE_KEY = 'starwatch_location_consent_v1';
     const FAVORITE_SPOTS_STORAGE_KEY = 'starwatch_favorite_spots_v1';
     let appStatusToastTimer = null;
     let latestReverseGeocodeRequest = 0;
@@ -3973,14 +3972,6 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       return Number(Math.min(9.0, Math.max(2.0, bortle)).toFixed(1));
     }
 
-    function rememberLocationConsent(choice) {
-      try {
-        localStorage.setItem(LOCATION_CONSENT_STORAGE_KEY, choice);
-      } catch (error) {
-        showAppStatus('Không thể lưu lựa chọn quyền vị trí trên thiết bị này.', true);
-      }
-    }
-
     function setCoordinateFallbackName(spot) {
       const isGpsLocation = spot.tags && spot.tags.includes('GPS hiện tại');
       const coordinates = `${Number(spot.lat).toFixed(4)}, ${Number(spot.lon).toFixed(4)}`;
@@ -4134,7 +4125,6 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       try {
         navigator.geolocation.getCurrentPosition((position) => {
           finishLocationRequest();
-          rememberLocationConsent('granted');
           const lat = Number(position.coords.latitude.toFixed(4));
           const lon = Number(position.coords.longitude.toFixed(4));
           const spot = {
@@ -4155,7 +4145,6 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         }, (error) => {
           finishLocationRequest();
           if (error.code === error.PERMISSION_DENIED) {
-            rememberLocationConsent('denied');
             showAppStatus('Quyền vị trí đang bị từ chối. Bạn có thể bật lại trong cài đặt trình duyệt.', true);
           } else if (error.code === error.TIMEOUT) {
             showAppStatus('Định vị quá thời gian chờ. Hãy thử lại khi tín hiệu GPS ổn định hơn.', true);
@@ -4174,13 +4163,6 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
     }
 
     async function initializeLocationConsent() {
-      let rememberedChoice;
-      try {
-        rememberedChoice = localStorage.getItem(LOCATION_CONSENT_STORAGE_KEY);
-      } catch (error) {
-        showAppStatus('Không đọc được lựa chọn quyền vị trí. Hãy dùng nút GPS để thử thủ công.', true);
-        return;
-      }
       if (!navigator.geolocation) return;
 
       if (navigator.permissions && navigator.permissions.query) {
@@ -4188,22 +4170,16 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         try {
           permission = await navigator.permissions.query({ name: 'geolocation' });
         } catch (error) {
-          if (rememberedChoice === 'denied') return;
           showAppStatus('Không kiểm tra được trạng thái quyền GPS; trình duyệt sẽ xử lý yêu cầu vị trí.', true);
         }
 
         if (permission && permission.state === 'denied') {
-          rememberLocationConsent('denied');
           return;
         }
         if (permission && permission.state === 'granted') {
-          rememberLocationConsent('granted');
           requestCurrentLocation();
           return;
         }
-        if (permission && permission.state === 'prompt' && rememberedChoice === 'denied') return;
-      } else if (rememberedChoice === 'denied') {
-        return;
       }
 
       requestCurrentLocation();
