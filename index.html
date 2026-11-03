@@ -4181,24 +4181,29 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         showAppStatus('Không đọc được lựa chọn quyền vị trí. Hãy dùng nút GPS để thử thủ công.', true);
         return;
       }
-      if (rememberedChoice === 'denied') return;
       if (!navigator.geolocation) return;
 
       if (navigator.permissions && navigator.permissions.query) {
+        let permission;
         try {
-          const permission = await navigator.permissions.query({ name: 'geolocation' });
-          if (permission.state === 'denied') {
-            rememberLocationConsent('denied');
-            return;
-          }
-          if (permission.state === 'granted') rememberLocationConsent('granted');
-          if (permission.state === 'prompt' && rememberedChoice === 'granted') {
-            showAppStatus('Trình duyệt không còn cấp quyền GPS tự động. Bấm nút GPS nếu muốn thử lại.');
-            return;
-          }
+          permission = await navigator.permissions.query({ name: 'geolocation' });
         } catch (error) {
-          showAppStatus('Không kiểm tra được trạng thái quyền GPS; trình duyệt vẫn sẽ xử lý yêu cầu vị trí.', true);
+          if (rememberedChoice === 'denied') return;
+          showAppStatus('Không kiểm tra được trạng thái quyền GPS; trình duyệt sẽ xử lý yêu cầu vị trí.', true);
         }
+
+        if (permission && permission.state === 'denied') {
+          rememberLocationConsent('denied');
+          return;
+        }
+        if (permission && permission.state === 'granted') {
+          rememberLocationConsent('granted');
+          requestCurrentLocation();
+          return;
+        }
+        if (permission && permission.state === 'prompt' && rememberedChoice === 'denied') return;
+      } else if (rememberedChoice === 'denied') {
+        return;
       }
 
       requestCurrentLocation();
