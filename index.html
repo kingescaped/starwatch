@@ -87,6 +87,161 @@
       border: 1px solid var(--border-color);
     }
 
+    #activeSpotBar {
+      transition: padding 0.25s ease;
+    }
+
+    .active-spot-indicator {
+      width: 0.625rem;
+      height: 2rem;
+      border-radius: 9999px;
+      background: linear-gradient(to bottom, #8b5cf6, #22d3ee);
+      transition: width 0.3s ease, height 0.3s ease;
+    }
+
+    .active-spot-indicator > svg {
+      width: 1rem;
+      height: 1rem;
+      opacity: 0;
+      transform: scale(0.65);
+      transition: opacity 0.2s ease, transform 0.3s ease;
+    }
+
+    .active-spot-bar-detail {
+      transition: opacity 0.2s ease, transform 0.25s ease;
+    }
+
+    #activeSpotTelemetry,
+    #activeSpotActions {
+      max-height: 7rem;
+      transition: max-height 0.3s ease, opacity 0.2s ease, transform 0.25s ease;
+    }
+
+    #activeSpotActions {
+      max-width: 100rem;
+      overflow: hidden;
+    }
+
+    #activeSpotBar[data-collapsed="true"] {
+      padding-block: 0.25rem;
+    }
+
+    #activeSpotBar[data-collapsed="true"] .active-spot-indicator {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    #activeSpotBar[data-collapsed="true"] .active-spot-indicator > svg {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #activeSpotBar[data-collapsed="true"] .active-spot-bar-detail {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-0.25rem);
+      visibility: hidden;
+    }
+
+    #activeSpotBar[data-collapsed="true"] #activeSpotRegionBadge,
+    #activeSpotBar[data-collapsed="true"] #apiStatusBadge {
+      min-width: 0;
+      max-width: 0;
+      max-height: 0;
+      padding: 0;
+      border-width: 0;
+      overflow: hidden;
+    }
+
+    #activeSpotBar[data-collapsed="true"] #activeSpotTelemetry {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transform: translateY(-0.25rem);
+    }
+
+    #activeSpotBar[data-collapsed="true"] #activeSpotTelemetry {
+      margin-top: 0;
+    }
+
+    #activeSpotBar[data-collapsed="true"] #activeSpotActions {
+      max-height: 7rem;
+      max-width: 100rem;
+      opacity: 1;
+      overflow: visible;
+      transform: none;
+    }
+
+    #activeSpotBar[data-collapsed="true"] #activeSpotActions .active-spot-bar-detail {
+      width: 0;
+      min-width: 0;
+      max-width: 0;
+      max-height: 0;
+      margin: 0;
+      padding: 0;
+      border-width: 0;
+      flex: 0 0 0;
+      overflow: hidden;
+    }
+
+    #activeSpotBarToggle {
+      flex: 0 0 auto;
+      margin-left: auto;
+    }
+
+    @media (max-width: 639px) {
+      #activeSpotActions {
+        width: 100%;
+        flex: 1 1 100%;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 0.125rem;
+        scrollbar-width: none;
+      }
+
+      #activeSpotActions::-webkit-scrollbar {
+        display: none;
+      }
+
+      #activeSpotActions > * {
+        flex: 0 0 auto !important;
+      }
+
+      #activeSpotBar[data-collapsed="true"] > div {
+        align-items: center !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 0.5rem !important;
+      }
+
+      #activeSpotBar[data-collapsed="true"] > div > div:first-child {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+        width: auto !important;
+      }
+
+      #activeSpotBar[data-collapsed="true"] #activeSpotActions {
+        flex: 1 1 0%;
+        min-width: 0;
+        padding: 0;
+      }
+
+      #activeSpotBar[data-collapsed="true"] #activeSpotActions > * {
+        flex-shrink: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #activeSpotBar,
+      .active-spot-indicator,
+      .active-spot-indicator > svg,
+      .active-spot-bar-detail,
+      #activeSpotTelemetry,
+      #activeSpotActions {
+        transition-duration: 0.01ms;
+      }
+    }
+
     html.light-theme {
       color-scheme: light;
     }
@@ -1273,27 +1428,29 @@
   </header>
 
   <!-- STICKY COMPACT ACTIVE SPOT & SCORE BAR (PINNED BELOW HEADER ON SCROLL) -->
-  <section class="sticky top-14 z-[990] glass-card border-b border-slate-800/90 px-3 sm:px-6 py-2 shadow-lg">
+  <section id="activeSpotBar" data-collapsed="false" class="sticky top-14 z-[990] glass-card border-b border-slate-800/90 px-3 sm:px-6 py-2 shadow-lg">
     <div class="max-w-[1600px] w-full mx-auto flex flex-wrap items-center justify-between gap-2 sm:gap-4">
       
       <!-- Left: Compact Active Location Name & Key Telemetry Pills -->
       <div class="flex items-center gap-2.5 min-w-0 flex-1">
-        <div class="w-2.5 h-8 rounded-full bg-gradient-to-b from-violet-500 to-cyan-400 shrink-0"></div>
+        <div class="active-spot-indicator shrink-0 flex items-center justify-center">
+          <i data-lucide="map-pin" class="text-white"></i>
+        </div>
         <div class="min-w-0">
           <div class="flex items-center gap-1.5 flex-wrap">
             <h2 id="activeSpotName" class="text-xs sm:text-sm font-extrabold text-white truncate max-w-[210px] sm:max-w-[300px]">
               Đỉnh Tà Xùa (Sống Lưng Khủng Long)
             </h2>
-            <span id="activeSpotRegionBadge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/30 whitespace-nowrap">
+            <span id="activeSpotRegionBadge" class="active-spot-bar-detail text-[10px] font-semibold px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/30 whitespace-nowrap">
               Miền Bắc · Sơn La
             </span>
-            <span id="apiStatusBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hidden sm:inline-flex items-center gap-1">
+            <span id="apiStatusBadge" class="active-spot-bar-detail text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hidden sm:inline-flex items-center gap-1">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
               LIVE
             </span>
           </div>
 
-          <div class="flex items-center gap-2 sm:gap-3 text-[10px] font-mono text-slate-400 mt-0.5 flex-wrap">
+          <div id="activeSpotTelemetry" class="flex items-center gap-2 sm:gap-3 text-[10px] font-mono text-slate-400 mt-0.5 flex-wrap">
             <span title="Tọa độ GPS">📍 <strong id="activeSpotCoords" class="text-cyan-300">21.2981, 104.4652</strong></span>
             <span title="Độ cao địa hình">⛰ <strong id="activeSpotElevation" class="text-amber-300">1,865 m</strong></span>
             <span class="inline-flex items-center gap-1" title="Cấp độ ô nhiễm ánh sáng VIIRS">
@@ -1307,9 +1464,9 @@
       </div>
 
       <!-- Right: Compact 3 Signature Photography Score Pills + Quick Setup Jump + Refresh -->
-      <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+      <div id="activeSpotActions" class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
         <!-- Pill 1: Milky Way Score -->
-        <div class="bg-slate-900/90 border border-violet-500/35 rounded-xl px-2.5 py-1 flex items-center gap-2" title="Điểm Săn Ngân Hà & Trời Tối">
+        <div class="active-spot-bar-detail bg-slate-900/90 border border-violet-500/35 rounded-xl px-2.5 py-1 flex items-center gap-2" title="Điểm Săn Ngân Hà & Trời Tối">
           <div class="text-[10px] text-violet-300 font-semibold flex items-center gap-1">
             <span>🌌</span>
             <span class="hidden sm:inline">Ngân Hà</span>
@@ -1320,7 +1477,7 @@
         </div>
 
         <!-- Pill 2: Afterglow Score -->
-        <div class="bg-slate-900/90 border border-amber-500/35 rounded-xl px-2.5 py-1 flex items-center gap-2" title="Điểm Ráng Bình Minh · Hoàng Hôn">
+        <div class="active-spot-bar-detail bg-slate-900/90 border border-amber-500/35 rounded-xl px-2.5 py-1 flex items-center gap-2" title="Điểm Ráng Bình Minh · Hoàng Hôn">
           <div class="text-[10px] text-amber-300 font-semibold flex items-center gap-1">
             <span>🌅</span>
             <span class="hidden sm:inline">Ráng</span>
@@ -1331,7 +1488,7 @@
         </div>
 
         <!-- Pill 3: Cloud Sea Score -->
-        <div class="bg-slate-900/90 border border-cyan-500/35 rounded-xl px-2.5 py-1 flex items-center gap-2" title="Điểm Săn Biển Mây">
+        <div class="active-spot-bar-detail bg-slate-900/90 border border-cyan-500/35 rounded-xl px-2.5 py-1 flex items-center gap-2" title="Điểm Săn Biển Mây">
           <div class="text-[10px] text-cyan-300 font-semibold flex items-center gap-1">
             <span>☁️</span>
             <span class="hidden sm:inline">Săn Mây</span>
@@ -1344,7 +1501,7 @@
         <!-- Jump to Astro Photography Setup Section -->
         <button
           id="btnJumpToCameraSetup"
-          class="px-2.5 py-1.5 rounded-xl bg-fuchsia-600/20 hover:bg-fuchsia-600/35 border border-fuchsia-500/40 text-fuchsia-200 text-[11px] font-semibold flex items-center gap-1 transition"
+          class="active-spot-bar-detail px-2.5 py-1.5 rounded-xl bg-fuchsia-600/20 hover:bg-fuchsia-600/35 border border-fuchsia-500/40 text-fuchsia-200 text-[11px] font-semibold flex items-center gap-1 transition"
           title="Xem thông số Setup Máy ảnh / iPhone 18 Pro / Android tại điểm này"
         >
           <i data-lucide="camera" class="w-3.5 h-3.5 text-fuchsia-400"></i>
@@ -1353,10 +1510,21 @@
 
         <button
           id="btnRefreshWeather"
-          class="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition"
+          class="active-spot-bar-detail p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition"
           title="Làm mới dữ liệu khí tượng Open-Meteo"
         >
           <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+        </button>
+        <button
+          id="activeSpotBarToggle"
+          type="button"
+          class="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition"
+          aria-label="Thu gọn thanh địa điểm"
+          aria-expanded="true"
+          title="Thu gọn thanh địa điểm"
+        >
+          <i data-lucide="chevron-up" class="active-spot-toggle-collapse w-4 h-4"></i>
+          <i data-lucide="chevron-down" class="active-spot-toggle-expand hidden w-4 h-4"></i>
         </button>
       </div>
 
@@ -3446,12 +3614,12 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         const data = await res.json();
         state.weatherData = normalizeWeatherResponse(data);
         statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Open-Meteo LIVE`;
-        statusBadge.className = 'text-[11px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1';
+        statusBadge.className = 'active-spot-bar-detail text-[11px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1';
       } catch (err) {
         // Graceful physics-based simulation fallback if offline
         state.weatherData = generateFallbackWeather(spot);
         statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Mô phỏng Khí tượng`;
-        statusBadge.className = 'text-[11px] font-mono px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 flex items-center gap-1';
+        statusBadge.className = 'active-spot-bar-detail text-[11px] font-mono px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 flex items-center gap-1';
       }
 
       renderForecastDayTabs();
@@ -4685,7 +4853,25 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
      * 11. EVENT LISTENERS & INITIALIZATION
      ***************************************************************************/
     function initEventListeners() {
-      const modalOverlays = [...document.querySelectorAll('div[id^="modal"].fixed.inset-0')];
+       const activeSpotBar = document.getElementById('activeSpotBar');
+       const activeSpotBarToggle = document.getElementById('activeSpotBarToggle');
+       activeSpotBarToggle.addEventListener('click', () => {
+         const isCollapsed = activeSpotBar.dataset.collapsed !== 'true';
+         activeSpotBar.dataset.collapsed = String(isCollapsed);
+         activeSpotBarToggle.setAttribute('aria-expanded', String(!isCollapsed));
+         activeSpotBarToggle.setAttribute(
+           'aria-label',
+           isCollapsed ? 'Mở rộng thanh địa điểm' : 'Thu gọn thanh địa điểm'
+         );
+         activeSpotBarToggle.title = isCollapsed ? 'Mở rộng thanh địa điểm' : 'Thu gọn thanh địa điểm';
+         activeSpotBarToggle.querySelector('.active-spot-toggle-collapse').classList.toggle('hidden', isCollapsed);
+         activeSpotBarToggle.querySelector('.active-spot-toggle-expand').classList.toggle('hidden', !isCollapsed);
+         activeSpotBar.querySelectorAll('.active-spot-bar-detail').forEach(detail => {
+           detail.inert = isCollapsed;
+         });
+       });
+
+       const modalOverlays = [...document.querySelectorAll('div[id^="modal"].fixed.inset-0')];
       let backgroundScrollLocked = false;
       let lockedScrollY = 0;
 
