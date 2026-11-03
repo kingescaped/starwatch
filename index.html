@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StarWatch — Chạm vào Vũ Trụ · Bắt trọn Khoảnh Khắc Bầu Trời</title>
+  <title>StarWatch</title>
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%236366f1'/%3E%3Cstop offset='50%25' stop-color='%23a855f7'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='4' y='4' width='56' height='56' rx='16' fill='url(%23grad)'/%3E%3Cpath d='M32 16 C32 24 24 32 16 32 C24 32 32 40 32 48 C32 40 40 32 48 32 C40 32 32 24 32 16 Z' fill='none' stroke='white' stroke-width='4' stroke-linejoin='round'/%3E%3Ccircle cx='46' cy='20' r='2.5' fill='white'/%3E%3Ccircle cx='20' cy='44' r='2.5' fill='white'/%3E%3Ccircle cx='52' cy='12' r='7' fill='%2310b981' stroke='%23070b14' stroke-width='2.5'/%3E%3C/svg%3E" />
 
@@ -206,6 +206,22 @@
       margin-left: auto;
     }
 
+    #weatherMatrixSection {
+      scroll-margin-top: 8rem;
+    }
+
+    #weatherMatrixTable .matrix-past-hour {
+      background-color: rgba(71, 85, 105, 0.32) !important;
+      color: #94a3b8 !important;
+    }
+
+    #weatherMatrixTable .matrix-past-hour > span,
+    #weatherMatrixTable .matrix-past-hour > div {
+      background-color: rgba(71, 85, 105, 0.55) !important;
+      color: #94a3b8 !important;
+      font-weight: 500;
+    }
+
     @media (max-width: 639px) {
       #activeSpotActions {
         width: 100%;
@@ -342,6 +358,10 @@
       #mapCloudLegend > div > span:first-child {
         padding-left: 0;
         color: #cbd5e1;
+      }
+
+      #weatherMatrixSection {
+        scroll-margin-top: 11rem;
       }
     }
 
@@ -973,11 +993,12 @@
       }
 
       #mobileToolNav #btnOpenAstroCalendarModal > span {
+        display: inline;
         font-size: 0;
       }
 
       #mobileToolNav #btnOpenAstroCalendarModal > span::after {
-        content: "Lịch";
+        content: "Sự kiện";
         font-size: 0.5625rem;
       }
 
@@ -1524,22 +1545,22 @@
       <nav id="mobileToolNav" aria-label="Công cụ StarWatch" class="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <button
           id="btnOpenSpotsDirectory"
-          title="Danh bạ điểm săn ảnh"
-          aria-label="Danh bạ điểm săn ảnh"
+          title="Địa điểm săn ảnh"
+          aria-label="Địa điểm săn ảnh"
           class="mobile-directory-button px-2 py-1.5 rounded-xl bg-violet-600/25 hover:bg-violet-600/40 text-violet-300 border border-violet-500/30 text-[11px] font-medium flex items-center gap-1 transition"
         >
-          <i data-lucide="compass" class="w-3.5 h-3.5"></i>
-          <span class="hidden sm:inline">Danh bạ</span>
+          <i data-lucide="compass" class="w-3.5 h-3.5 text-violet-300"></i>
+          <span class="hidden sm:inline">Địa điểm</span>
         </button>
 
         <!-- Astronomical Events Calendar Button -->
         <button
           id="btnOpenAstroCalendarModal"
           class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-violet-600/25 hover:bg-violet-600/40 text-violet-200 border border-violet-500/40 text-xs font-semibold flex items-center gap-1.5 transition"
-          title="Lịch Thiên Văn & Dự đoán địa điểm săn ảnh"
+          title="Sự kiện thiên văn & dự đoán địa điểm săn ảnh"
         >
           <i data-lucide="calendar-heart" class="w-3.5 h-3.5 text-fuchsia-400"></i>
-          <span class="hidden md:inline">Lịch Thiên Văn</span>
+          <span class="hidden md:inline">Sự kiện</span>
         </button>
 
         <!-- Contribute Spot Button -->
@@ -1548,7 +1569,7 @@
           class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-medium flex items-center gap-1.5 transition"
           title="Đóng góp địa điểm săn ảnh mới"
         >
-          <i data-lucide="map-pin-plus" class="w-3.5 h-3.5"></i>
+          <i data-lucide="map-pin-plus" class="w-3.5 h-3.5 text-emerald-300"></i>
           <span class="hidden lg:inline">Đóng góp điểm</span>
         </button>
 
@@ -2046,7 +2067,7 @@
     </div>
 
     <!-- MULTI-LAYER CLOUD & WEATHER TIMELINE MATRIX (48H / 7-DAY INTERACTIVE HEATMAP) -->
-    <section class="glass-card rounded-2xl p-4 border border-slate-800">
+    <section id="weatherMatrixSection" class="glass-card rounded-2xl p-4 border border-slate-800">
       <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div>
           <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
@@ -2065,7 +2086,7 @@
       </div>
 
       <!-- Horizontal Scrollable Weather & Astro Matrix Table -->
-      <div class="overflow-x-auto rounded-xl border border-slate-800/90 bg-slate-950/60">
+      <div id="weatherMatrixScroll" class="overflow-x-auto rounded-xl border border-slate-800/90 bg-slate-950/60">
         <table id="weatherMatrixTable" class="w-full text-left border-collapse select-none">
           <tbody id="weatherMatrixBody" class="divide-y divide-slate-800/70 text-[11px] font-mono">
             <!-- Populated dynamically with 24 hourly columns for the active day -->
@@ -3112,6 +3133,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
     let nominatimRequestQueue = Promise.resolve();
     let nominatimLastRequestAt = 0;
     let locationRequestPending = false;
+    let matrixHourRefreshTimer = null;
 
     function showAppStatus(message, isError = false) {
       const toast = document.getElementById('appStatusToast');
@@ -3576,8 +3598,10 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
 
           if (foundSpot) {
             selectSpot(foundSpot, true);
+            scrollToWeatherMatrix();
           } else {
             updateAllViews();
+            scrollToWeatherMatrix();
           }
         });
       });
@@ -5128,6 +5152,61 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       return 'bg-rose-500/30 text-rose-200 font-bold';
     }
 
+    function getCurrentVietnamDateTime() {
+      const nowVN = new Date(Date.now() + 7 * 3600000);
+      return {
+        dateStr: nowVN.toISOString().split('T')[0],
+        minutes: nowVN.getUTCHours() * 60 + nowVN.getUTCMinutes()
+      };
+    }
+
+    function isWeatherMatrixHourPast(hour) {
+      const currentVietnamDateTime = getCurrentVietnamDateTime();
+      if (state.selectedDateStr < currentVietnamDateTime.dateStr) return true;
+      return state.selectedDateStr === currentVietnamDateTime.dateStr &&
+        hour < Math.floor(currentVietnamDateTime.minutes / 60);
+    }
+
+    function scheduleMatrixHourRefresh() {
+      clearTimeout(matrixHourRefreshTimer);
+      const now = new Date();
+      const currentVietnamDateTime = getCurrentVietnamDateTime();
+      const currentMinute = currentVietnamDateTime.minutes % 60;
+      const delayToNextHour = (60 - currentMinute) * 60000 -
+        now.getUTCSeconds() * 1000 -
+        now.getUTCMilliseconds() +
+        50;
+      matrixHourRefreshTimer = setTimeout(() => {
+        renderWeatherMatrixTable();
+        scheduleMatrixHourRefresh();
+      }, Math.max(50, delayToNextHour));
+    }
+
+    function scrollToWeatherMatrix() {
+      const section = document.getElementById('weatherMatrixSection');
+      if (!section) return;
+      const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+      section.scrollIntoView({ behavior, block: 'start' });
+    }
+
+    function revealSelectedMatrixHour() {
+      const scroller = document.getElementById('weatherMatrixScroll');
+      const hourCell = document.querySelector(`#weatherMatrixBody th[data-hour-col="${Math.floor(state.selectedMinutes / 60)}"]`);
+      const rowLabel = scroller && scroller.querySelector('.matrix-row-label');
+      if (!scroller || !hourCell || !rowLabel) return;
+
+      const scrollerRect = scroller.getBoundingClientRect();
+      const cellRect = hourCell.getBoundingClientRect();
+      const labelWidth = rowLabel.getBoundingClientRect().width;
+      const visibleLeft = scrollerRect.left + labelWidth;
+      const visibleRight = scrollerRect.right;
+      if (cellRect.left >= visibleLeft && cellRect.right <= visibleRight) return;
+
+      const visibleCenter = (visibleLeft + visibleRight) / 2;
+      const cellCenter = (cellRect.left + cellRect.right) / 2;
+      scroller.scrollLeft += cellCenter - visibleCenter;
+    }
+
     function scoreCellColorClass(score) {
       if (score >= 78) return 'bg-violet-500/30 text-violet-200 font-bold';
       if (score >= 55) return 'bg-emerald-500/20 text-emerald-300';
@@ -5152,7 +5231,8 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
           </td>
           ${dayHours.map((hw, hIdx) => {
             const isSelectedCol = hIdx === activeHour;
-            return `<td data-hour-col="${hIdx}" class="matrix-hour-cell px-2 py-2 text-center cursor-pointer transition ${isSelectedCol ? 'ring-1 ring-inset ring-violet-400 bg-violet-500/10' : ''}">
+            const isPastHour = isWeatherMatrixHourPast(hw.hour);
+            return `<td data-hour-col="${hIdx}" class="matrix-hour-cell px-2 py-2 text-center cursor-pointer transition ${isPastHour ? 'matrix-past-hour' : ''} ${isSelectedCol ? 'ring-1 ring-inset ring-violet-400 bg-violet-500/10' : ''}">
               ${renderCellFn(hw, hourlyScores[hIdx], hIdx)}
             </td>`;
           }).join('')}
@@ -5165,7 +5245,8 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
           <th class="matrix-row-label sticky left-0 z-10 bg-slate-900 px-3 py-2 text-xs font-sans font-bold border-r border-slate-800">Giờ (GMT+7)</th>
           ${dayHours.map((hw, hIdx) => {
             const isSelectedCol = hIdx === activeHour;
-            return `<th data-hour-col="${hIdx}" class="matrix-hour-cell px-2 py-2 text-center cursor-pointer ${isSelectedCol ? 'bg-violet-600 text-white font-bold' : 'hover:bg-slate-800'}">
+            const isPastHour = isWeatherMatrixHourPast(hw.hour);
+            return `<th data-hour-col="${hIdx}" class="matrix-hour-cell px-2 py-2 text-center cursor-pointer ${isPastHour ? 'matrix-past-hour' : isSelectedCol ? 'bg-violet-600 text-white font-bold' : 'hover:bg-slate-800'}">
               ${String(hw.hour).padStart(2, '0')}h
             </th>`;
           }).join('')}
@@ -5202,6 +5283,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
           updateAllViews();
         });
       });
+      revealSelectedMatrixHour();
     }
 
     /***************************************************************************
@@ -5356,7 +5438,10 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         card.addEventListener('click', () => {
           const spotKey = card.getAttribute('data-spot-key');
           const found = [...state.spots, ...state.favoriteSpots].find(spot => getSpotKey(spot) === spotKey);
-          if (found) selectSpot(found, true);
+          if (found) {
+            selectSpot(found, true);
+            scrollToWeatherMatrix();
+          }
         });
       });
     }
@@ -5498,10 +5583,12 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       syncBackgroundScrollLock();
 
       // Date input default to today in Vietnam timezone
-      const nowVN = new Date(Date.now() + 7 * 3600000);
-      state.selectedDateStr = nowVN.toISOString().split('T')[0];
+      const currentVietnamDateTime = getCurrentVietnamDateTime();
+      state.selectedDateStr = currentVietnamDateTime.dateStr;
+      state.selectedMinutes = currentVietnamDateTime.minutes;
       const dateInput = document.getElementById('datePickerInput');
       dateInput.value = state.selectedDateStr;
+      scheduleMatrixHourRefresh();
 
       dateInput.addEventListener('change', (e) => {
         if (e.target.value) {
@@ -5513,6 +5600,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
 
       // Time Minutes Slider (0..1439)
       const timeSlider = document.getElementById('timeMinutesSlider');
+      timeSlider.value = state.selectedMinutes;
       timeSlider.addEventListener('input', (e) => {
         state.selectedMinutes = parseInt(e.target.value, 10);
         updateAllViews();
@@ -5543,15 +5631,16 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
           else if (jumpType === 'astro-dark') state.selectedMinutes = eph.astroDuskMin;
           else if (jumpType === 'galactic-peak') state.selectedMinutes = eph.targetPeakMin;
           else if (jumpType === 'now') {
-            const curVN = new Date(Date.now() + 7 * 3600000);
-            state.selectedDateStr = curVN.toISOString().split('T')[0];
+            const currentVietnamDateTime = getCurrentVietnamDateTime();
+            state.selectedDateStr = currentVietnamDateTime.dateStr;
             dateInput.value = state.selectedDateStr;
-            state.selectedMinutes = curVN.getUTCHours() * 60 + curVN.getUTCMinutes();
+            state.selectedMinutes = currentVietnamDateTime.minutes;
           }
 
           timeSlider.value = state.selectedMinutes;
           renderForecastDayTabs();
           updateAllViews();
+          if (jumpType === 'now') revealSelectedMatrixHour();
         });
       });
 
@@ -6123,6 +6212,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       });
 
       window.addEventListener('pagehide', () => {
+        clearTimeout(matrixHourRefreshTimer);
         if (state.isPlayingTimeline || state.isPlayingRadar) setMapSimulationPlayback(false);
       });
     }
