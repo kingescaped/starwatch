@@ -1121,7 +1121,7 @@
           <div id="vietnamLeafletMap" class="absolute inset-0 z-10"></div>
           
           <!-- Custom GIS Overlay Canvas for Bortle Heatmap, Himawari Clouds & Azimuth Rays -->
-          <canvas id="mapOverlayCanvas" class="absolute inset-0 z-20 pointer-events-none"></canvas>
+          <canvas id="mapOverlayCanvas" class="absolute inset-0 z-20 h-full w-full pointer-events-none"></canvas>
 
           <!-- Carto Sandbox Diagnostic Banner (Shown when Carto API mode is selected inside preview sandbox) -->
           <div id="cartoSandboxNotice" class="hidden absolute top-3 right-3 z-30 max-w-xs glass-card rounded-xl p-2.5 text-[11px] border border-amber-500/50 shadow-xl">
@@ -3525,10 +3525,21 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       if (!leafletMap) return;
       const canvas = document.getElementById('mapOverlayCanvas');
       const rect = canvas.parentElement.getBoundingClientRect();
+      const mapRect = leafletMap.getContainer().getBoundingClientRect();
+      const canvasRect = canvas.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
+      const mapPointToCanvas = (latLng) => {
+        const point = leafletMap.latLngToContainerPoint(latLng);
+        return L.point(
+          point.x + mapRect.left - canvasRect.left,
+          point.y + mapRect.top - canvasRect.top
+        );
+      };
 
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+      const canvasWidth = Math.round(rect.width * dpr);
+      const canvasHeight = Math.round(rect.height * dpr);
+      if (canvas.width !== canvasWidth) canvas.width = canvasWidth;
+      if (canvas.height !== canvasHeight) canvas.height = canvasHeight;
       const ctx = canvas.getContext('2d');
       ctx.save();
       ctx.scale(dpr, dpr);
@@ -3537,10 +3548,10 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       // 1. VIIRS BORTLE LIGHT POLLUTION HEATMAP OVERLAY
       if (state.showBortleOverlay) {
         VIETNAM_LIGHT_DOMES.forEach(dome => {
-          const pt = leafletMap.latLngToContainerPoint([dome.lat, dome.lon]);
+          const pt = mapPointToCanvas([dome.lat, dome.lon]);
           // Convert km radius to pixel radius at current zoom
           const edgeLatLng = L.latLng(dome.lat + (dome.radiusKm / 111.32), dome.lon);
-          const edgePt = leafletMap.latLngToContainerPoint(edgeLatLng);
+          const edgePt = mapPointToCanvas(edgeLatLng);
           const radiusPx = Math.max(12, Math.abs(pt.y - edgePt.y) * 1.45);
 
           const grad = ctx.createRadialGradient(pt.x, pt.y, 1, pt.x, pt.y, radiusPx);
@@ -3576,8 +3587,8 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         ];
 
         cloudSystems.forEach((sys, idx) => {
-          const pt = leafletMap.latLngToContainerPoint([sys.lat, sys.lon]);
-          const edgePt = leafletMap.latLngToContainerPoint([sys.lat + sys.rKm / 111.32, sys.lon]);
+          const pt = mapPointToCanvas([sys.lat, sys.lon]);
+          const edgePt = mapPointToCanvas([sys.lat + sys.rKm / 111.32, sys.lon]);
           const rPx = Math.max(24, Math.abs(pt.y - edgePt.y));
 
           const grad = ctx.createRadialGradient(pt.x, pt.y, rPx * 0.08, pt.x, pt.y, rPx);
@@ -3602,7 +3613,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
       // 3. CELESTIAL AZIMUTH VECTOR LINES FROM ACTIVE PIN
       if (state.showAzimuthVectors && state.activeSpot) {
         const spot = state.activeSpot;
-        const origin = leafletMap.latLngToContainerPoint([spot.lat, spot.lon]);
+        const origin = mapPointToCanvas([spot.lat, spot.lon]);
         const dt = makeVietnamDate(state.selectedDateStr, state.selectedMinutes);
 
         const sun = getSunPosition(dt, spot.lat, spot.lon);
