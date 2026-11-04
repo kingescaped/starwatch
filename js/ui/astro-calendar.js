@@ -2,6 +2,7 @@ import { formatHHMM } from '../astro/time.js';
 import { emit } from '../core/events.js';
 import { state } from '../core/state.js';
 import { ASTRO_CALENDAR_EVENTS } from '../data/calendar.js';
+import { iconMarkup, renderIcons } from './icons.js';
 
 /**
  * Astronomical events calendar modal renderer.
@@ -33,10 +34,10 @@ export function renderAstroCalendarModal() {
         <div>
           <div class="flex items-center justify-between gap-2 flex-wrap">
             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${ev.badgeColor}">
-              ${ev.badge}
+              ${iconMarkup(ev.badgeIcon, 'w-3 h-3 inline-block align-[-2px]')} ${ev.badge}
             </span>
             <span class="font-mono text-[11px] text-cyan-300 font-semibold">
-              📅 ${dd}/${mm}/${yyyy} · ⏰ ${timeStr} GMT+7
+              ${iconMarkup('calendar', 'w-3 h-3 inline-block align-[-2px]')} ${dd}/${mm}/${yyyy} · ${iconMarkup('clock', 'w-3 h-3 inline-block align-[-2px]')} ${timeStr} GMT+7
             </span>
           </div>
           <h4 class="text-sm font-bold text-white mt-2">${ev.title}</h4>
@@ -45,7 +46,7 @@ export function renderAstroCalendarModal() {
 
         <div class="pt-2.5 border-t border-white/10">
           <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-            📍 Địa điểm dự báo lý tưởng nhất (Nhấp để xem &amp; nạp Setup chụp):
+            ${iconMarkup('map-pin', 'w-3 h-3 inline-block align-[-2px]')} Địa điểm dự báo lý tưởng nhất (Nhấp để xem &amp; nạp Setup chụp):
           </div>
           <div class="flex flex-wrap gap-1.5">
             ${recSpots.map(sp => `
@@ -66,6 +67,7 @@ export function renderAstroCalendarModal() {
       </div>
     `;
   }).join('');
+  renderIcons(grid);
 
   grid.querySelectorAll('.cal-jump-spot-btn').forEach(btn => {
     btn.addEventListener('click', () => {

@@ -129,13 +129,41 @@ input[type="range"].sky-slider::-webkit-slider-thumb:hover {
   animation: pulseGlow 2.4s infinite ease-in-out;
 }
 
+html.light-theme #activeSpotBar[data-collapsed="true"] .active-spot-indicator > svg {
+  color: #ffffff !important;
+  stroke: #ffffff;
+}
+
+.dome-darkness-badge {
+  box-sizing: border-box;
+  display: flex;
+  flex: 0 0 10rem;
+  width: 10rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-align: center;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  padding: 0.25rem 0.5rem !important;
+}
+
 @media (max-width: 639px) and (prefers-reduced-motion: no-preference) {
-  .mobile-tool-popup-entering {
+  .tool-modal-opening {
     animation: mobileToolBackdropIn 180ms ease-out both;
   }
 
-  .mobile-tool-popup-entering > :first-child {
-    animation: mobileToolPopupFromTool 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  .tool-modal-opening > :first-child {
+    animation: mobileToolPanelIn 240ms cubic-bezier(0.2, 0.75, 0.3, 1) both;
+  }
+
+  .tool-modal-closing {
+    animation: mobileToolBackdropOut 180ms ease-in both;
+  }
+
+  .tool-modal-closing > :first-child {
+    animation: mobileToolPanelOut 180ms ease-in both;
   }
 
   @keyframes mobileToolBackdropIn {
@@ -143,30 +171,57 @@ input[type="range"].sky-slider::-webkit-slider-thumb:hover {
     to { opacity: 1; }
   }
 
-  @keyframes mobileToolPopupFromTool {
-    0% {
-      opacity: 0.35;
-      transform: translate(var(--mobile-popup-start-x, 0), var(--mobile-popup-start-y, 0)) scale(0.06);
-    }
-    68% {
-      opacity: 1;
-      transform: translate(0, 0) scale(1.015);
-    }
-    100% {
-      opacity: 1;
-      transform: translate(0, 0) scale(1);
-    }
+  @keyframes mobileToolBackdropOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  @keyframes mobileToolPanelIn {
+    from { opacity: 0.7; transform: translateY(0.75rem); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes mobileToolPanelOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0.7; transform: translateY(0.5rem); }
   }
 }
 
 @media (min-width: 640px) and (prefers-reduced-motion: no-preference) {
-  @keyframes appInfoPanelIn {
-    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  .tool-modal-opening {
+    animation: desktopToolBackdropIn 180ms ease-out both;
+  }
+
+  .tool-modal-opening > :first-child {
+    animation: desktopToolPanelIn 220ms cubic-bezier(0.2, 0.75, 0.3, 1) both;
+  }
+
+  .tool-modal-closing {
+    animation: desktopToolBackdropOut 180ms ease-in both;
+  }
+
+  .tool-modal-closing > :first-child {
+    animation: desktopToolPanelOut 180ms ease-in both;
+  }
+
+  @keyframes desktopToolBackdropIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes desktopToolBackdropOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  @keyframes desktopToolPanelIn {
+    from { opacity: 0.6; transform: translateY(0.75rem) scale(0.96); }
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  #modalAppInfo.app-info-desktop-entering > .liquid-glass {
-    animation: appInfoPanelIn 220ms ease-out both;
+  @keyframes desktopToolPanelOut {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0.6; transform: translateY(0.5rem) scale(0.97); }
   }
 }
 
@@ -333,7 +388,7 @@ body.modal-scroll-locked {
   #mobileToolNav {
     position: fixed;
     z-index: 1200;
-    left: 50%;
+    left: 50vw;
     bottom: calc(0.75rem + env(safe-area-inset-bottom));
     display: flex;
     width: min(24rem, calc(100vw - 2rem));
@@ -386,20 +441,6 @@ body.modal-scroll-locked {
     color: #cbd5e1;
     text-align: center;
     -webkit-tap-highlight-color: transparent;
-  }
-
-  #mobileToolNav > button:active {
-    color: #e9d5ff;
-    background: linear-gradient(145deg, rgba(139, 92, 246, 0.32), rgba(99, 102, 241, 0.2));
-    box-shadow:
-      inset 0 1px 1px rgba(255, 255, 255, 0.22),
-      0 0 18px rgba(139, 92, 246, 0.16);
-  }
-
-  html.light-theme #mobileToolNav > button:active {
-    color: #5b21b6;
-    background: linear-gradient(145deg, rgba(196, 181, 253, 0.68), rgba(224, 231, 255, 0.76));
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.95);
   }
 
   #mobileToolNav > button > i {
@@ -469,25 +510,29 @@ body.modal-scroll-locked {
   }
 
   @media (hover: none) {
-    #mobileToolNav > button:hover {
+    #mobileToolNav > button:hover,
+    #mobileToolNav > button:active {
       background: transparent;
       box-shadow: none;
       color: inherit;
     }
+  }
 
-    #mobileToolNav > button:active {
-      color: #e9d5ff;
-      background: linear-gradient(145deg, rgba(139, 92, 246, 0.32), rgba(99, 102, 241, 0.2));
-      box-shadow:
-        inset 0 1px 1px rgba(255, 255, 255, 0.22),
-        0 0 18px rgba(139, 92, 246, 0.16);
-    }
+  html.light-theme #mobileToolNav #btnOpenSettingsModal,
+  html.light-theme #mobileToolNav #btnOpenSettingsModal:hover,
+  html.light-theme #mobileToolNav #btnOpenSettingsModal:active,
+  html.light-theme #mobileToolNav #btnOpenSettingsModal:focus {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
 
-    html.light-theme #mobileToolNav > button:active {
-      color: #5b21b6;
-      background: linear-gradient(145deg, rgba(196, 181, 253, 0.68), rgba(224, 231, 255, 0.76));
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.95);
-    }
+  .dome-darkness-badge {
+    flex: 0 0 5.5rem;
+    width: 5.5rem;
+    height: 3.5rem;
+    font-size: 10px;
+    padding: 0.25rem !important;
   }
 
   #modalSettings,
@@ -505,8 +550,217 @@ body.modal-scroll-locked {
     margin-block: auto;
   }
 
+  #modalAstroCalendar,
+  #modalUserGuide,
+  #modalSettings,
+  #modalContributeSpot {
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  #modalAstroCalendar > div,
+  #modalUserGuide > div,
+  #modalSettings > div,
+  #modalContributeSpot > div {
+    width: 100%;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    border: 0;
+    border-radius: 0;
+    background: #0f172a;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  html.light-theme #modalAstroCalendar > div,
+  html.light-theme #modalUserGuide > div,
+  html.light-theme #modalSettings > div,
+  html.light-theme #modalContributeSpot > div {
+    background: #f8fafc;
+  }
+
+  #modalContributeSpot {
+    overflow: hidden;
+  }
+
+  #modalContributeSpot > div {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0 !important;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  #formContributeSpot {
+    box-sizing: border-box;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    margin: 0 !important;
+    padding: 1rem;
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+    overscroll-behavior: contain;
+  }
+
+  #formContributeSpot input,
+  #formContributeSpot select {
+    min-height: 2.75rem;
+  }
+
+  #formContributeSpot textarea {
+    min-height: 5rem;
+  }
+
+  #formContributeSpot > div:last-child {
+    flex-wrap: wrap;
+    padding-top: 1rem;
+  }
+
+  #formContributeSpot > div:last-child > button {
+    min-height: 2.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  #formContributeSpot > div:last-child > button[type="submit"] {
+    flex: 0 1 auto;
+  }
+
+  #modalAstroCalendar > div,
+  #modalUserGuide > div,
+  #modalSettings > div {
+    overflow: hidden;
+  }
+
+  #modalAstroCalendar #astroCalendarEventsGrid,
+  #modalUserGuide > div > .overflow-y-auto,
+  #settingsModalBody {
+    min-height: 0;
+    flex: 1 1 auto;
+    overscroll-behavior: contain;
+  }
+
+  #modalSettings > div {
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    margin-block: 0;
+  }
+
+  #modalSettings {
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  .tool-screen-header {
+    box-sizing: border-box;
+    flex: 0 0 8rem;
+    height: 8rem;
+    min-height: 8rem;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 1rem !important;
+  }
+
+  .tool-screen-heading {
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .tool-screen-heading > :first-child {
+    flex: 0 0 2.5rem;
+  }
+
+  .tool-screen-heading > :last-child {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .tool-screen-header h3 {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.875rem;
+    line-height: 1.25;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    text-wrap: pretty;
+  }
+
+  .tool-screen-header p {
+    display: -webkit-box;
+    margin-top: 0.3rem;
+    font-size: 0.6875rem;
+    line-height: 1.45;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .tool-screen-header > button {
+    flex: 0 0 auto;
+  }
+
+  .tool-screen-header .tool-screen-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-basis: 2.5rem;
+    border-radius: 0.875rem;
+  }
+
   #settingsModalBody {
     padding: 0.75rem;
+    overscroll-behavior: contain;
+  }
+
+  #settingsModalBody > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.75rem;
+  }
+
+  #settingsModalBody > section,
+  #settingsModalBody > div {
+    padding: 0.75rem;
+  }
+
+  #settingsModalBody .theme-btn {
+    min-width: 0;
+    min-height: 3.25rem;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #settingsModalBody > :first-child > div:first-child > div > p {
+    display: none;
+  }
+
+  #settingsModalBody .theme-btn > span {
+    display: none;
+  }
+
+  #settingsCartoStatusLabel {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   #settingsCartoControls {

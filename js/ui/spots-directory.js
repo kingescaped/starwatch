@@ -1,6 +1,7 @@
 import { emit } from '../core/events.js';
 import { state } from '../core/state.js';
 import { escapeHTML, getSpotKey } from '../core/utils.js';
+import { iconMarkup, renderIcons } from './icons.js';
 
 /**
  * Curated spots directory grid renderer.
@@ -39,14 +40,15 @@ export function renderSpotsDirectoryGrid() {
           <p class="text-[11px] text-slate-400 mt-1 line-clamp-2">${escapeHTML(spot.desc)}</p>
         </div>
         <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-800/80 text-[11px]">
-          <span class="font-mono text-amber-300">⛰ ${escapeHTML(spot.elevation)}m</span>
+          <span class="font-mono text-amber-300">${iconMarkup('mountain', 'w-3 h-3 inline-block align-[-2px]')} ${escapeHTML(spot.elevation)}m</span>
           <span class="text-violet-300 font-semibold flex items-center gap-1">
-            Xem dự báo →
+            Xem dự báo ${iconMarkup('arrow-right', 'w-3 h-3')}
           </span>
         </div>
       </div>
     `;
   }).join('');
+  renderIcons(container);
 
   container.querySelectorAll('.spot-card-item').forEach(card => {
     card.addEventListener('click', () => {

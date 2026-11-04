@@ -6,6 +6,7 @@ import { leafletMap, renderAllSpotMarkersOnMap } from '../map/map.js';
 import { drawMapCanvasOverlays } from '../map/overlays.js';
 import { updateFavoriteButton } from '../services/favorites.js';
 import { fetchWeatherForActiveSpot } from '../services/weather.js';
+import { iconMarkup, renderIcons, setIcon } from '../ui/icons.js';
 import { renderCameraSetupGuide } from '../ui/camera-guide.js';
 import { drawTopDownSkyDome } from '../ui/sky-dome.js';
 import { renderSpotsDirectoryGrid } from '../ui/spots-directory.js';
@@ -39,8 +40,9 @@ export function updateAllViews() {
   // Update Dew Heater Warning Badge
   const dewEl = document.getElementById('activeDewStatus');
   if (evalNow.dewSpread <= 2.5) {
-    dewEl.textContent = `💧 Dễ đọng sương (Δ${evalNow.dewSpread}°C)`;
+    dewEl.innerHTML = `${iconMarkup('dew', 'w-3 h-3 inline-block align-[-2px] mr-1')} Dễ đọng sương (Δ${evalNow.dewSpread}°C)`;
     dewEl.className = 'text-xs font-semibold text-rose-400 mt-0.5 block';
+    renderIcons(dewEl);
   } else {
     dewEl.textContent = `An toàn sương (Δ${evalNow.dewSpread}°C)`;
     dewEl.className = 'text-xs font-semibold text-emerald-400 mt-0.5 block';
@@ -116,8 +118,8 @@ export function setMapSimulationPlayback(isPlaying) {
   const radarIcon = document.getElementById('iconPlayRadar');
   const timelineButton = document.getElementById('btnPlayTimeline');
   const radarButton = document.getElementById('btnPlayRadarLoop');
-  timelineIcon.setAttribute('data-lucide', isPlaying ? 'pause' : 'play');
-  radarIcon.setAttribute('data-lucide', isPlaying ? 'pause' : 'play');
+  setIcon(timelineIcon, isPlaying ? 'pause' : 'play');
+  setIcon(radarIcon, isPlaying ? 'pause' : 'play');
   timelineButton.setAttribute('aria-pressed', String(isPlaying));
   radarButton.setAttribute('aria-pressed', String(isPlaying));
   timelineButton.title = isPlaying ? 'Tạm dừng mô phỏng bản đồ và bầu trời' : 'Chạy mô phỏng thời gian, ánh sáng, mây và phương vị';
@@ -153,5 +155,4 @@ export function setMapSimulationPlayback(isPlaying) {
     drawMapCanvasOverlays();
   }
 
-  lucide.createIcons();
 }

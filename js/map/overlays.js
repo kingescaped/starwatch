@@ -196,9 +196,9 @@ export function drawMapCanvasOverlays() {
       ctx.restore();
     };
 
-    drawAzimuthVector(sun.azimuth, sun.altitude, '#fbbf24', '☀️ Mặt Trời');
-    drawAzimuthVector(moon.azimuth, moon.altitude, '#38bdf8', '🌙 Trăng');
-    drawAzimuthVector(target.azimuth, target.altitude, '#e879f9', `✨ ${target.shortName}`);
+    drawAzimuthVector(sun.azimuth, sun.altitude, '#fbbf24', 'Mặt Trời');
+    drawAzimuthVector(moon.azimuth, moon.altitude, '#38bdf8', 'Trăng');
+    drawAzimuthVector(target.azimuth, target.altitude, '#e879f9', target.shortName);
 
     // Update floating legend values
     document.getElementById('mapLegendSunAz').textContent = `${Math.round(sun.azimuth)}° (${azimuthToCardinalVN(sun.azimuth)})`;

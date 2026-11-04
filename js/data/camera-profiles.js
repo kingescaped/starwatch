@@ -6,7 +6,8 @@
 export function buildCameraProfiles({ isDarkSky, isDewRisk, ffIsoMilkyWay, phoneIsoMilkyWay }) {
   return {
     milkyway: {
-      title: '🌌 Săn Tâm Dải Ngân Hà (Milky Way Core)',
+      icon: 'milky-way',
+      title: 'Săn Tâm Dải Ngân Hà (Milky Way Core)',
       fullframe: {
         gearTitle: 'Máy Ảnh Full-Frame / Mirrorless + Tripod Vững',
         lens: 'Ống kính Góc Siêu Rộng 14mm – 24mm (Khuyên dùng 14mm f/1.8, 16mm f/1.8, 20mm f/1.4 hoặc 24mm f/1.4)',
@@ -14,7 +15,7 @@ export function buildCameraProfiles({ isDarkSky, isDewRisk, ffIsoMilkyWay, phone
         shutter: '13 giây – 20 giây (Theo Quy tắc NPF / 500: 15s ở 24mm · 20s ở 14-16mm để sao tròn nét)',
         iso: `ISO ${ffIsoMilkyWay}`,
         wbFocus: 'WB: 3800K – 4100K (Kéo nhẹ Tint +5 về tím) · Lấy nét tay (MF): Bật LiveView Zoom 10x vào ngôi sao sáng nhất (Sao Mộc / Antares) và xoay vòng nét đến khi điểm sao nhỏ nhất.',
-        tripodNotes: `Chân máy (Tripod) carbon/nhôm chắc chắn, tắt chống rung IBIS/VR trên lens, chụp RAW 14-bit, hẹn giờ 2s hoặc dùng dây bấm mềm.${isDewRisk ? ' ⚠️ Bắt buộc quấn dây sưởi ống kính (Dew Heater) mức Trung bình.' : ''}`
+        tripodNotes: `Chân máy (Tripod) carbon/nhôm chắc chắn, tắt chống rung IBIS/VR trên lens, chụp RAW 14-bit, hẹn giờ 2s hoặc dùng dây bấm mềm.${isDewRisk ? ' Lưu ý: Bắt buộc quấn dây sưởi ống kính (Dew Heater) mức Trung bình.' : ''}`
       },
       iphone18pro: {
         gearTitle: 'iPhone 18 Pro / 18 Pro Max + Tripod Điện Thoại',
@@ -36,7 +37,8 @@ export function buildCameraProfiles({ isDarkSky, isDewRisk, ffIsoMilkyWay, phone
       }
     },
     deepsky: {
-      title: '🌀 Thiên Hà Andromeda (M31), Tinh Vân Orion (M42) & Cụm Sao Tua Rua (M45)',
+      icon: 'spiral-galaxy',
+      title: 'Thiên Hà Andromeda (M31), Tinh Vân Orion (M42) & Cụm Sao Tua Rua (M45)',
       fullframe: {
         gearTitle: 'Máy Ảnh Full-Frame + Ống Kính Tele (Có hoặc Không Star Tracker)',
         lens: 'Ống kính Tele 85mm f/1.4, 135mm f/1.8 hoặc 70-200mm f/2.8',
@@ -66,7 +68,8 @@ export function buildCameraProfiles({ isDarkSky, isDewRisk, ffIsoMilkyWay, phone
       }
     },
     meteor: {
-      title: '☄️ Săn Mưa Sao Băng & Phơi Vệt Sao (Star Trails)',
+      icon: 'meteor',
+      title: 'Săn Mưa Sao Băng & Phơi Vệt Sao (Star Trails)',
       fullframe: {
         gearTitle: 'Máy Ảnh Full-Frame + Intervalometer (Chụp Liên Tiếp)',
         lens: 'Ống kính Góc Rộng 14mm – 20mm f/1.4 – f/2.0 (Góc càng rộng xác suất bắt dính sao băng càng cao)',
@@ -96,7 +99,8 @@ export function buildCameraProfiles({ isDarkSky, isDewRisk, ffIsoMilkyWay, phone
       }
     },
     moon: {
-      title: '🌕 Chụp Mặt Trăng & Phong Cảnh Đêm Trăng',
+      icon: 'full-moon',
+      title: 'Chụp Mặt Trăng & Phong Cảnh Đêm Trăng',
       fullframe: {
         gearTitle: 'Máy Ảnh Full-Frame + Ống Tele / Góc Rộng HDR',
         lens: 'Cận cảnh Trăng: 200mm – 600mm · Trăng kèm phong cảnh: 35mm – 85mm',
@@ -126,7 +130,8 @@ export function buildCameraProfiles({ isDarkSky, isDewRisk, ffIsoMilkyWay, phone
       }
     },
     cloudsea: {
-      title: '☁️ Săn Biển Mây & Ráng Bình Minh / Hoàng Hôn',
+      icon: 'cloud',
+      title: 'Săn Biển Mây & Ráng Bình Minh / Hoàng Hôn',
       fullframe: {
         gearTitle: 'Máy Ảnh Full-Frame + Kính Lọc GND / ND',
         lens: '16-35mm f/2.8 (Bao trọn thung lũng mây) hoặc 70-200mm f/2.8 (Đặc tả biển mây luồn qua đỉnh núi & tia nắng Ray)',

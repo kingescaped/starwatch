@@ -9,9 +9,10 @@ import { loadFavoriteSpotsFromStorage, updateFavoriteButton } from './services/f
 import { initializeLocationConsent } from './services/geocoding.js';
 import { loadSpotsFromStorage } from './services/spots-store.js';
 import { fetchWeatherForActiveSpot } from './services/weather.js';
+import { renderIcons } from './ui/icons.js';
 
 window.addEventListener('DOMContentLoaded', () => {
-  lucide.createIcons();
+  renderIcons();
   loadSpotsFromStorage();
   loadFavoriteSpotsFromStorage();
   state.activeSpot = state.spots.find(spot => spot.id === 'khe-sanh');

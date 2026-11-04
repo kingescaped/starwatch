@@ -2,6 +2,7 @@ import { getCelestialTargetPosition } from '../astro/ephemeris.js';
 import { azimuthToCardinalVN, getMoonPosition, getSunPosition } from '../astro/sun-moon.js';
 import { DEG2RAD, makeVietnamDate } from '../astro/time.js';
 import { state } from '../core/state.js';
+import { iconMarkup, renderIcons } from './icons.js';
 
 /**
  * Top-down sky dome and 24-hour altitude chart.
@@ -45,7 +46,23 @@ export function drawTopDownSkyDome() {
 
   // 1. Dynamic Sky Dome Background based on Sun Altitude
   const domeGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, maxR);
-  if (sun.trueAltitude > 6) {
+  if (isLightTheme && sun.trueAltitude > 6) {
+    domeGrad.addColorStop(0, '#075985');
+    domeGrad.addColorStop(0.7, '#38bdf8');
+    domeGrad.addColorStop(1, '#e0f2fe');
+  } else if (isLightTheme && sun.trueAltitude > -6) {
+    domeGrad.addColorStop(0, '#7c2d12');
+    domeGrad.addColorStop(0.65, '#fb923c');
+    domeGrad.addColorStop(1, '#ffedd5');
+  } else if (isLightTheme && sun.trueAltitude > -18) {
+    domeGrad.addColorStop(0, '#312e81');
+    domeGrad.addColorStop(0.7, '#a5b4fc');
+    domeGrad.addColorStop(1, '#f5d0fe');
+  } else if (isLightTheme) {
+    domeGrad.addColorStop(0, '#334155');
+    domeGrad.addColorStop(0.7, '#cbd5e1');
+    domeGrad.addColorStop(1, '#f8fafc');
+  } else if (sun.trueAltitude > 6) {
     // Daylight sky
     domeGrad.addColorStop(0, '#0284c7');
     domeGrad.addColorStop(0.7, '#0369a1');
@@ -90,7 +107,7 @@ export function drawTopDownSkyDome() {
   }
 
   // 3. Concentric Altitude Rings (0° Horizon, 30°, 60°, 90° Zenith)
-  ctx.strokeStyle = isLightTheme ? 'rgba(203, 213, 225, 0.48)' : 'rgba(148, 163, 184, 0.28)';
+  ctx.strokeStyle = isLightTheme ? 'rgba(71, 85, 105, 0.48)' : 'rgba(148, 163, 184, 0.28)';
   ctx.lineWidth = 1;
 
   // Outer 0° Horizon Ring
@@ -106,7 +123,7 @@ export function drawTopDownSkyDome() {
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.stroke();
 
-    ctx.fillStyle = isLightTheme ? 'rgba(203, 213, 225, 0.82)' : 'rgba(148, 163, 184, 0.6)';
+    ctx.fillStyle = isLightTheme ? 'rgba(71, 85, 105, 0.82)' : 'rgba(148, 163, 184, 0.6)';
     ctx.font = '500 9px "JetBrains Mono", monospace';
     ctx.fillText(`${altRing}°`, cx + 4, cy - r + 10);
   });
@@ -121,7 +138,7 @@ export function drawTopDownSkyDome() {
   ctx.setLineDash([]);
 
   // Zenith center dot
-  ctx.fillStyle = 'rgba(226, 232, 240, 0.6)';
+  ctx.fillStyle = isLightTheme ? 'rgba(71, 85, 105, 0.72)' : 'rgba(226, 232, 240, 0.6)';
   ctx.beginPath();
   ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
   ctx.fill();
@@ -181,7 +198,7 @@ export function drawTopDownSkyDome() {
   plotTrajectory(d => getCelestialTargetPosition(d, spot.lat, spot.lon, state.selectedTargetKey), '#e879f9');
 
   // 6. Draw Azimuth Ray & Current Body Marker for each Object
-  const drawBodyOnDome = (pos, colorHex, symbolStr) => {
+  const drawBodyOnDome = (pos, colorHex, iconName) => {
     const isAbove = pos.altitude >= 0;
     const pt = altAzToXY(Math.max(0, pos.altitude), pos.azimuth);
 
@@ -208,14 +225,52 @@ export function drawTopDownSkyDome() {
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    ctx.font = '10px sans-serif';
-    ctx.fillText(symbolStr, pt.x, pt.y - 11);
+    ctx.save();
+    ctx.translate(pt.x, pt.y - 11);
+    ctx.strokeStyle = colorHex;
+    ctx.lineWidth = 1.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    if (iconName === 'sun') {
+      ctx.arc(0, 0, 3, 0, Math.PI * 2);
+      ctx.moveTo(0, -6);
+      ctx.lineTo(0, -4.5);
+      ctx.moveTo(0, 6);
+      ctx.lineTo(0, 4.5);
+      ctx.moveTo(-6, 0);
+      ctx.lineTo(-4.5, 0);
+      ctx.moveTo(6, 0);
+      ctx.lineTo(4.5, 0);
+      ctx.moveTo(-4.2, -4.2);
+      ctx.lineTo(-3.2, -3.2);
+      ctx.moveTo(4.2, 4.2);
+      ctx.lineTo(3.2, 3.2);
+      ctx.moveTo(-4.2, 4.2);
+      ctx.lineTo(-3.2, 3.2);
+      ctx.moveTo(4.2, -4.2);
+      ctx.lineTo(3.2, -3.2);
+    } else if (iconName === 'moon') {
+      ctx.arc(0, 0, 5, -Math.PI * 0.72, Math.PI * 0.72);
+      ctx.quadraticCurveTo(-1, 0, -2.5, -4.5);
+    } else {
+      ctx.moveTo(0, -6);
+      ctx.lineTo(1.3, -1.3);
+      ctx.lineTo(6, 0);
+      ctx.lineTo(1.3, 1.3);
+      ctx.lineTo(0, 6);
+      ctx.lineTo(-1.3, 1.3);
+      ctx.lineTo(-6, 0);
+      ctx.lineTo(-1.3, -1.3);
+      ctx.closePath();
+    }
+    ctx.stroke();
+    ctx.restore();
     ctx.restore();
   };
 
-  drawBodyOnDome(sun, '#fbbf24', '☀️');
-  drawBodyOnDome(moon, '#38bdf8', '🌙');
-  drawBodyOnDome(target, '#e879f9', '✨');
+  drawBodyOnDome(sun, '#fbbf24', 'sun');
+  drawBodyOnDome(moon, '#38bdf8', 'moon');
+  drawBodyOnDome(target, '#e879f9', 'sparkles');
 
   ctx.restore();
 
@@ -226,7 +281,9 @@ export function drawTopDownSkyDome() {
   document.getElementById('domeMoonAltAz').textContent = `${moon.altitude >= 0 ? '+' : ''}${moon.altitude.toFixed(1)}° · ${Math.round(moon.azimuth)}°`;
   document.getElementById('domeMoonStatus').textContent = `Sáng ${moon.illuminationPct}% · ${moon.ageDays} ngày`;
 
-  document.getElementById('domeTargetTitle').textContent = `🌌 ${target.shortName}`;
+  const domeTargetTitle = document.getElementById('domeTargetTitle');
+  domeTargetTitle.innerHTML = `${iconMarkup('milky-way', 'w-3 h-3 inline-block align-[-2px]')} ${target.shortName}`;
+  renderIcons(domeTargetTitle);
   document.getElementById('domeTargetAltAz').textContent = `${target.altitude >= 0 ? '+' : ''}${target.altitude.toFixed(1)}° · ${Math.round(target.azimuth)}°`;
   const targetStatusEl = document.getElementById('domeTargetStatus');
   if (target.altitude >= 15 && sun.trueAltitude <= -12) {
@@ -243,18 +300,19 @@ export function drawTopDownSkyDome() {
   // Darkness Badge
   const darkBadge = document.getElementById('domeDarknessBadge');
   if (sun.trueAltitude <= -18) {
-    darkBadge.textContent = '🌌 Đêm Thiên Văn (-18°)';
-    darkBadge.className = 'text-[11px] font-mono px-2.5 py-1 rounded-lg bg-violet-500/20 text-violet-300 border border-violet-500/30';
+    darkBadge.innerHTML = `${iconMarkup('milky-way', 'w-3 h-3 inline-block align-[-2px]')} Đêm Thiên Văn (-18°)`;
+    darkBadge.className = 'dome-darkness-badge text-[11px] font-mono px-2.5 py-1 rounded-lg bg-violet-500/20 text-violet-300 border border-violet-500/30';
   } else if (sun.trueAltitude <= -6) {
-    darkBadge.textContent = '🌆 Chạng Vạng / Giờ Xanh';
-    darkBadge.className = 'text-[11px] font-mono px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30';
+    darkBadge.innerHTML = `${iconMarkup('twilight', 'w-3 h-3 inline-block align-[-2px]')} Chạng Vạng / Giờ Xanh`;
+    darkBadge.className = 'dome-darkness-badge text-[11px] font-mono px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30';
   } else if (sun.trueAltitude <= 6) {
-    darkBadge.textContent = '🌅 Giờ Vàng (Golden Hour)';
-    darkBadge.className = 'text-[11px] font-mono px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30';
+    darkBadge.innerHTML = `${iconMarkup('sunrise', 'w-3 h-3 inline-block align-[-2px]')} Giờ Vàng (Golden Hour)`;
+    darkBadge.className = 'dome-darkness-badge text-[11px] font-mono px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30';
   } else {
-    darkBadge.textContent = '☀️ Ban Ngày';
-    darkBadge.className = 'text-[11px] font-mono px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30';
+    darkBadge.innerHTML = `${iconMarkup('sun', 'w-3 h-3 inline-block align-[-2px]')} Ban Ngày`;
+    darkBadge.className = 'dome-darkness-badge text-[11px] font-mono px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30';
   }
+  renderIcons(darkBadge);
 
   draw24HourElevationChart();
 }

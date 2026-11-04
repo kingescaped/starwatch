@@ -1,6 +1,7 @@
 import { computePhotographyScores } from '../astro/scoring.js';
 import { state } from '../core/state.js';
 import { buildCameraProfiles } from '../data/camera-profiles.js';
+import { iconMarkup, renderIcons } from './icons.js';
 
 /**
  * Camera setup advisor and its renderer.
@@ -26,6 +27,7 @@ export function computeCameraSetupRecommendation(spot, eventType, gearMode, eval
   const spec = selectedGroup[gearMode] || selectedGroup.fullframe;
   return {
     sceneTitle: selectedGroup.title,
+    sceneIcon: selectedGroup.icon,
     ...spec
   };
 }
@@ -37,7 +39,7 @@ export function renderCameraSetupGuide() {
   const spot = state.activeSpot;
   const badgeEl = document.getElementById('setupActiveSpotBadge');
   if (badgeEl) {
-    badgeEl.textContent = `📍 ${spot.shortName || spot.name} · Bortle ${spot.bortle} · Độ cao ${spot.elevation}m`;
+    badgeEl.textContent = `${spot.shortName || spot.name} · Bortle ${spot.bortle} · Độ cao ${spot.elevation}m`;
   }
 
   const activeHour = Math.min(23, Math.floor(state.selectedMinutes / 60));
@@ -51,7 +53,7 @@ export function renderCameraSetupGuide() {
     <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800">
       <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-800/90">
         <div>
-          <span class="text-[11px] font-semibold text-fuchsia-300 uppercase tracking-wider">${rec.sceneTitle}</span>
+          <span class="text-[11px] font-semibold text-fuchsia-300 uppercase tracking-wider">${iconMarkup(rec.sceneIcon, 'w-3.5 h-3.5 inline-block align-[-3px]')} ${rec.sceneTitle}</span>
           <h4 class="text-sm sm:text-base font-extrabold text-white mt-0.5">${rec.gearTitle}</h4>
         </div>
         <div class="flex items-center gap-2 text-[11px] font-mono">
@@ -59,7 +61,7 @@ export function renderCameraSetupGuide() {
             Bầu trời: Bortle ${spot.bortle}
           </span>
           <span class="px-2.5 py-1 rounded-lg ${evalNow.dewSpread <= 2.5 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'}">
-            ${evalNow.dewSpread <= 2.5 ? '💧 Cần bật sưởi Lens' : '✓ Lens khô ráo'}
+            ${evalNow.dewSpread <= 2.5 ? `${iconMarkup('dew', 'w-3 h-3 inline-block align-[-2px]')} Cần bật sưởi Lens` : 'Lens khô ráo'}
           </span>
         </div>
       </div>
@@ -85,14 +87,14 @@ export function renderCameraSetupGuide() {
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-xs">
         <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 flex items-start gap-2.5">
-          <span class="text-base">🎯</span>
+          <span class="text-base">${iconMarkup('target', 'w-5 h-5')}</span>
           <div>
             <div class="font-bold text-slate-200 mb-0.5">Lấy Nét (Focus) &amp; Cân Bằng Trắng (WB):</div>
             <p class="text-slate-400 leading-relaxed">${rec.wbFocus}</p>
           </div>
         </div>
         <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 flex items-start gap-2.5">
-          <span class="text-base">🔭</span>
+          <span class="text-base">${iconMarkup('telescope', 'w-5 h-5')}</span>
           <div>
             <div class="font-bold text-slate-200 mb-0.5">Chân Máy (Tripod) &amp; Lưu Ý Tại ${spot.shortName || spot.name}:</div>
             <p class="text-slate-400 leading-relaxed">${rec.tripodNotes}</p>
@@ -101,4 +103,5 @@ export function renderCameraSetupGuide() {
       </div>
     </div>
   `;
+  renderIcons(container);
 }

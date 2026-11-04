@@ -13,8 +13,10 @@ import { loadSpotsFromStorage } from '../services/spots-store.js';
 import { fetchWeatherForActiveSpot } from '../services/weather.js';
 import { renderAstroCalendarModal } from '../ui/astro-calendar.js';
 import { renderCameraSetupGuide } from '../ui/camera-guide.js';
+import { iconMarkup, renderIcons } from '../ui/icons.js';
 import { drawTopDownSkyDome } from '../ui/sky-dome.js';
 import { renderSpotsDirectoryGrid } from '../ui/spots-directory.js';
+import { closeToolModal, openToolModal } from '../ui/tool-modal.js';
 import { matrixHourRefreshTimer, renderForecastDayTabs, revealSelectedMatrixHour, scheduleMatrixHourRefresh, scrollToWeatherMatrix } from '../ui/weather-matrix.js';
 
 /**
@@ -350,7 +352,7 @@ export function initEventListeners() {
         const lon = parseFloat(gmapsMatch ? gmapsMatch[2] : coordMatch[3]);
         html += `
           <div data-custom-lat="${lat}" data-custom-lon="${lon}" data-custom-name="Tọa độ Bản đồ (${lat.toFixed(4)}, ${lon.toFixed(4)})" class="p-2.5 hover:bg-violet-600/25 cursor-pointer flex items-center justify-between text-xs">
-            <span class="text-cyan-300 font-mono">📍 Nhảy tới tọa độ: ${lat.toFixed(4)}, ${lon.toFixed(4)}</span>
+            <span class="text-cyan-300 font-mono">${iconMarkup('map-pin', 'w-3.5 h-3.5 inline-block align-[-3px]')} Nhảy tới tọa độ: ${lat.toFixed(4)}, ${lon.toFixed(4)}</span>
             <span class="text-[10px] px-2 py-0.5 rounded bg-violet-500/30 text-violet-200">Tải dự báo</span>
           </div>
         `;
@@ -370,7 +372,7 @@ export function initEventListeners() {
       }
 
       html += `<div class="px-2.5 py-1 bg-slate-900/90 text-[10px] font-semibold uppercase tracking-wider text-cyan-300 flex items-center justify-between">
-        <span>🌍 Kết quả Tìm kiếm Bản đồ mở rộng</span>
+        <span>${iconMarkup('globe', 'w-3.5 h-3.5 inline-block align-[-3px]')} Kết quả Tìm kiếm Bản đồ mở rộng</span>
         ${isSearchingRemote ? '<span class="animate-pulse text-amber-300">Đang tìm...</span>' : ''}
       </div>`;
 
@@ -387,7 +389,7 @@ export function initEventListeners() {
               class="p-2.5 hover:bg-cyan-500/20 cursor-pointer flex items-center justify-between gap-2 text-xs"
             >
               <div class="min-w-0">
-                <div class="font-bold text-white truncate">📍 ${p.shortTitle}</div>
+                <div class="font-bold text-white truncate">${iconMarkup('map-pin', 'w-3.5 h-3.5 inline-block align-[-3px]')} ${p.shortTitle}</div>
                 <div class="text-[10px] text-slate-300 truncate">${p.fullAddress}</div>
               </div>
               <div class="text-right shrink-0">
@@ -402,6 +404,7 @@ export function initEventListeners() {
       }
 
       searchDropdown.innerHTML = html;
+      renderIcons(searchDropdown);
       searchDropdown.classList.remove('hidden');
 
       searchDropdown.querySelectorAll('[data-spot-id]').forEach(el => {
@@ -506,43 +509,14 @@ export function initEventListeners() {
     });
   });
 
-  const openToolModal = (modal, trigger) => {
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-
-    const panel = modal.firstElementChild;
-    if (
-      !panel ||
-      !window.matchMedia('(max-width: 639px)').matches ||
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) return;
-
-    const triggerRect = trigger.getBoundingClientRect();
-    const panelRect = panel.getBoundingClientRect();
-    panel.style.setProperty('--mobile-popup-start-x', `${triggerRect.left + triggerRect.width / 2 - (panelRect.left + panelRect.width / 2)}px`);
-    panel.style.setProperty('--mobile-popup-start-y', `${triggerRect.top + triggerRect.height / 2 - (panelRect.top + panelRect.height / 2)}px`);
-    modal.classList.remove('mobile-tool-popup-entering');
-    void modal.offsetWidth;
-    modal.classList.add('mobile-tool-popup-entering');
-    const handleAnimationEnd = (event) => {
-      if (event.animationName !== 'mobileToolPopupFromTool') return;
-      panel.removeEventListener('animationend', handleAnimationEnd);
-      modal.classList.remove('mobile-tool-popup-entering');
-      panel.style.removeProperty('--mobile-popup-start-x');
-      panel.style.removeProperty('--mobile-popup-start-y');
-    };
-    panel.addEventListener('animationend', handleAnimationEnd);
-  };
-
   // Astronomical Events Calendar Modal
   const modalAstroCal = document.getElementById('modalAstroCalendar');
-  document.getElementById('btnOpenAstroCalendarModal').addEventListener('click', (event) => {
+  document.getElementById('btnOpenAstroCalendarModal').addEventListener('click', () => {
     renderAstroCalendarModal();
-    openToolModal(modalAstroCal, event.currentTarget);
+    openToolModal(modalAstroCal);
   });
   document.getElementById('btnCloseAstroCalendarModal').addEventListener('click', () => {
-    modalAstroCal.classList.add('hidden');
-    modalAstroCal.classList.remove('flex');
+    closeToolModal(modalAstroCal);
   });
   document.querySelectorAll('.cal-filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -558,11 +532,10 @@ export function initEventListeners() {
   // Liquid Glass User Guide Modal
   const modalGuide = document.getElementById('modalUserGuide');
   const closeGuide = () => {
-    modalGuide.classList.add('hidden');
-    modalGuide.classList.remove('flex');
+    closeToolModal(modalGuide);
   };
-  document.getElementById('btnOpenGuideModal').addEventListener('click', (event) => {
-    openToolModal(modalGuide, event.currentTarget);
+  document.getElementById('btnOpenGuideModal').addEventListener('click', () => {
+    openToolModal(modalGuide);
   });
   document.getElementById('btnCloseGuideModal').addEventListener('click', closeGuide);
   document.getElementById('btnAcknowledgeGuide').addEventListener('click', closeGuide);
@@ -570,20 +543,10 @@ export function initEventListeners() {
   // App Information Modal
   const modalAppInfo = document.getElementById('modalAppInfo');
   const closeAppInfo = () => {
-    modalAppInfo.classList.add('hidden');
-    modalAppInfo.classList.remove('flex');
-    modalAppInfo.classList.remove('app-info-desktop-entering');
+    closeToolModal(modalAppInfo);
   };
-  document.getElementById('btnOpenAppInfo').addEventListener('click', (event) => {
-    openToolModal(modalAppInfo, event.currentTarget);
-    if (
-      window.matchMedia('(min-width: 640px)').matches &&
-      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
-      modalAppInfo.classList.remove('app-info-desktop-entering');
-      void modalAppInfo.offsetWidth;
-      modalAppInfo.classList.add('app-info-desktop-entering');
-    }
+  document.getElementById('btnOpenAppInfo').addEventListener('click', () => {
+    openToolModal(modalAppInfo);
   });
   document.getElementById('btnCloseAppInfo').addEventListener('click', closeAppInfo);
   modalAppInfo.addEventListener('click', (event) => {
@@ -611,14 +574,13 @@ export function initEventListeners() {
   // Unified Settings Modal
   const modalSettings = document.getElementById('modalSettings');
   const settingsCartoInput = document.getElementById('settingsCartoKeyInput');
-  document.getElementById('btnOpenSettingsModal').addEventListener('click', (event) => {
+  document.getElementById('btnOpenSettingsModal').addEventListener('click', () => {
     if (settingsCartoInput) settingsCartoInput.value = CARTO_CONFIG.apiKey;
     updateCartoTelemetryUI();
-    openToolModal(modalSettings, event.currentTarget);
+    openToolModal(modalSettings);
   });
   document.getElementById('btnCloseSettingsModal').addEventListener('click', () => {
-    modalSettings.classList.add('hidden');
-    modalSettings.classList.remove('flex');
+    closeToolModal(modalSettings);
   });
   document.getElementById('btnSettingsApplyCartoKey').addEventListener('click', () => {
     const newKey = (settingsCartoInput.value || '').trim() || DEFAULT_CARTO_API_KEY;
@@ -658,21 +620,20 @@ export function initEventListeners() {
 
   // Contribute New Spot Modal
   const modalContribute = document.getElementById('modalContributeSpot');
-  const openContribute = (trigger) => {
+  const openContribute = () => {
     if (state.activeSpot) {
       document.getElementById('inputSpotLat').value = state.activeSpot.lat;
       document.getElementById('inputSpotLon').value = state.activeSpot.lon;
       document.getElementById('inputSpotElevation').value = state.activeSpot.elevation;
       document.getElementById('inputSpotBortle').value = state.activeSpot.bortle;
     }
-    openToolModal(modalContribute, trigger);
+    openToolModal(modalContribute);
   };
   const closeContribute = () => {
-    modalContribute.classList.add('hidden');
-    modalContribute.classList.remove('flex');
+    closeToolModal(modalContribute);
   };
 
-  document.getElementById('btnOpenContributeModal').addEventListener('click', (event) => openContribute(event.currentTarget));
+  document.getElementById('btnOpenContributeModal').addEventListener('click', openContribute);
   document.getElementById('btnCloseContributeModal').addEventListener('click', closeContribute);
   document.getElementById('btnCancelContribute').addEventListener('click', closeContribute);
 

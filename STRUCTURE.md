@@ -27,11 +27,14 @@ Hạn chế: khó đọc, khó sửa, mọi thay đổi đều nằm chung một
 StarWatch/
 ├── index.html                  # Vỏ HTML + link CSS + entry module
 ├── assets/
-│   └── css/
-│       ├── tokens.css          # Biến màu, theme dark/light/red-vision
-│       ├── layout.css          # Bố cục, active spot bar, map widget
-│       ├── theme-light.css     # Ghi đè cho light theme
-│       └── components.css      # Modal, scrollbar, slider, animation, responsive
+│   ├── css/
+│   │   ├── tokens.css          # Biến màu, theme dark/light/red-vision
+│   │   ├── layout.css          # Bố cục, active spot bar, map widget
+│   │   ├── theme-light.css     # Ghi đè cho light theme
+│   │   └── components.css      # Modal, scrollbar, slider, animation, responsive
+│   └── icons/
+│       ├── sprite.svg          # Bộ biểu tượng SVG nội bộ
+│       └── starwatch.svg       # Favicon ứng dụng
 └── js/
     ├── main.js                 # Điểm khởi động ứng dụng
     ├── config/
@@ -62,8 +65,10 @@ StarWatch/
     │   ├── context.js          # Tham chiếu map dùng chung
     │   └── light-domes.js      # Các đô thị ô nhiễm sáng lớn
     ├── ui/
+    │   ├── icons.js            # Render biểu tượng từ SVG sprite nội bộ
     │   ├── camera-guide.js     # Gợi ý setup máy ảnh
     │   ├── astro-calendar.js   # Modal lịch sự kiện thiên văn
+    │   ├── tool-modal.js       # Hàm mở/đóng modal và đồng bộ animation tabview
     │   ├── sky-dome.js         # Sky dome + biểu đồ độ cao 24h
     │   ├── weather-matrix.js   # Bảng thời tiết theo giờ + tab ngày
     │   └── spots-directory.js  # Lưới thẻ địa điểm
@@ -80,6 +85,7 @@ StarWatch/
 
 | Thư mục | Trách nhiệm |
 | --- | --- |
+| `assets/icons/` | Bộ SVG sprite dùng chung cho giao diện và favicon; icon UI không tải từ CDN. |
 | `config/` | Hằng số cấu hình. `carto.js` chứa API key và URL tile của từng kiểu bản đồ. |
 | `core/` | Nền tảng dùng chung: state, helper DOM, event bus. Không phụ thuộc vào UI. |
 | `data/` | Dữ liệu tĩnh: địa điểm, thiên thể, lịch sự kiện, profile máy ảnh. |
@@ -89,6 +95,8 @@ StarWatch/
 | `ui/` | Renderer cho từng vùng giao diện. Chỉ đọc state và phát sự kiện, không gọi trực tiếp action. |
 | `app/` | Điều phối: `actions.js` cập nhật toàn bộ view, `events.js` gắn listener và nối event bus. |
 | `main.js` | Bootstrap: nạp dữ liệu, khởi tạo map, đăng ký sự kiện, gọi API lần đầu. |
+
+`ui/tool-modal.js` cung cấp `openToolModal()` và `closeToolModal()` để mọi tabview dùng chung một luồng mở/đóng. Animation theo breakpoint và cấu hình giảm chuyển động được định nghĩa tập trung trong `assets/css/components.css`.
 
 ---
 
@@ -102,7 +110,7 @@ StarWatch/
 
 `js/main.js` thực hiện theo thứ tự:
 
-1. `lucide.createIcons()` — render icon.
+1. `renderIcons()` — chuyển các khai báo `data-icon` sang SVG sprite nội bộ.
 2. `loadSpotsFromStorage()` — nạp địa điểm curated + địa điểm cộng đồng.
 3. `loadFavoriteSpotsFromStorage()` — nạp địa điểm yêu thích.
 4. Gán địa điểm mặc định (`khe-sanh`).
@@ -218,7 +226,7 @@ http://127.0.0.1:8123/
 
 - Không cần build step. Đẩy nguyên thư mục lên GitHub Pages là chạy.
 - Tất cả đường dẫn đều **tương đối** (`assets/...`, `js/...`) nên hoạt động cả ở root domain lẫn `username.github.io/repo/`.
-- Tailwind, Leaflet, Lucide vẫn dùng CDN như trước.
+- Tailwind và Leaflet vẫn dùng CDN; biểu tượng giao diện lấy từ SVG sprite nội bộ trong `assets/icons/`.
 - API key Carto được giữ nguyên trong `js/config/carto.js`, không đổi và không xoay vòng (dùng nội bộ).
 - Các module được phục vụ với MIME type `text/javascript`; GitHub Pages xử lý đúng.
 - Nếu từng deploy bản cũ, chỉ cần ghi đè `index.html` và thêm thư mục `assets/`, `js/`.

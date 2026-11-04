@@ -2,6 +2,7 @@ import { computePhotographyScores } from '../astro/scoring.js';
 import { getCurrentVietnamDateTime } from '../astro/time.js';
 import { emit } from '../core/events.js';
 import { state } from '../core/state.js';
+import { iconMarkup, renderIcons } from './icons.js';
 
 /**
  * Weather timeline matrix, forecast tabs and matrix helpers.
@@ -143,9 +144,9 @@ export function renderWeatherMatrixTable() {
       }).join('')}
     </tr>`,
     // Row 1: Milky Way / Astro Score
-    buildRow('🌌 Điểm Ngân Hà', (hw, sc) => `<span class="px-1.5 py-0.5 rounded ${scoreCellColorClass(sc.mwScore)}">${sc.mwScore}</span>`),
+    buildRow(`${iconMarkup('milky-way', 'w-3 h-3 inline-block align-[-2px]')} Điểm Ngân Hà`, (hw, sc) => `<span class="px-1.5 py-0.5 rounded ${scoreCellColorClass(sc.mwScore)}">${sc.mwScore}</span>`),
     // Row 2: Cloud Sea Score
-    buildRow('☁️ Điểm Săn Mây', (hw, sc) => `<span class="px-1.5 py-0.5 rounded ${scoreCellColorClass(sc.cloudSeaScore)}">${sc.cloudSeaScore}</span>`),
+    buildRow(`${iconMarkup('cloud', 'w-3 h-3 inline-block align-[-2px]')} Điểm Săn Mây`, (hw, sc) => `<span class="px-1.5 py-0.5 rounded ${scoreCellColorClass(sc.cloudSeaScore)}">${sc.cloudSeaScore}</span>`),
     // Row 3: High Clouds (>6km)
     buildRow('Mây Cao (&gt;6km)', (hw) => `<span class="px-1.5 py-0.5 rounded ${cloudCellColorClass(hw.cloudHigh)}">${hw.cloudHigh}%</span>`),
     // Row 4: Mid Clouds (2-6km)
@@ -158,12 +159,13 @@ export function renderWeatherMatrixTable() {
     buildRow('Nhiệt độ · Điểm sương', (hw, sc) => {
       const isDewRisk = sc.dewSpread <= 2.5;
       return `<div class="${isDewRisk ? 'text-rose-300 font-bold' : 'text-slate-300'}" title="Chênh lệch điểm sương: ${sc.dewSpread}°C">
-        ${hw.temp}°/${Math.round(hw.dewPoint)}° ${isDewRisk ? '💧' : ''}
+        ${hw.temp}°/${Math.round(hw.dewPoint)}° ${isDewRisk ? iconMarkup('dew', 'w-3 h-3 inline-block align-[-2px]') : ''}
       </div>`;
     }),
     // Row 8: Relative Humidity & Wind Speed
     buildRow('Độ ẩm · Gió (km/h)', (hw) => `<span class="text-slate-400">${hw.humidity}% · ${hw.windKmh}</span>`)
   ].join('');
+  renderIcons(tbody);
 
   // Click any hour column to sync the entire application to that hour
   tbody.querySelectorAll('.matrix-hour-cell').forEach(cell => {

@@ -14,6 +14,10 @@ Trước khi đọc code, sửa file hoặc chạy lệnh, hãy đọc **toàn b
 
 Chỉ sau khi đọc xong mới bắt đầu mở các file trong `js/`, `assets/css/` và `index.html`.
 
+## Bắt buộc: tuân theo design system
+
+Trước mọi thay đổi frontend, đọc toàn bộ `design.md` ở thư mục gốc. Mọi giao diện mới hoặc chỉnh sửa phải tuân theo màu sắc, typography, spacing, breakpoint và nguyên tắc desktop/mobile trong tài liệu. Nếu chủ động thay đổi design system, cập nhật `design.md` cùng thay đổi đó.
+
 ## Bối cảnh dự án
 
 StarWatch là static site xem bầu trời / săn ảnh thiên văn, giao diện tiếng Việt, deploy trực tiếp lên GitHub Pages tại:
