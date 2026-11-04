@@ -171,8 +171,9 @@ html.light-theme header h1 {
   background-image: linear-gradient(90deg, #6d28d9, #0e7490) !important;
 }
 
-html.light-theme #btnOpenAppInfo .lucide {
+html.light-theme .starwatch-brand-mark {
   color: #ffffff !important;
+  stroke: #ffffff;
 }
 
 html.light-theme [class~="bg-violet-600"][class~="text-white"],

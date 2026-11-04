@@ -610,6 +610,7 @@ export function initEventListeners() {
       htmlEl.classList.toggle('dark', mode !== 'light');
       if (mode === 'light') htmlEl.classList.add('light-theme');
       if (mode === 'red') htmlEl.classList.add('red-vision-theme');
+      drawTopDownSkyDome();
 
       document.querySelectorAll('.theme-btn').forEach(b => {
         b.className = 'theme-btn p-3 rounded-xl border border-white/15 bg-white/5 text-slate-300 hover:text-white font-semibold flex flex-col items-center gap-1.5 transition';
