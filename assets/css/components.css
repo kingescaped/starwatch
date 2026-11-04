@@ -149,6 +149,11 @@ html.light-theme #activeSpotBar[data-collapsed="true"] .active-spot-indicator > 
   padding: 0.25rem 0.5rem !important;
 }
 
+.sky-elevation-chart {
+  touch-action: pan-y;
+  user-select: none;
+}
+
 @media (max-width: 639px) and (prefers-reduced-motion: no-preference) {
   .tool-modal-opening {
     animation: mobileToolBackdropIn 180ms ease-out both;

@@ -172,20 +172,41 @@ export function initEventListeners() {
     updateAllViews();
   });
 
-  // Click on 24h Elevation Chart to jump to that hour/minute
+  // Press and drag across the 24-hour elevation chart to scrub the selected time.
   const elevCanvas = document.getElementById('elevationChartCanvas');
   if (elevCanvas) {
-    elevCanvas.addEventListener('click', (e) => {
+    let isScrubbingElevationChart = false;
+    const selectChartTime = (e) => {
       const rect = elevCanvas.getBoundingClientRect();
       const padL = 26;
       const padR = 10;
       const plotW = rect.width - padL - padR;
+      if (plotW <= 0) return;
       const clickX = e.clientX - rect.left - padL;
       const ratio = Math.max(0, Math.min(1, clickX / plotW));
-      state.selectedMinutes = Math.round(ratio * 1439);
+      const selectedMinutes = Math.round(ratio * 1439);
+      if (selectedMinutes === state.selectedMinutes) return;
+      state.selectedMinutes = selectedMinutes;
       timeSlider.value = state.selectedMinutes;
       updateAllViews();
+    };
+
+    elevCanvas.addEventListener('pointerdown', (e) => {
+      if (!e.isPrimary || e.button !== 0) return;
+      isScrubbingElevationChart = true;
+      elevCanvas.setPointerCapture(e.pointerId);
+      e.preventDefault();
+      selectChartTime(e);
     });
+    elevCanvas.addEventListener('pointermove', (e) => {
+      if (isScrubbingElevationChart) selectChartTime(e);
+    });
+    const stopScrubbing = (e) => {
+      isScrubbingElevationChart = false;
+      if (elevCanvas.hasPointerCapture(e.pointerId)) elevCanvas.releasePointerCapture(e.pointerId);
+    };
+    elevCanvas.addEventListener('pointerup', stopScrubbing);
+    elevCanvas.addEventListener('pointercancel', stopScrubbing);
   }
 
   // Map Overlay Toggle Buttons (Bortle, simulated clouds, Azimuth Vectors)

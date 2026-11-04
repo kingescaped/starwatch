@@ -40,12 +40,20 @@ export function persistFavoriteSpots() {
 export function updateFavoriteButton() {
   const button = document.getElementById('btnToggleFavoriteSpot');
   const icon = button.querySelector('svg, i');
-  const isFavorite = state.activeSpot &&
-    state.favoriteSpots.some(spot => getSpotKey(spot) === getSpotKey(state.activeSpot));
-  button.setAttribute('aria-pressed', String(Boolean(isFavorite)));
+  const isFavorite = Boolean(state.activeSpot &&
+    state.favoriteSpots.some(spot => getSpotKey(spot) === getSpotKey(state.activeSpot)));
+  button.setAttribute('aria-pressed', String(isFavorite));
   button.setAttribute('aria-label', isFavorite ? 'Bỏ địa điểm khỏi yêu thích' : 'Lưu địa điểm yêu thích');
   button.title = isFavorite ? 'Bỏ lưu địa điểm yêu thích' : 'Lưu địa điểm yêu thích trên thiết bị này';
-  button.classList.toggle('bg-amber-500/30', Boolean(isFavorite));
+  button.classList.toggle('bg-amber-500/30', isFavorite);
+  button.classList.toggle('hover:bg-amber-500/40', isFavorite);
+  button.classList.toggle('border-amber-500/50', isFavorite);
+  button.classList.toggle('text-amber-300', isFavorite);
+  button.classList.toggle('bg-slate-800/80', !isFavorite);
+  button.classList.toggle('hover:bg-slate-700', !isFavorite);
+  button.classList.toggle('border-slate-700', !isFavorite);
+  button.classList.toggle('text-slate-300', !isFavorite);
+  button.classList.toggle('hover:text-white', !isFavorite);
   icon.setAttribute('fill', isFavorite ? 'currentColor' : 'none');
 }
 

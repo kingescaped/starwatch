@@ -232,7 +232,7 @@
         <button
           id="btnToggleFavoriteSpot"
           type="button"
-          class="active-spot-bar-detail p-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 transition"
+          class="active-spot-bar-detail p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition"
           aria-label="Lưu địa điểm yêu thích"
           aria-pressed="false"
           title="Lưu địa điểm yêu thích trên thiết bị này"
@@ -531,17 +531,18 @@
 
           <!-- Responsive High-DPI Polar Canvas -->
           <div class="relative w-full max-w-[310px] aspect-square flex items-center justify-center my-0.5">
-            <canvas id="skyDomeCanvas" class="w-full h-full cursor-crosshair"></canvas>
+            <canvas id="skyDomeBackgroundCanvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+            <canvas id="skyDomeCanvas" class="relative z-10 w-full h-full cursor-crosshair"></canvas>
           </div>
 
           <!-- 24-Hour Celestial Altitude Chart (Sun, Moon, Target Elevation Curve) -->
           <div class="w-full mt-2 pt-2 border-t border-slate-800/70">
             <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1">
               <span class="font-semibold text-slate-300">Biểu đồ Độ Cao Thiên Thể 24 Giờ (0° – 90°)</span>
-              <span class="font-mono">Nhấp để chọn giờ</span>
+              <span class="font-mono">Nhấn, giữ và kéo để chọn giờ</span>
             </div>
             <div class="w-full h-24 bg-slate-950/70 rounded-xl border border-slate-800/90 overflow-hidden relative">
-              <canvas id="elevationChartCanvas" class="w-full h-full cursor-pointer"></canvas>
+              <canvas id="elevationChartCanvas" class="sky-elevation-chart w-full h-full cursor-pointer"></canvas>
             </div>
           </div>
 
