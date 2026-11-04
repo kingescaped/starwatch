@@ -1,0 +1,926 @@
+/* Components, modals, scrollbars, Leaflet overrides, sliders, animations and responsive rules. */
+
+/* Liquid Glass aesthetic for modals & pop-ups. */
+.liquid-glass {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.72) 0%,
+    rgba(15, 23, 42, 0.58) 50%,
+    rgba(30, 27, 75, 0.68) 100%
+  );
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 25px 60px -15px rgba(0, 0, 0, 0.75),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 1px 0 rgba(139, 92, 246, 0.22);
+}
+
+html.light-theme .liquid-glass {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.82) 0%,
+    rgba(241, 245, 249, 0.72) 50%,
+    rgba(238, 242, 255, 0.80) 100%
+  );
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  box-shadow:
+    0 25px 50px -12px rgba(15, 23, 42, 0.2),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.5);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.8);
+}
+
+/* Leaflet Custom Overrides */
+.leaflet-container {
+  background: #060a12 !important;
+  font-family: 'Inter', sans-serif;
+}
+/* Astro Dark Matter CSS Filter for OSM Standard Tiles (100% Watermark-Free Dark GIS) */
+.leaflet-layer.astro-dark-tiles .leaflet-tile {
+  filter: invert(100%) hue-rotate(180deg) brightness(76%) contrast(112%) saturate(76%);
+  -webkit-filter: invert(100%) hue-rotate(180deg) brightness(76%) contrast(112%) saturate(76%);
+}
+html.light-theme .leaflet-layer.astro-dark-tiles .leaflet-tile {
+  filter: none;
+  -webkit-filter: none;
+}
+
+#btnAcknowledgeGuide .guide-acknowledge-mobile {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  #btnAcknowledgeGuide {
+    flex: 0 0 auto;
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+    line-height: 1.25rem;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #btnAcknowledgeGuide .guide-acknowledge-full {
+    display: none;
+  }
+
+  #btnAcknowledgeGuide .guide-acknowledge-mobile {
+    display: inline;
+  }
+}
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+  background: rgba(15, 23, 42, 0.95) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Range Slider Styling */
+input[type="range"].sky-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"].sky-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0f172a 0%, #3b0764 20%, #f59e0b 27%, #38bdf8 50%, #ea580c 73%, #3b0764 80%, #0f172a 100%);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+input[type="range"].sky-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #8b5cf6;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.9);
+  margin-top: -7px;
+  transition: transform 0.15s ease;
+}
+input[type="range"].sky-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(1.18); }
+}
+.pulse-ring {
+  animation: pulseGlow 2.4s infinite ease-in-out;
+}
+
+@media (max-width: 639px) and (prefers-reduced-motion: no-preference) {
+  .mobile-tool-popup-entering {
+    animation: mobileToolBackdropIn 180ms ease-out both;
+  }
+
+  .mobile-tool-popup-entering > :first-child {
+    animation: mobileToolPopupFromTool 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes mobileToolBackdropIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes mobileToolPopupFromTool {
+    0% {
+      opacity: 0.35;
+      transform: translate(var(--mobile-popup-start-x, 0), var(--mobile-popup-start-y, 0)) scale(0.06);
+    }
+    68% {
+      opacity: 1;
+      transform: translate(0, 0) scale(1.015);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(0, 0) scale(1);
+    }
+  }
+}
+
+@media (min-width: 640px) and (prefers-reduced-motion: no-preference) {
+  @keyframes appInfoPanelIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  #modalAppInfo.app-info-desktop-entering > .liquid-glass {
+    animation: appInfoPanelIn 220ms ease-out both;
+  }
+}
+
+html.modal-scroll-locked {
+  overflow-y: hidden;
+}
+
+body.modal-scroll-locked {
+  position: fixed;
+  top: var(--modal-scroll-lock-top);
+  left: 0;
+  right: 0;
+  width: var(--modal-scroll-lock-width, 100%);
+  overflow: hidden;
+}
+
+#modalCartoConfig,
+#modalBackendArchitecture {
+  z-index: 2100;
+}
+
+#timelineControls,
+#timelineReadout,
+#celestialTargetControl {
+  min-width: 0;
+}
+
+#timeMinutesSlider {
+  width: 100%;
+  min-width: 0;
+}
+
+.section-description {
+  margin-top: 0.5rem;
+  padding-left: 0.625rem;
+  border-left: 2px solid rgba(148, 163, 184, 0.35);
+  color: #94a3b8;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 1280px) {
+  #masterTimeLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  #timePresets {
+    min-width: 0;
+  }
+
+  #timelineControls {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  #timelineReadout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #timelineReadoutHeader {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: center;
+    column-gap: 0.75rem;
+  }
+
+  #lblCurrentTimeDisplay {
+    white-space: nowrap;
+  }
+
+  #lblSkyPhaseDescription {
+    min-width: 0;
+    text-align: right;
+    line-height: 1.35;
+  }
+
+  #timeMinutesSlider {
+    grid-column: 1 / -1;
+  }
+
+  #celestialTargetControl {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    grid-column: 1 / -1;
+  }
+
+  #celestialTargetControl select {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (min-width: 1536px) {
+  #masterTimeLayout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.15fr) minmax(0, 0.9fr);
+  }
+
+  #celestialTargetControl {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 639px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  body {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+
+  header.glass-card {
+    height: auto !important;
+    min-height: 3.5rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  header > div {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "brand"
+      "search";
+    gap: 0.5rem;
+  }
+
+  header > div > div:first-child {
+    grid-area: brand;
+    min-width: 0;
+  }
+
+  header > div > div:nth-child(2) {
+    grid-area: search;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  #quickSpotSearchInput {
+    font-size: 16px;
+  }
+
+  html.mobile-search-active section.sticky {
+    position: static !important;
+  }
+
+  .mobile-directory-button {
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    justify-content: center;
+  }
+
+  #mobileToolNav {
+    position: fixed;
+    z-index: 1200;
+    left: 50%;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    display: flex;
+    width: min(24rem, calc(100vw - 2rem));
+    min-height: 4.25rem;
+    align-items: center;
+    justify-content: space-around;
+    gap: 0.25rem;
+    padding: 0.4rem;
+    transform: translateX(-50%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 1.5rem;
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(148, 163, 184, 0.04) 45%, rgba(139, 92, 246, 0.16)),
+      rgba(15, 23, 42, 0.76);
+    box-shadow:
+      0 12px 36px rgba(0, 0, 0, 0.38),
+      inset 0 1px 1px rgba(255, 255, 255, 0.24),
+      inset 0 -1px 1px rgba(139, 92, 246, 0.16);
+    backdrop-filter: blur(26px) saturate(180%);
+    -webkit-backdrop-filter: blur(26px) saturate(180%);
+  }
+
+  html.light-theme #mobileToolNav {
+    border-color: rgba(255, 255, 255, 0.72);
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(241, 245, 249, 0.72) 55%, rgba(224, 231, 255, 0.8)),
+      rgba(255, 255, 255, 0.72);
+    box-shadow:
+      0 12px 32px rgba(15, 23, 42, 0.16),
+      inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  }
+
+  html.light-theme #mobileToolNav > button {
+    color: #334155;
+  }
+
+  #mobileToolNav > button {
+    display: flex;
+    min-width: 0;
+    min-height: 3.35rem;
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.35rem 0.15rem;
+    border: 0;
+    border-radius: 1rem;
+    background: transparent;
+    color: #cbd5e1;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #mobileToolNav > button:active {
+    color: #e9d5ff;
+    background: linear-gradient(145deg, rgba(139, 92, 246, 0.32), rgba(99, 102, 241, 0.2));
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.22),
+      0 0 18px rgba(139, 92, 246, 0.16);
+  }
+
+  html.light-theme #mobileToolNav > button:active {
+    color: #5b21b6;
+    background: linear-gradient(145deg, rgba(196, 181, 253, 0.68), rgba(224, 231, 255, 0.76));
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  }
+
+  #mobileToolNav > button > i {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex: 0 0 auto;
+  }
+
+  #mobileToolNav > button > span {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #mobileToolNav #btnOpenSpotsDirectory {
+    order: 3;
+  }
+
+  #mobileToolNav #btnOpenAstroCalendarModal {
+    order: 1;
+  }
+
+  #mobileToolNav #btnOpenAstroCalendarModal > span {
+    display: inline;
+    font-size: 0;
+  }
+
+  #mobileToolNav #btnOpenAstroCalendarModal > span::after {
+    content: "Sự kiện";
+    font-size: 0.5625rem;
+  }
+
+  #mobileToolNav #btnOpenContributeModal {
+    order: 2;
+  }
+
+  #mobileToolNav #btnOpenContributeModal > span {
+    font-size: 0;
+  }
+
+  #mobileToolNav #btnOpenContributeModal > span::after {
+    content: "Đóng góp";
+    font-size: 0.5625rem;
+  }
+
+  #mobileToolNav #btnOpenGuideModal {
+    order: 4;
+  }
+
+  #mobileToolNav #btnOpenSettingsModal {
+    order: 5;
+  }
+
+  #mobileToolNav #btnOpenSpotsDirectory > i {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+
+  #mobileToolNav > button:focus-visible {
+    outline: 2px solid #c4b5fd;
+    outline-offset: 2px;
+  }
+
+  @media (hover: none) {
+    #mobileToolNav > button:hover {
+      background: transparent;
+      box-shadow: none;
+      color: inherit;
+    }
+
+    #mobileToolNav > button:active {
+      color: #e9d5ff;
+      background: linear-gradient(145deg, rgba(139, 92, 246, 0.32), rgba(99, 102, 241, 0.2));
+      box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.22),
+        0 0 18px rgba(139, 92, 246, 0.16);
+    }
+
+    html.light-theme #mobileToolNav > button:active {
+      color: #5b21b6;
+      background: linear-gradient(145deg, rgba(196, 181, 253, 0.68), rgba(224, 231, 255, 0.76));
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.95);
+    }
+  }
+
+  #modalSettings,
+  #modalCartoConfig,
+  #modalBackendArchitecture {
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+
+  #modalSettings > div,
+  #modalCartoConfig > div,
+  #modalBackendArchitecture > div {
+    max-height: calc(100vh - 1rem);
+    max-height: calc(100dvh - 1rem);
+    margin-block: auto;
+  }
+
+  #settingsModalBody {
+    padding: 0.75rem;
+  }
+
+  #settingsCartoControls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #settingsCartoControls > input {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  #settingsCartoControls > button {
+    min-width: 0;
+    padding-inline: 0.5rem;
+  }
+
+  #settingsBackendSection {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #settingsBackendSection > button {
+    width: 100%;
+  }
+
+  section.sticky {
+    top: 6rem;
+  }
+
+  section.sticky > div {
+    align-items: stretch !important;
+    flex-direction: column !important;
+    gap: 0.5rem;
+  }
+
+  section.sticky > div > div:first-child {
+    flex: none !important;
+    width: 100%;
+  }
+
+  section.sticky > div > div:first-child > div:last-child > div:last-child {
+    column-gap: 0.5rem;
+    row-gap: 0.25rem;
+  }
+
+  #activeSpotCoords {
+    white-space: nowrap;
+  }
+
+  section.sticky > div > div:last-child {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    padding-bottom: 0.125rem;
+    scrollbar-width: none;
+  }
+
+  section.sticky > div > div:last-child::-webkit-scrollbar {
+    display: none;
+  }
+
+  section.sticky > div > div:last-child > * {
+    flex: 0 0 auto !important;
+  }
+
+  body > section:not(.sticky) > div > div > div:last-child {
+    flex-wrap: wrap;
+    width: 100%;
+    min-width: 0;
+  }
+
+  #selectCelestialTarget {
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  #masterTimeLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  #timePresets {
+    min-width: 0;
+  }
+
+  #timelineControls {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  #selectPlaybackSpeed {
+    width: 100%;
+    min-width: 0;
+    font-size: 0.75rem !important;
+  }
+
+  #timelineReadout {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+  }
+
+  #timelineReadoutHeader {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: center;
+    column-gap: 0.75rem;
+    row-gap: 0.5rem;
+  }
+
+  #lblCurrentTimeDisplay {
+    white-space: nowrap;
+  }
+
+  #lblSkyPhaseDescription {
+    min-width: 0;
+    text-align: right;
+    line-height: 1.35;
+  }
+
+  #timeMinutesSlider {
+    grid-column: 1 / -1;
+  }
+
+  #celestialTargetControl {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+    padding: 0.625rem;
+    border: 1px solid rgba(51, 65, 85, 0.8);
+    border-radius: 0.75rem;
+    background: #0f172a;
+  }
+
+  #celestialTargetControl label {
+    grid-column: 1 / -1;
+    gap: 0.5rem;
+    color: #cbd5e1;
+    font-size: 0.75rem;
+  }
+
+  #celestialTargetControl select {
+    grid-column: 1 / -1;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.625rem 0.75rem;
+    border-color: rgba(148, 163, 184, 0.22);
+    border-radius: 0.625rem;
+    background-color: #0f172a;
+  }
+
+  #spotsGridContainer {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  #spotsGridContainer .spot-card-item {
+    aspect-ratio: 1 / 1;
+    height: calc((100vw - 4.5625rem) / 2);
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0.625rem;
+  }
+
+  #spotsGridContainer .spot-card-item > div:first-child {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #spotsGridContainer .spot-card-item > div:first-child > div:first-child {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  #spotsGridContainer .spot-card-item > div:first-child > div:first-child > span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #spotsGridContainer .spot-card-item h4 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    line-height: 1.3;
+  }
+
+  #spotsGridContainer .spot-card-item p {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  #spotsGridContainer .spot-card-item > div:last-child {
+    gap: 0.25rem;
+    font-size: 9px;
+  }
+
+  #weatherMatrixTable {
+    table-layout: fixed;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  #weatherMatrixTable .matrix-row-label {
+    width: 6rem;
+    min-width: 6rem;
+    max-width: 6rem;
+    padding-inline: 0.5rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.3;
+  }
+
+  #weatherMatrixTable .matrix-hour-cell {
+    min-width: 3rem;
+    padding-inline: 0.25rem;
+  }
+
+  #mapTileControls {
+    flex-wrap: nowrap;
+    gap: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  #mapTileControls::-webkit-scrollbar {
+    display: none;
+  }
+
+  #mapTileControls .map-tile-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding-inline: 0.5rem;
+    font-size: 10px;
+  }
+
+  #cameraSetupIntro {
+    min-width: 0;
+  }
+
+  #cameraSetupTitle {
+    align-items: flex-start;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  #cameraSetupDescription {
+    font-size: 0.75rem;
+  }
+
+  #footerInner {
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  #footerBrand {
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  #footerMeta {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    text-align: left;
+  }
+
+  #footerMeta .footer-meta-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-block: 0.5rem;
+    border-top: 1px solid rgba(51, 65, 85, 0.65);
+    line-height: 1.4;
+  }
+
+  #footerMeta .footer-meta-item strong {
+    max-width: 62%;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  #cameraSetupControls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #setupEventControl {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.375rem 0.5rem;
+    width: 100%;
+    min-width: 0;
+  }
+
+  #setupEventControl > span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #cbd5e1;
+  }
+
+  #selectSetupEventType {
+    grid-column: 1 / -1;
+    min-width: 0;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 0.625rem;
+    background-color: #0f172a;
+    font-size: 0.875rem !important;
+  }
+
+  #gearModeControls {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  #gearModeControls .gear-tab-btn {
+    min-width: 0;
+    min-height: 3.75rem;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 0.5rem 0.375rem;
+    text-align: center;
+    line-height: 1.2;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+  }
+
+  #gearModeControls {
+    gap: 0.375rem;
+    align-items: stretch;
+  }
+
+  #gearModeControls .gear-tab-btn:not(.bg-violet-600) {
+    background: rgba(15, 23, 42, 0.8);
+  }
+
+  #gearModeControls .gear-tab-btn i {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+  }
+
+  #gearModeControls .gear-tab-btn span {
+    max-width: 100%;
+    font-size: 0.625rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  html.light-theme #celestialTargetControl {
+    border-color: #cbd5e1;
+    background: #ffffff;
+  }
+
+  html.light-theme #celestialTargetControl label,
+  html.light-theme #setupEventControl > span {
+    color: #475569;
+  }
+
+  html.light-theme #celestialTargetControl select,
+  html.light-theme #selectSetupEventType {
+    border-color: #cbd5e1;
+    background-color: #ffffff !important;
+    color: #6b21a8 !important;
+  }
+
+  html.light-theme #gearModeControls .gear-tab-btn:not(.bg-violet-600) {
+    border-color: #cbd5e1;
+    background: #e2e8f0 !important;
+    color: #334155 !important;
+  }
+
+  input:not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 359px) {
+  header > div {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "brand"
+      "search";
+  }
+
+  section.sticky {
+    top: 6.5rem;
+  }
+}

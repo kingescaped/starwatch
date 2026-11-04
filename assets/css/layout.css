@@ -1,0 +1,304 @@
+/* Layout primitives: active spot bar, map widgets, weather matrix states. */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-color);
+}
+
+#activeSpotBar {
+  transition: padding 0.18s ease-out;
+}
+
+.active-spot-indicator {
+  width: 0.625rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background: linear-gradient(to bottom, #8b5cf6, #22d3ee);
+  transition: width 0.18s ease-out, height 0.18s ease-out;
+}
+
+.active-spot-indicator > svg {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0;
+  transform: scale(0.65);
+  transition: opacity 0.12s ease-out, transform 0.18s ease-out;
+}
+
+.active-spot-bar-detail {
+  transition: opacity 0.12s ease-out, transform 0.18s ease-out;
+}
+
+#activeSpotTelemetry,
+#activeSpotActions {
+  max-height: 7rem;
+  transition: opacity 0.12s ease-out, transform 0.18s ease-out;
+}
+
+#activeSpotActions {
+  max-width: 100rem;
+  overflow: hidden;
+}
+
+#activeSpotBar[data-collapsed="true"] {
+  padding-block: 0.25rem;
+}
+
+#activeSpotBar[data-collapsed="true"] .active-spot-indicator {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+#activeSpotBar[data-collapsed="true"] .active-spot-indicator > svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+#activeSpotBar[data-collapsed="true"] .active-spot-bar-detail {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-0.25rem);
+}
+
+#activeSpotBar[data-collapsed="true"] #activeSpotRegionBadge,
+#activeSpotBar[data-collapsed="true"] #apiStatusBadge {
+  display: none;
+}
+
+#activeSpotBar[data-collapsed="true"] #activeSpotTelemetry {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-0.25rem);
+}
+
+#activeSpotBar[data-collapsed="true"] #activeSpotTelemetry {
+  margin-top: 0;
+}
+
+#activeSpotBar[data-collapsed="true"] #activeSpotActions {
+  width: auto;
+  flex: 0 0 auto;
+  gap: 0;
+  max-height: 7rem;
+  max-width: 100rem;
+  opacity: 1;
+  overflow: visible;
+  transform: none;
+  margin-left: auto;
+}
+
+#activeSpotBar[data-collapsed="true"] #activeSpotActions .active-spot-bar-detail {
+  width: 0;
+  min-width: 0;
+  max-width: 0;
+  max-height: 0;
+  margin: 0;
+  padding: 0;
+  border-width: 0;
+  flex: 0 0 0;
+  overflow: hidden;
+}
+
+#activeSpotBar[data-collapsed="true"] > div > div:first-child > div:last-child {
+  flex: 1 1 0%;
+  min-width: 0;
+  align-self: center;
+  display: flex;
+  align-items: center;
+}
+
+#activeSpotBar[data-collapsed="true"] > div > div:first-child > div:last-child > div:first-child {
+  display: block;
+  width: 100%;
+}
+
+#activeSpotBar[data-collapsed="true"] #activeSpotName {
+  width: 100%;
+  max-width: none;
+  line-height: 1.5rem;
+}
+
+#activeSpotBarToggle {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+#weatherMatrixSection {
+  scroll-margin-top: 8rem;
+}
+
+#weatherMatrixTable .matrix-past-hour {
+  background-color: rgba(71, 85, 105, 0.32) !important;
+  color: #94a3b8 !important;
+}
+
+#weatherMatrixTable .matrix-past-hour > span,
+#weatherMatrixTable .matrix-past-hour > div {
+  background-color: rgba(71, 85, 105, 0.55) !important;
+  color: #94a3b8 !important;
+  font-weight: 500;
+}
+
+@media (max-width: 639px) {
+  #activeSpotActions {
+    width: 100%;
+    flex: 1 1 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.125rem;
+    scrollbar-width: none;
+  }
+
+  #activeSpotActions::-webkit-scrollbar {
+    display: none;
+  }
+
+  #activeSpotActions > * {
+    flex: 0 0 auto !important;
+  }
+
+  #activeSpotBar[data-collapsed="true"] > div {
+    align-items: center !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 0.5rem !important;
+  }
+
+  #activeSpotBar[data-collapsed="true"] > div > div:first-child {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    width: auto !important;
+  }
+
+  #activeSpotBar[data-collapsed="true"] #activeSpotActions {
+    flex: 0 0 auto;
+    padding: 0;
+  }
+
+  #activeSpotBar[data-collapsed="true"] #activeSpotActions > * {
+    flex-shrink: 0;
+  }
+
+  #mapAzimuthLegend {
+    top: 0.5rem;
+    left: 3.25rem;
+    padding: 0.375rem 0.5rem;
+    font-size: 9px;
+    line-height: 1.2;
+    border-radius: 0.65rem;
+  }
+
+  #mapAzimuthLegend > div:first-child {
+    display: none;
+  }
+
+  #mapAzimuthLegend > div:not(:first-child) {
+    gap: 0.35rem;
+  }
+
+  #mapAzimuthLegend > div:not(:first-child) > span:first-child {
+    width: 0.75rem;
+    flex: 0 0 0.75rem;
+  }
+
+  #mapAzimuthLegend > div:not(:first-child) > span:last-child {
+    white-space: nowrap;
+  }
+
+  #himawariControlPanel {
+    bottom: 0.5rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
+    padding: 0.45rem;
+    border-radius: 0.75rem;
+  }
+
+  #himawariControlPanel > div:first-child {
+    width: 100%;
+    min-width: 0;
+    gap: 0.45rem;
+  }
+
+  #btnPlayRadarLoop {
+    width: 1.75rem;
+    height: 1.75rem;
+    flex: 0 0 1.75rem;
+  }
+
+  #himawariControlPanel > div:first-child > div {
+    flex: 1 1 0%;
+    min-width: 0;
+  }
+
+  #himawariControlPanel > div:first-child > div > div {
+    flex-wrap: wrap;
+    gap: 0.25rem 0.4rem;
+  }
+
+  #himawariControlPanel > div:first-child > div > div > span:first-child {
+    font-size: 9px;
+    line-height: 1.2;
+  }
+
+  #lblRadarFrameTime {
+    padding: 0.125rem 0.35rem;
+    font-size: 8px;
+    line-height: 1.2;
+  }
+
+  #sliderRadarFrame {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+
+  #mapCloudLegend {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    font-size: 8px;
+    line-height: 1.2;
+  }
+
+  #mapCloudLegend > div {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  #mapCloudLegend > div > span {
+    padding: 0.125rem 0.35rem;
+    white-space: nowrap;
+  }
+
+  #mapCloudLegend > div > span:first-child {
+    padding-left: 0;
+    color: #cbd5e1;
+  }
+
+  #weatherMatrixSection {
+    scroll-margin-top: 11rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #activeSpotBar,
+  .active-spot-indicator,
+  .active-spot-indicator > svg,
+  .active-spot-bar-detail,
+  #activeSpotTelemetry,
+  #activeSpotActions {
+    transition-duration: 0.01ms;
+  }
+}
