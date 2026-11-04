@@ -1118,9 +1118,9 @@ body.modal-scroll-locked {
     background: rgba(15, 23, 42, 0.8);
   }
 
-  #gearModeControls .gear-tab-btn i {
-    width: 1rem;
-    height: 1rem;
+  #gearModeControls .gear-tab-btn > svg[data-icon] {
+    width: 1.5rem;
+    height: 1.5rem;
     flex: 0 0 auto;
   }
 
