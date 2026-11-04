@@ -1,6 +1,6 @@
 const iconNames = new Set([
   'starwatch-mark', 'sparkles', 'search', 'locate-fixed', 'compass', 'calendar-heart',
-  'map-pin-plus', 'book-open-check', 'settings', 'map-pin', 'camera', 'heart',
+  'map-pin-plus', 'book-open-check', 'book-open', 'settings', 'map-pin', 'camera', 'heart',
   'refresh-cw', 'chevron-up', 'chevron-down', 'calendar', 'play', 'pause',
   'telescope', 'map', 'lightbulb', 'satellite', 'shield-check', 'clock', 'layers',
   'aperture', 'smartphone', 'cpu', 'mountain-snow', 'x', 'server', 'key-round',

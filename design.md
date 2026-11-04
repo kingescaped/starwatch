@@ -52,6 +52,8 @@ This document is the required visual reference for all future StarWatch frontend
 - Avoid `flex-grow` on a single action when it makes that button disproportionately wide. Use intrinsic sizing or balanced equal-width actions.
 - Inputs should have clear labels, dark/light theme-aware surfaces, and visible focus borders. Technical values use monospace.
 - Use the internal SVG sprite in `assets/icons/sprite.svg` through `js/ui/icons.js`; keep icons centered, accessible, and undistorted.
+- The mobile bottom tool navigation uses centered 22px icons with compact labels.
+- Keep the StarWatch logo consistent across the header, app-information view, and favicon by using the `starwatch-mark` glyph and its violet-indigo-cyan gradient treatment.
 - Dynamic status badges should keep fixed dimensions and wrap their text within the allocated space so changing status copy does not reflow adjacent content.
 
 ## 5. Desktop layout (`min-width: 640px`)
