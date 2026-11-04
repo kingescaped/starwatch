@@ -16,7 +16,7 @@ Chỉ sau khi đọc xong mới bắt đầu mở các file trong `js/`, `assets
 
 ## Bắt buộc: tuân theo design system
 
-Trước mọi thay đổi frontend, đọc toàn bộ `design.md` ở thư mục gốc. Mọi giao diện mới hoặc chỉnh sửa phải tuân theo màu sắc, typography, spacing, breakpoint và nguyên tắc desktop/mobile trong tài liệu. Nếu chủ động thay đổi design system, cập nhật `design.md` cùng thay đổi đó.
+Trước mọi thay đổi frontend, đọc toàn bộ `DESIGN.md` ở thư mục gốc. Mọi giao diện mới hoặc chỉnh sửa phải tuân theo màu sắc, typography, spacing, breakpoint và nguyên tắc desktop/mobile trong tài liệu. Nếu chủ động thay đổi design system, cập nhật `DESIGN.md` cùng thay đổi đó.
 
 ## Bối cảnh dự án
 

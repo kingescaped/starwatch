@@ -1,6 +1,6 @@
 # StarWatch UI Design System
 
-This document is the required visual reference for all future StarWatch frontend changes. Read it before editing `index.html`, `assets/css/`, or UI-facing code. Keep new work consistent with these rules; if an intentional design change is needed, update this document in the same change.
+`DESIGN.md` is the required visual reference for all future StarWatch frontend changes. Read it before editing `index.html`, `assets/css/`, or UI-facing code. Keep new work consistent with these rules; if an intentional design change is needed, update this document in the same change.
 
 ## 1. Visual direction
 
