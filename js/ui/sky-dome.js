@@ -541,22 +541,42 @@ export function drawTopDownSkyDome() {
     targetStatusEl.className = 'text-[10px] text-slate-500';
   }
 
-  // Darkness Badge
+  // Darkness Badge (Auto-Layout: 2 rows - Row 1 outside parentheses, Row 2 inside parentheses)
   const darkBadge = document.getElementById('domeDarknessBadge');
-  if (sun.trueAltitude <= -18) {
-    darkBadge.innerHTML = `${iconMarkup('milky-way', 'w-3 h-3 inline-block align-[-2px]')} Đêm Thiên Văn (-18°)`;
-    darkBadge.className = 'dome-darkness-badge text-[11px] font-mono px-2.5 py-1 rounded-lg bg-violet-500/20 text-violet-300 border border-violet-500/30';
-  } else if (sun.trueAltitude <= -6) {
-    darkBadge.innerHTML = `${iconMarkup('twilight', 'w-3 h-3 inline-block align-[-2px]')} Chạng Vạng / Giờ Xanh`;
-    darkBadge.className = 'dome-darkness-badge text-[11px] font-mono px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30';
-  } else if (sun.trueAltitude <= 6) {
-    darkBadge.innerHTML = `${iconMarkup('sunrise', 'w-3 h-3 inline-block align-[-2px]')} Giờ Vàng (Golden Hour)`;
-    darkBadge.className = 'dome-darkness-badge text-[11px] font-mono px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30';
-  } else {
-    darkBadge.innerHTML = `${iconMarkup('sun', 'w-3 h-3 inline-block align-[-2px]')} Ban Ngày`;
-    darkBadge.className = 'dome-darkness-badge text-[11px] font-mono px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30';
+  if (darkBadge) {
+    let iconName, titleText, subText, themeClasses;
+    if (sun.trueAltitude <= -18) {
+      iconName = 'milky-way';
+      titleText = 'Đêm Thiên Văn';
+      subText = '(-18°)';
+      themeClasses = 'bg-violet-500/20 text-violet-300 border border-violet-500/30';
+    } else if (sun.trueAltitude <= -6) {
+      iconName = 'twilight';
+      titleText = 'Chạng Vạng';
+      subText = '(Giờ Xanh)';
+      themeClasses = 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30';
+    } else if (sun.trueAltitude <= 6) {
+      iconName = 'sunrise';
+      titleText = 'Giờ Vàng';
+      subText = '(Golden Hour)';
+      themeClasses = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+    } else {
+      iconName = 'sun';
+      titleText = 'Ban Ngày';
+      subText = '(Mặt Trời > 6°)';
+      themeClasses = 'bg-sky-500/20 text-sky-300 border border-sky-500/30';
+    }
+
+    darkBadge.className = `dome-darkness-badge ${themeClasses}`;
+    darkBadge.innerHTML = `
+      ${iconMarkup(iconName, 'w-3.5 h-3.5 shrink-0')}
+      <div class="dome-darkness-badge__content flex flex-col text-left leading-none">
+        <span class="dome-darkness-badge__title font-semibold text-[11px] leading-tight whitespace-nowrap">${titleText}</span>
+        ${subText ? `<span class="dome-darkness-badge__sub text-[9.5px] opacity-80 font-mono leading-tight whitespace-nowrap mt-0.5">${subText}</span>` : ''}
+      </div>
+    `;
+    renderIcons(darkBadge);
   }
-  renderIcons(darkBadge);
 
   draw24HourElevationChart();
 }

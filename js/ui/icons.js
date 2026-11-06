@@ -3,7 +3,7 @@ const iconNames = new Set([
   'map-pin-plus', 'book-open-check', 'book-open', 'settings', 'map-pin', 'camera', 'heart',
   'refresh-cw', 'chevron-up', 'chevron-down', 'calendar', 'play', 'pause',
   'telescope', 'map', 'lightbulb', 'satellite', 'shield-check', 'clock', 'layers',
-  'aperture', 'smartphone', 'cpu', 'mountain-snow', 'x', 'server', 'key-round',
+  'aperture', 'smartphone', 'cpu', 'mountain-snow', 'trash-2', 'x', 'server', 'key-round',
   'mail', 'send', 'palette', 'moon', 'sun', 'eye', 'milky-way', 'dew', 'globe',
   'sunrise', 'sunset', 'cloud', 'meteor', 'spiral-galaxy', 'diamond', 'full-moon',
   'target', 'mountain', 'arrow-right', 'warning', 'twilight'

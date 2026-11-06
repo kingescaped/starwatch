@@ -41,12 +41,15 @@
 </head>
 <body class="min-h-screen flex flex-col selection:bg-violet-600 selection:text-white">
 
-  <!-- TOP NAVIGATION BAR (STICKY ROW 1) -->
-  <header class="sticky top-0 z-[1000] glass-card border-b border-slate-800/80 px-3 sm:px-6 h-14 flex items-center">
-    <div class="max-w-[1600px] w-full mx-auto flex items-center justify-between gap-2 sm:gap-4">
+  <!-- STICKY CHROME: TOP NAVIGATION + ACTIVE SPOT BAR SHARE ONE STICKY FRAME -->
+  <div id="appChrome" class="app-chrome">
+
+  <!-- TOP NAVIGATION BAR (ROW 1) -->
+  <header id="appHeader" class="app-header glass-card border-b border-slate-800/80 h-14 flex items-center">
+    <div class="page-shell header-frame flex items-center justify-between gap-2 sm:gap-4">
       
       <!-- Brand Logo & New Slogan -->
-      <div class="flex items-center gap-2.5 shrink-0">
+      <div class="header-brand flex items-center gap-2.5 shrink-0">
         <button id="btnOpenAppInfo" type="button" aria-label="Thông tin ứng dụng StarWatch" title="Thông tin ứng dụng StarWatch" class="relative w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 via-indigo-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-600/30 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400">
           <i data-icon="starwatch-mark" class="starwatch-brand-mark w-6 h-6 text-white"></i>
           <span class="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
@@ -67,7 +70,7 @@
       </div>
 
       <!-- Universal Place Search (Curated + Live Geocoding Map Search) -->
-      <div class="flex items-center gap-1.5 flex-1 max-w-lg mx-auto">
+      <div id="headerSearchPanel" class="header-search flex items-center gap-1.5 flex-1 max-w-lg mx-auto">
         <div class="relative flex-1">
           <i data-icon="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
           <input
@@ -77,7 +80,7 @@
             class="w-full pl-8 pr-3 py-1.5 text-xs sm:text-sm rounded-xl bg-slate-900/90 border border-slate-700/80 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500 transition"
           />
           <!-- Dropdown search results (Local + Global Map Geocoder) -->
-          <div id="quickSearchDropdown" class="hidden absolute left-0 right-0 top-full mt-1.5 liquid-glass rounded-xl border border-slate-700 shadow-2xl max-h-80 overflow-y-auto z-50 divide-y divide-slate-800/60"></div>
+          <div id="quickSearchDropdown" class="hidden search-dropdown custom-scrollbar"></div>
         </div>
 
         <button
@@ -87,10 +90,31 @@
         >
           <i data-icon="locate-fixed" class="w-4 h-4"></i>
         </button>
+
+        <button
+          id="btnCloseMobileSearch"
+          type="button"
+          aria-label="Đóng tìm kiếm"
+          class="mobile-search-close p-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition shrink-0"
+        >
+          <i data-icon="x" class="w-4 h-4"></i>
+        </button>
       </div>
 
+      <button
+        id="btnToggleMobileSearch"
+        type="button"
+        aria-label="Tìm điểm săn ảnh"
+        aria-expanded="false"
+        aria-controls="headerSearchPanel"
+        class="mobile-search-toggle items-center justify-center rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-cyan-300 transition shrink-0"
+      >
+        <i data-icon="search" class="w-4 h-4"></i>
+      </button>
+
       <!-- Tool actions: horizontal on desktop, liquid-glass tab bar on mobile -->
-      <nav id="mobileToolNav" aria-label="Công cụ StarWatch" class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <nav id="mobileToolNav" class="header-tools flex items-center gap-1.5 sm:gap-2 shrink-0" aria-label="Công cụ StarWatch">
+        <div id="mobileNavIndicator" class="mobile-nav-indicator" aria-hidden="true"></div>
         <button
           id="btnOpenSpotsDirectory"
           title="Địa điểm săn ảnh"
@@ -98,47 +122,51 @@
           class="mobile-directory-button px-2 py-1.5 rounded-xl bg-violet-600/25 hover:bg-violet-600/40 text-violet-300 border border-violet-500/30 text-[11px] font-medium flex items-center gap-1 transition"
         >
           <i data-icon="compass" class="w-3.5 h-3.5 text-violet-300"></i>
-          <span class="hidden sm:inline">Địa điểm</span>
+          <span class="hidden xl:inline">Địa điểm</span>
         </button>
 
         <!-- Astronomical Events Calendar Button -->
         <button
           id="btnOpenAstroCalendarModal"
+          aria-label="Sự kiện thiên văn"
           class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-violet-600/25 hover:bg-violet-600/40 text-violet-200 border border-violet-500/40 text-xs font-semibold flex items-center gap-1.5 transition"
           title="Sự kiện thiên văn & dự đoán địa điểm săn ảnh"
         >
           <i data-icon="calendar-heart" class="w-3.5 h-3.5 text-fuchsia-400"></i>
-          <span class="hidden md:inline">Sự kiện</span>
+          <span class="hidden xl:inline">Sự kiện</span>
         </button>
 
         <!-- Contribute Spot Button -->
         <button
           id="btnOpenContributeModal"
+          aria-label="Đóng góp địa điểm"
           class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-medium flex items-center gap-1.5 transition"
           title="Đóng góp địa điểm săn ảnh mới"
         >
           <i data-icon="map-pin-plus" class="w-3.5 h-3.5 text-emerald-300"></i>
-          <span class="hidden lg:inline">Đóng góp điểm</span>
+          <span class="hidden xl:inline">Đóng góp</span>
         </button>
 
         <!-- Liquid Glass User Guide Button -->
         <button
           id="btnOpenGuideModal"
+          aria-label="Hướng dẫn sử dụng"
           class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-500/35 text-xs font-medium flex items-center gap-1.5 transition"
           title="Hướng dẫn sử dụng & Cách đọc thông số"
         >
           <i data-icon="book-open" class="w-3.5 h-3.5 text-cyan-400"></i>
-          <span class="hidden md:inline">Hướng dẫn</span>
+          <span class="hidden xl:inline">Hướng dẫn</span>
         </button>
 
         <!-- Unified Settings Button (Theme, Carto API Key, Backend Code) -->
         <button
           id="btnOpenSettingsModal"
+          aria-label="Cài đặt"
           class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium flex items-center gap-1.5 transition"
           title="Cài đặt Giao diện, Carto API Key & Backend"
         >
           <i data-icon="settings" class="w-3.5 h-3.5 text-amber-400"></i>
-          <span class="hidden sm:inline">Cài đặt</span>
+          <span class="hidden xl:inline">Cài đặt</span>
         </button>
 
       </nav>
@@ -146,19 +174,17 @@
     </div>
   </header>
 
-  <div id="appStatusToast" class="hidden fixed top-3 left-1/2 -translate-x-1/2 z-[5000] max-w-[calc(100%-1.5rem)] rounded-xl border border-cyan-400/30 bg-slate-950/95 px-4 py-2 text-xs text-cyan-100 shadow-xl" role="status" aria-live="polite"></div>
-
   <!-- STICKY COMPACT ACTIVE SPOT & SCORE BAR (PINNED BELOW HEADER ON SCROLL) -->
-  <section id="activeSpotBar" data-collapsed="false" class="sticky top-14 z-[990] glass-card border-b border-slate-800/90 px-3 sm:px-6 py-2 shadow-lg">
-    <div class="max-w-[1600px] w-full mx-auto flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+  <section id="activeSpotBar" data-collapsed="false" class="spot-bar glass-card border-b border-slate-800/90 py-2 shadow-lg">
+    <div class="page-shell spot-bar__inner flex flex-wrap items-center justify-between gap-2 sm:gap-4">
       
       <!-- Left: Compact Active Location Name & Key Telemetry Pills -->
-      <div class="flex items-center gap-2.5 min-w-0 flex-1">
+      <div class="spot-bar__identity flex items-center gap-2.5 min-w-0 flex-1">
         <div class="active-spot-indicator shrink-0 flex items-center justify-center">
           <i data-icon="map-pin" class="text-white"></i>
         </div>
-        <div class="min-w-0">
-          <div class="flex items-center gap-1.5 flex-wrap">
+        <div class="spot-bar__info min-w-0">
+          <div class="spot-bar__title-row flex items-center gap-1.5 flex-wrap">
             <h2 id="activeSpotName" class="text-xs sm:text-sm font-extrabold text-white truncate max-w-full sm:max-w-[30rem]">
               Đỉnh Tà Xùa (Sống Lưng Khủng Long)
             </h2>
@@ -190,10 +216,10 @@
         <div class="active-spot-bar-detail bg-slate-900/90 border border-violet-500/35 rounded-xl px-2.5 py-1 flex items-center gap-2" title="Điểm Săn Ngân Hà & Trời Tối">
           <div class="text-[10px] text-violet-300 font-semibold flex items-center gap-1">
             <i data-icon="milky-way" class="w-3 h-3"></i>
-            <span class="hidden sm:inline">Ngân Hà</span>
+            <span class="hidden xl:inline">Ngân Hà</span>
           </div>
           <span id="scoreMilkyWay" class="text-xs sm:text-sm font-extrabold font-mono text-white">88</span>
-          <span id="badgeMilkyWay" class="hidden xl:inline text-[9px] px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300">Rất lý tưởng</span>
+          <span id="badgeMilkyWay" class="hidden 2xl:inline text-[9px] px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300">Rất lý tưởng</span>
           <div class="hidden"><div id="barMilkyWay"></div><p id="reasonMilkyWay"></p></div>
         </div>
 
@@ -201,10 +227,10 @@
         <div class="active-spot-bar-detail bg-slate-900/90 border border-amber-500/35 rounded-xl px-2.5 py-1 flex items-center gap-2" title="Điểm Ráng Bình Minh · Hoàng Hôn">
           <div class="text-[10px] text-amber-300 font-semibold flex items-center gap-1">
             <i data-icon="sunrise" class="w-3 h-3"></i>
-            <span class="hidden sm:inline">Ráng</span>
+            <span class="hidden xl:inline">Ráng</span>
           </div>
           <span id="scoreAfterglow" class="text-xs sm:text-sm font-extrabold font-mono text-white">76</span>
-          <span id="badgeAfterglow" class="hidden xl:inline text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">Ráng đẹp</span>
+          <span id="badgeAfterglow" class="hidden 2xl:inline text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">Ráng đẹp</span>
           <div class="hidden"><div id="barAfterglow"></div><p id="reasonAfterglow"></p></div>
         </div>
 
@@ -212,10 +238,10 @@
         <div class="active-spot-bar-detail bg-slate-900/90 border border-cyan-500/35 rounded-xl px-2.5 py-1 flex items-center gap-2" title="Điểm Săn Biển Mây">
           <div class="text-[10px] text-cyan-300 font-semibold flex items-center gap-1">
             <i data-icon="cloud" class="w-3 h-3"></i>
-            <span class="hidden sm:inline">Săn Mây</span>
+            <span class="hidden xl:inline">Săn Mây</span>
           </div>
           <span id="scoreCloudSea" class="text-xs sm:text-sm font-extrabold font-mono text-white">92</span>
-          <span id="badgeCloudSea" class="hidden xl:inline text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300">Mây dày</span>
+          <span id="badgeCloudSea" class="hidden 2xl:inline text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300">Mây dày</span>
           <div class="hidden"><div id="barCloudSea"></div><p id="reasonCloudSea"></p></div>
         </div>
 
@@ -226,7 +252,7 @@
           title="Xem thông số Setup Máy ảnh / iPhone 18 Pro / Android tại điểm này"
         >
           <i data-icon="camera" class="w-3.5 h-3.5 text-fuchsia-400"></i>
-          <span class="hidden md:inline">Thông số chụp</span>
+          <span class="hidden xl:inline">Thông số chụp</span>
         </button>
 
         <button
@@ -247,60 +273,68 @@
         >
           <i data-icon="refresh-cw" class="w-3.5 h-3.5"></i>
         </button>
-        <button
-          id="activeSpotBarToggle"
-          type="button"
-          class="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition"
-          aria-label="Thu gọn thanh địa điểm"
-          aria-expanded="true"
-          title="Thu gọn thanh địa điểm"
-        >
-          <i data-icon="chevron-up" class="active-spot-toggle-collapse w-4 h-4"></i>
-          <i data-icon="chevron-down" class="active-spot-toggle-expand hidden w-4 h-4"></i>
-        </button>
       </div>
+
+      <button
+        id="activeSpotBarToggle"
+        type="button"
+        class="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition"
+        aria-label="Thu gọn thanh địa điểm"
+        aria-expanded="true"
+        title="Thu gọn thanh địa điểm"
+      >
+        <i data-icon="chevron-up" class="active-spot-toggle-collapse w-4 h-4"></i>
+        <i data-icon="chevron-down" class="active-spot-toggle-expand hidden w-4 h-4"></i>
+      </button>
 
     </div>
   </section>
 
+  </div>
+  <!-- /appChrome -->
+
+  <div id="appStatusToast" class="hidden fixed top-3 left-1/2 -translate-x-1/2 z-[5000] max-w-[calc(100%-1.5rem)] rounded-xl border border-cyan-400/30 bg-slate-950/95 px-4 py-2 text-xs text-cyan-100 shadow-xl" role="status" aria-live="polite"></div>
+
   <!-- MASTER TIME CONTROLLER & CELESTIAL TARGET BAR -->
-  <section class="max-w-[1600px] w-full mx-auto px-3 sm:px-6 py-2">
+  <section class="page-shell py-2">
     <div class="glass-card rounded-2xl p-3 sm:p-4 border border-slate-800">
-      <div id="masterTimeLayout" class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
+      <div id="masterTimeLayout">
         
-        <!-- Date Picker + Quick Time Jump Presets -->
-        <div id="timePresets" class="flex flex-wrap items-center gap-2">
-          <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-700/80 rounded-xl px-2.5 py-1.5">
-            <i data-icon="calendar" class="w-4 h-4 text-violet-400"></i>
+        <!-- Row 1: Date Picker + Quick Astronomical Jump Presets -->
+        <div id="timePresets">
+          <div id="datePickerControl" class="flex items-center gap-1.5 bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-1.5 shrink-0">
+            <i data-icon="calendar" class="w-3.5 h-3.5 text-violet-400 shrink-0"></i>
             <input
               id="datePickerInput"
               type="date"
-              class="bg-transparent text-xs sm:text-sm font-mono font-semibold text-white focus:outline-none"
+              class="bg-transparent text-xs sm:text-sm font-mono font-semibold text-white focus:outline-none cursor-pointer"
             />
           </div>
 
+          <div class="hidden sm:block w-px h-5 bg-slate-700/60 shrink-0"></div>
+
           <!-- Quick Astronomical Jump Buttons -->
-          <div class="flex items-center gap-1 flex-wrap">
-            <button data-jump="dawn" class="time-jump-btn px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-[11px] font-medium text-amber-300 border border-slate-700/80 transition">
+          <div class="time-presets-group">
+            <button data-jump="now" class="time-jump-btn px-2.5 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-[11px] font-medium text-emerald-300 border border-emerald-500/30 transition whitespace-nowrap">
+              <i data-icon="clock" class="w-3.5 h-3.5 inline-block align-[-3px]"></i> Hiện tại
+            </button>
+            <button data-jump="dawn" class="time-jump-btn px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-[11px] font-medium text-amber-300 border border-slate-700/80 transition whitespace-nowrap">
               <i data-icon="sunrise" class="w-3.5 h-3.5 inline-block align-[-3px]"></i> Bình minh (<span id="lblSunriseQuick">05:54</span>)
             </button>
-            <button data-jump="dusk" class="time-jump-btn px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-[11px] font-medium text-orange-300 border border-slate-700/80 transition">
+            <button data-jump="dusk" class="time-jump-btn px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-[11px] font-medium text-orange-300 border border-slate-700/80 transition whitespace-nowrap">
               <i data-icon="sunset" class="w-3.5 h-3.5 inline-block align-[-3px]"></i> Hoàng hôn (<span id="lblSunsetQuick">17:38</span>)
             </button>
-            <button data-jump="astro-dark" class="time-jump-btn px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-[11px] font-medium text-indigo-300 border border-slate-700/80 transition">
+            <button data-jump="astro-dark" class="time-jump-btn px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-[11px] font-medium text-indigo-300 border border-slate-700/80 transition whitespace-nowrap">
               <i data-icon="twilight" class="w-3.5 h-3.5 inline-block align-[-3px]"></i> Chập tối TV (<span id="lblAstroDarkQuick">19:02</span>)
             </button>
-            <button data-jump="galactic-peak" class="time-jump-btn px-2.5 py-1.5 rounded-xl bg-violet-600/25 hover:bg-violet-600/40 text-[11px] font-medium text-violet-200 border border-violet-500/40 transition">
+            <button data-jump="galactic-peak" class="time-jump-btn px-2.5 py-1.5 rounded-xl bg-violet-600/25 hover:bg-violet-600/40 text-[11px] font-medium text-violet-200 border border-violet-500/40 transition whitespace-nowrap">
               <i data-icon="sparkles" class="w-3.5 h-3.5 inline-block align-[-3px]"></i> Đỉnh Thiên Thể (<span id="lblTargetPeakQuick">20:15</span>)
-            </button>
-            <button data-jump="now" class="time-jump-btn px-2.5 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-[11px] font-medium text-emerald-300 border border-emerald-500/30 transition">
-              <i data-icon="clock" class="w-3.5 h-3.5 inline-block align-[-3px]"></i> Hiện tại
             </button>
           </div>
         </div>
 
-        <!-- Minute-by-Minute Time Slider & Playback Controls -->
-        <div id="timelineControls" class="flex-1 flex items-center gap-3 bg-slate-900/75 px-3.5 py-2 rounded-xl border border-slate-800">
+        <!-- Row 2: Minute-by-Minute Time Slider & Playback Controls -->
+        <div id="timelineControls">
           <button
             id="btnPlayTimeline"
             class="w-9 h-9 rounded-xl bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center shadow-md shadow-violet-600/30 transition shrink-0"
@@ -319,8 +353,8 @@
             <option value="60" selected>60 phút/giây</option>
           </select>
 
-          <div id="timelineReadout" class="flex-1 flex flex-col gap-1">
-            <div id="timelineReadoutHeader" class="flex items-center justify-between gap-2 text-xs">
+          <div id="timelineReadout">
+            <div id="timelineReadoutHeader">
               <span class="font-mono font-bold text-sm sm:text-base text-cyan-300" id="lblCurrentTimeDisplay">21:00 GMT+7</span>
               <span class="text-[11px] text-slate-400" id="lblSkyPhaseDescription">Đêm thiên văn (Mặt trời -42.5°)</span>
             </div>
@@ -336,15 +370,13 @@
           </div>
         </div>
 
-        <!-- Deep Sky / Celestial Object Selector -->
-        <div id="celestialTargetControl" class="flex items-center gap-2">
-          <label for="selectCelestialTarget" class="text-xs font-medium text-slate-400 whitespace-nowrap flex items-center gap-1">
-            <i data-icon="telescope" class="w-4 h-4 text-fuchsia-400"></i>
-            <span>Thiên thể:</span>
-          </label>
+        <!-- Row 2 (Right): Deep Sky / Celestial Object Selector -->
+        <div id="celestialTargetControl" class="flex items-center gap-1.5 bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-1.5 shrink-0">
+          <i data-icon="telescope" class="w-3.5 h-3.5 text-fuchsia-400 shrink-0"></i>
+          <span class="text-[11px] sm:text-xs text-slate-400 whitespace-nowrap font-medium">Thiên thể:</span>
           <select
             id="selectCelestialTarget"
-            class="bg-slate-900 border border-violet-500/40 text-xs sm:text-sm font-medium text-violet-200 rounded-xl px-3 py-2 focus:outline-none focus:border-violet-400 transition"
+            class="bg-transparent text-xs font-semibold text-violet-200 focus:outline-none cursor-pointer"
           >
             <option value="galactic_center">Tâm Ngân Hà (Galactic Center · Sgr A*)</option>
             <option value="m31">M31 · Thiên hà Andromeda (RA 00h42m, Dec +41.3°)</option>
@@ -354,62 +386,73 @@
             <option value="lmc">Đám Mây Magellan Lớn (LMC · RA 05h23m, Dec -69.8°)</option>
           </select>
         </div>
-
       </div>
     </div>
   </section>
 
   <!-- MAIN WORKSPACE: INTERACTIVE GIS MAP + TOP-DOWN SKY DOME + EPHEMERIS -->
-  <main class="max-w-[1600px] w-full mx-auto px-3 sm:px-6 py-2 flex-1 flex flex-col gap-4">
+  <main class="page-shell py-2 flex-1 flex flex-col gap-4">
     
-    <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+    <div class="workspace">
       
       <!-- LEFT 7 COLS: INTERACTIVE VIETNAM GIS MAP WITH BORTLE, HIMAWARI RADAR & AZIMUTH VECTORS -->
-      <div class="xl:col-span-7 glass-card rounded-2xl overflow-hidden flex flex-col border border-slate-800 min-h-[540px]">
+      <div class="workspace__map glass-card rounded-2xl overflow-hidden flex flex-col border border-slate-800 min-h-[540px]">
         
         <!-- Map Top Toolbar -->
-        <div class="p-3 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-xs font-bold text-white flex items-center gap-1.5 mr-1">
+        <div class="p-2.5 sm:p-3 bg-slate-900/90 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            <h3 class="card-heading">
               <i data-icon="map" class="w-4 h-4 text-violet-400"></i>
-              Bản đồ Radar &amp; Phương Vị
-            </span>
+              <span>Bản Đồ</span>
+            </h3>
 
-            <!-- Toggle Bortle Light Pollution Overlay -->
-            <button
-              id="btnToggleBortleOverlay"
-              class="px-2.5 py-1 rounded-lg text-[11px] font-medium border transition flex items-center gap-1.5 bg-amber-500/20 text-amber-300 border-amber-500/40"
-            >
-              <i data-icon="lightbulb" class="w-3.5 h-3.5"></i>
-              <span>Ô nhiễm sáng (VIIRS Bortle)</span>
-            </button>
+            <!-- 3 Toggle Buttons for Overlays: Grid 3 cols on mobile, flex on desktop -->
+            <div id="mapOverlayToggles" class="map-overlay-toggles">
+              <!-- Toggle Bortle Light Pollution Overlay -->
+              <button
+                id="btnToggleBortleOverlay"
+                type="button"
+                aria-pressed="true"
+                class="map-overlay-btn map-overlay-btn--bortle"
+              >
+                <i data-icon="lightbulb" class="w-3.5 h-3.5"></i>
+                <span class="sm:hidden">Ô nhiễm</span>
+                <span class="hidden sm:inline">Ô nhiễm sáng (VIIRS Bortle)</span>
+              </button>
 
-            <!-- Toggle Simulated Cloud Overlay -->
-            <button
-              id="btnToggleHimawariOverlay"
-              class="px-2.5 py-1 rounded-lg text-[11px] font-medium border transition flex items-center gap-1.5 bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
-              title="Mô phỏng chuyển động mây tham khảo; không dùng ảnh vệ tinh thời gian thực"
-            >
-              <i data-icon="satellite" class="w-3.5 h-3.5"></i>
-              <span>Mây mô phỏng</span>
-            </button>
+              <!-- Toggle Simulated Cloud Overlay -->
+              <button
+                id="btnToggleHimawariOverlay"
+                type="button"
+                aria-pressed="true"
+                class="map-overlay-btn map-overlay-btn--cloud"
+                title="Mô phỏng chuyển động mây tham khảo; không dùng ảnh vệ tinh thời gian thực"
+              >
+                <i data-icon="satellite" class="w-3.5 h-3.5"></i>
+                <span class="sm:hidden">Mây</span>
+                <span class="hidden sm:inline">Mây mô phỏng</span>
+              </button>
 
-            <!-- Toggle Celestial Azimuth Vectors -->
-            <button
-              id="btnToggleAzimuthVectors"
-              class="px-2.5 py-1 rounded-lg text-[11px] font-medium border transition flex items-center gap-1.5 bg-violet-500/25 text-violet-200 border-violet-500/50"
-            >
-              <i data-icon="compass" class="w-3.5 h-3.5"></i>
-              <span>Tia Phương Vị (Mặt Trời · Trăng · Ngân Hà)</span>
-            </button>
+              <!-- Toggle Celestial Azimuth Vectors -->
+              <button
+                id="btnToggleAzimuthVectors"
+                type="button"
+                aria-pressed="true"
+                class="map-overlay-btn map-overlay-btn--azimuth"
+              >
+                <i data-icon="compass" class="w-3.5 h-3.5"></i>
+                <span class="sm:hidden">Phương vị</span>
+                <span class="hidden sm:inline">Tia Phương Vị (Mặt Trời · Trăng · Ngân Hà)</span>
+              </button>
+            </div>
           </div>
 
-          <!-- Basemap Style Switcher -->
-          <div id="mapTileControls" class="flex flex-nowrap items-center divide-x divide-slate-700 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[11px] overflow-x-auto">
-            <button data-map-tile="satellite" class="map-tile-btn px-2.5 py-0.5 rounded bg-violet-600 text-white font-medium" title="Ảnh vệ tinh Esri World Imagery + Nhãn địa danh">Vệ Tinh</button>
-            <button data-map-tile="astro_dark" class="map-tile-btn px-2.5 py-0.5 rounded text-slate-400 hover:text-white" title="Bản đồ tối thiên văn OSM Dark Matter (Hiển thị đầy đủ địa danh VN, không watermark)">Astro Dark</button>
-            <button data-map-tile="esri_dark" class="map-tile-btn px-2.5 py-0.5 rounded text-slate-400 hover:text-white" title="Bản đồ nền tối Esri World Dark Gray GIS">Esri Dark</button>
-            <button data-map-tile="topo" class="map-tile-btn px-2.5 py-0.5 rounded text-slate-400 hover:text-white" title="Bản đồ đường đồng mức độ cao OpenTopoMap">Topo Độ Cao</button>
+          <!-- Basemap Style Switcher (4 equal segments on mobile, inline-flex on desktop) -->
+          <div id="mapTileControls" class="map-tile-controls bg-slate-950/90 p-1 rounded-xl border border-slate-800 text-[11px]">
+            <button data-map-tile="satellite" class="map-tile-btn px-2.5 py-1 rounded-lg bg-violet-600 text-white font-medium is-active" title="Ảnh vệ tinh Esri World Imagery + Nhãn địa danh">Vệ Tinh</button>
+            <button data-map-tile="astro_dark" class="map-tile-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white" title="Bản đồ tối thiên văn OSM Dark Matter (Hiển thị đầy đủ địa danh VN, không watermark)">Astro Dark</button>
+            <button data-map-tile="esri_dark" class="map-tile-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white" title="Bản đồ nền tối Esri World Dark Gray GIS">Esri Dark</button>
+            <button data-map-tile="topo" class="map-tile-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white" title="Bản đồ đường đồng mức độ cao OpenTopoMap">Topo Độ Cao</button>
           </div>
         </div>
 
@@ -420,8 +463,11 @@
           <!-- Custom GIS Overlay Canvas for Bortle Heatmap, Simulated Clouds & Azimuth Rays -->
           <canvas id="mapOverlayCanvas" class="absolute inset-0 h-full w-full pointer-events-none"></canvas>
 
+          <!-- Consolidated floating map overlays: legend, sandbox notice, cloud scrubber -->
+          <div class="map-overlays">
+
           <!-- Carto Sandbox Diagnostic Banner (Shown when Carto API mode is selected inside preview sandbox) -->
-          <div id="cartoSandboxNotice" class="hidden absolute top-3 right-3 z-30 max-w-xs glass-card rounded-xl p-2.5 text-[11px] border border-amber-500/50 shadow-xl">
+          <div id="cartoSandboxNotice" class="hidden max-w-xs glass-card rounded-xl p-2.5 text-[11px] border border-amber-500/50 shadow-xl">
             <div class="flex items-start justify-between gap-2">
               <div class="font-semibold text-amber-300 flex items-center gap-1">
                 <i data-icon="shield-check" class="w-3.5 h-3.5 shrink-0"></i>
@@ -435,7 +481,7 @@
           </div>
 
           <!-- Floating Legend for Azimuth Rays (Top-Left on Map) -->
-          <div id="mapAzimuthLegend" class="absolute top-3 left-12 z-30 glass-card rounded-xl p-2.5 text-[11px] space-y-1.5 pointer-events-none border border-slate-700/80 shadow-xl">
+          <div id="mapAzimuthLegend" class="glass-card rounded-xl p-2.5 text-[11px] space-y-1.5 pointer-events-none border border-slate-700/80 shadow-xl">
             <div class="font-semibold text-slate-200 mb-1">Vector Phương Vị trên Bản đồ</div>
             <div class="flex items-center gap-2">
               <span class="w-5 h-0.5 bg-amber-400 inline-block border-b border-dashed border-amber-400"></span>
@@ -452,7 +498,7 @@
           </div>
 
           <!-- Floating Simulated Cloud Scrubber & Legend (Bottom on Map) -->
-          <div id="himawariControlPanel" class="absolute bottom-3 left-3 right-3 z-30 glass-card rounded-xl p-2.5 border border-slate-700/80 shadow-xl flex flex-wrap items-center justify-between gap-3">
+          <div id="himawariControlPanel" class="glass-card rounded-xl p-2.5 border border-slate-700/80 shadow-xl flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2">
               <button
                 id="btnPlayRadarLoop"
@@ -498,6 +544,8 @@
               </div>
             </div>
           </div>
+          </div>
+          <!-- /map-overlays -->
         </div>
 
         <!-- Map Footer Instruction -->
@@ -510,23 +558,27 @@
       </div>
 
       <!-- RIGHT 5 COLS: TOP-DOWN SKY DOME ("VÒM NHÌN TỪ TRÊN XUỐNG"), 24H ELEVATION CURVE & EPHEMERIS -->
-      <div class="xl:col-span-5 flex flex-col gap-4">
+      <div class="workspace__side flex flex-col gap-4">
         
         <!-- Signature Top-Down Sky Dome Polar Chart + 24h Altitude Curve Switcher -->
         <div class="glass-card rounded-2xl p-4 border border-slate-800 flex flex-col items-center relative">
-          <div class="w-full flex items-center justify-between mb-2">
-            <div>
-              <h3 class="text-sm font-bold text-white flex items-center gap-1.5">
+          <div class="w-full flex items-center justify-between gap-3 mb-2">
+            <div class="min-w-0 flex-1">
+              <h3 class="card-heading">
                 <i data-icon="compass" class="w-4 h-4 text-fuchsia-400"></i>
-                Vòm Thiên Đỉnh 360° &amp; Quỹ Đạo Độ Cao 24h
+                <span>Vòm Thiên Đỉnh 360°</span>
               </h3>
               <p class="section-description">
                 Tâm = Thiên đỉnh (90°) · Vòng ngoài = Chân trời (0°) · Đã cộng khúc xạ khí quyển
               </p>
             </div>
-            <span id="domeDarknessBadge" class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-              Trời tối TV
-            </span>
+            <div id="domeDarknessBadge" class="dome-darkness-badge shrink-0 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <i data-icon="twilight" class="w-3.5 h-3.5 shrink-0"></i>
+              <div class="dome-darkness-badge__content flex flex-col text-left leading-none">
+                <span class="dome-darkness-badge__title font-semibold text-[11px] leading-tight whitespace-nowrap">Đêm Thiên Văn</span>
+                <span class="dome-darkness-badge__sub text-[9.5px] opacity-80 font-mono leading-tight whitespace-nowrap mt-0.5">(-18°)</span>
+              </div>
+            </div>
           </div>
 
           <!-- Responsive High-DPI Polar Canvas -->
@@ -579,9 +631,9 @@
         <!-- Detailed Astronomical Ephemeris Table (Sun, Moon, Twilight, Rise/Set) -->
         <div class="glass-card rounded-2xl p-4 border border-slate-800 flex-1 flex flex-col justify-between">
           <div class="flex items-center justify-between mb-2.5">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+            <h3 class="card-heading">
               <i data-icon="clock" class="w-4 h-4 text-cyan-400"></i>
-              Lịch Thiên Văn Chi Tiết Trong Ngày (Ephemeris)
+              <span>Lịch Thiên Văn Trong Ngày</span>
             </h3>
             <span id="ephemerisDateLabel" class="text-[11px] font-mono text-slate-400">--/--/----</span>
           </div>
@@ -621,9 +673,9 @@
     <section id="weatherMatrixSection" class="glass-card rounded-2xl p-4 border border-slate-800">
       <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div>
-          <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+          <h3 class="card-heading">
             <i data-icon="layers" class="w-4 h-4 text-cyan-400"></i>
-            Ma Trận Phân Tầng Mây, Điểm Sương &amp; Chỉ Số Săn Ảnh (Open-Meteo Hourly)
+            <span>Ma Trận Phân Tầng Mây</span>
           </h3>
           <p class="section-description">
             Nhấp vào bất kỳ cột giờ nào để đồng bộ Bản đồ Phương vị &amp; Vòm Thiên Đỉnh tới thời điểm đó · Cảnh báo đọng sương lens khi <code class="text-rose-300 font-mono">Nhiệt độ - Điểm sương ≤ 2.5°C</code>
@@ -638,7 +690,7 @@
 
       <!-- Horizontal Scrollable Weather & Astro Matrix Table -->
       <div id="weatherMatrixScroll" class="overflow-x-auto rounded-xl border border-slate-800/90 bg-slate-950/60">
-        <table id="weatherMatrixTable" class="w-full text-left border-collapse select-none">
+        <table id="weatherMatrixTable" class="w-full text-left select-none border-separate border-spacing-0">
           <tbody id="weatherMatrixBody" class="divide-y divide-slate-800/70 text-[11px] font-mono">
             <!-- Populated dynamically with 24 hourly columns for the active day -->
           </tbody>
@@ -685,9 +737,9 @@
               Tà Xùa · Bortle 3.5 · 1,865m
             </span>
           </div>
-          <h3 id="cameraSetupTitle" class="text-base sm:text-lg font-bold text-white mt-1 flex items-center gap-2">
-            <i data-icon="camera" class="w-5 h-5 text-fuchsia-400"></i>
-            Hướng Dẫn Setup Chụp Thiên Văn &amp; Săn Ảnh Theo Địa Điểm
+          <h3 id="cameraSetupTitle" class="card-heading mt-1">
+            <i data-icon="camera" class="w-4 h-4 text-fuchsia-400"></i>
+            <span>Hướng Dẫn Setup Chụp Thiên Văn</span>
           </h3>
           <p id="cameraSetupDescription" class="section-description">
             Thông số tiêu cự, khẩu độ, tốc độ phơi sáng (Quy tắc NPF/500) &amp; ISO được tính toán tự động theo cấp độ tối Bortle và điều kiện thời tiết tại điểm đang chọn.
@@ -695,12 +747,12 @@
         </div>
 
         <!-- Event Type Selector + Gear Platform Switcher -->
-        <div id="cameraSetupControls" class="flex flex-wrap items-center gap-2">
+        <div id="cameraSetupControls" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <!-- Astronomical Event / Scene Selector -->
-          <div id="setupEventControl" class="flex items-center gap-1.5 bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-1.5">
-            <i data-icon="sparkles" class="w-3.5 h-3.5 text-violet-400"></i>
-            <span class="text-[11px] text-slate-400">Sự kiện:</span>
-            <select id="selectSetupEventType" class="bg-transparent text-xs font-semibold text-violet-200 focus:outline-none">
+          <div id="setupEventControl" class="flex items-center gap-1.5 bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-1.5 shrink-0">
+            <i data-icon="sparkles" class="w-3.5 h-3.5 text-violet-400 shrink-0"></i>
+            <span class="text-[11px] sm:text-xs text-slate-400 whitespace-nowrap font-medium">Sự kiện:</span>
+            <select id="selectSetupEventType" class="bg-transparent text-xs font-semibold text-violet-200 focus:outline-none cursor-pointer">
               <option value="milkyway">Dải Ngân Hà</option>
               <option value="deepsky">Thiên Hà &amp; Tinh Vân</option>
               <option value="meteor">Sao Băng &amp; Vệt Sao</option>
@@ -713,24 +765,27 @@
           <div id="gearModeControls" class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
             <button
               data-gear-mode="fullframe"
-              class="gear-tab-btn px-3 py-1.5 rounded-lg font-semibold bg-violet-600 text-white flex items-center gap-1.5 transition"
+              class="gear-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg font-semibold bg-violet-600 text-white flex items-center justify-center gap-1.5 transition"
             >
-              <i data-icon="aperture" class="w-5 h-5"></i>
-              <span>Máy ảnh Full-Frame</span>
+              <i data-icon="aperture" class="w-4 h-4 shrink-0"></i>
+              <span class="sm:hidden">Full-Frame</span>
+              <span class="hidden sm:inline">Máy ảnh Full-Frame</span>
             </button>
             <button
               data-gear-mode="iphone18pro"
-              class="gear-tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white flex items-center gap-1.5 transition"
+              class="gear-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition"
             >
-              <i data-icon="smartphone" class="w-5 h-5"></i>
-              <span>iPhone 18 Pro</span>
+              <i data-icon="smartphone" class="w-4 h-4 shrink-0"></i>
+              <span class="sm:hidden">iPhone</span>
+              <span class="hidden sm:inline">iPhone 18 Pro</span>
             </button>
             <button
               data-gear-mode="androidflagship"
-              class="gear-tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white flex items-center gap-1.5 transition"
+              class="gear-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition"
             >
-              <i data-icon="cpu" class="w-5 h-5"></i>
-              <span>Android Flagship</span>
+              <i data-icon="cpu" class="w-4 h-4 shrink-0"></i>
+              <span class="sm:hidden">Android</span>
+              <span class="hidden sm:inline">Android Flagship</span>
             </button>
           </div>
         </div>
@@ -742,58 +797,81 @@
       </div>
     </section>
 
-    <!-- CURATED VIETNAM ASTRO & LANDSCAPE SPOTS SHOWCASE SECTION -->
-    <section class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-800 mb-6">
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <div>
-          <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-            <i data-icon="mountain-snow" class="w-5 h-5 text-violet-400"></i>
-            Danh Bạ Điểm Săn Ngân Hà, Bình Minh &amp; Biển Mây Việt Nam
-          </h3>
-          <p class="section-description">
-            Chọn nhanh tọa độ các điểm săn ảnh nổi tiếng khắp 3 miền hoặc thêm địa điểm bí mật của riêng bạn
-          </p>
-        </div>
+  </main>
 
-        <!-- Region Filter Pills -->
-        <div class="flex items-center gap-1.5 flex-wrap">
-          <button data-region-filter="all" class="region-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-violet-600 text-white transition">
+  <!-- MODAL: CURATED & COMMUNITY SPOTS DIRECTORY ("ĐỊA ĐIỂM SĂN ẢNH") -->
+  <div id="modalSpotsDirectory" class="tool-modal fixed inset-0 z-[2000] hidden items-center justify-center bg-black/75 backdrop-blur-md p-3 sm:p-5" role="dialog" aria-modal="true" aria-labelledby="spotsDirectoryTitle">
+    <div class="tool-modal__panel liquid-glass rounded-3xl max-w-5xl w-full max-h-[88vh] flex flex-col overflow-hidden">
+      <!-- Header -->
+      <div class="tool-modal__header tool-screen-header p-4 sm:p-5 border-b border-white/15 flex items-center justify-between gap-3">
+        <div class="tool-screen-heading flex items-center gap-3">
+          <div class="tool-screen-icon w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-violet-600/30 shrink-0">
+            <i data-icon="compass" class="w-5 h-5"></i>
+          </div>
+          <div class="min-w-0">
+            <h3 id="spotsDirectoryTitle" class="text-base sm:text-lg font-extrabold text-white">Điểm Săn Ảnh</h3>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button
+            id="btnToggleDeleteSpotMode"
+            type="button"
+            class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-500/40 text-xs font-medium flex items-center gap-1.5 transition cursor-pointer"
+            title="Bật/tắt chế độ xoá địa điểm"
+          >
+            <i data-icon="trash-2" class="w-3.5 h-3.5 text-rose-400"></i>
+            <span id="labelDeleteSpotMode" class="hidden sm:inline">Xoá địa điểm</span>
+          </button>
+          <button id="btnCloseSpotsDirectoryModal" type="button" aria-label="Đóng danh bạ địa điểm" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 transition shrink-0">
+            <i data-icon="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Subbar Ribbon: Region Filter Pills -->
+      <div class="tool-modal__subbar px-4 sm:px-5 py-2.5 bg-slate-950/50 border-b border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div id="spotsRegionFilters" class="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
+          <button data-region-filter="all" class="region-filter-btn is-active shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-violet-600 text-white transition">
             Tất cả (<span id="countAllSpots">10</span>)
           </button>
-          <button data-region-filter="Miền Bắc" class="region-filter-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/90 text-slate-300 hover:text-white transition">
+          <button data-region-filter="Miền Bắc" class="region-filter-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/10 text-slate-300 hover:text-white transition">
             Miền Bắc
           </button>
-          <button data-region-filter="Miền Trung & Tây Nguyên" class="region-filter-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/90 text-slate-300 hover:text-white transition">
+          <button data-region-filter="Miền Trung & Tây Nguyên" class="region-filter-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/10 text-slate-300 hover:text-white transition">
             Miền Trung &amp; Tây Nguyên
           </button>
-          <button data-region-filter="Miền Nam" class="region-filter-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/90 text-slate-300 hover:text-white transition">
+          <button data-region-filter="Miền Nam" class="region-filter-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/10 text-slate-300 hover:text-white transition">
             Miền Nam
           </button>
-          <button data-region-filter="favorites" class="region-filter-btn px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/90 text-amber-300 hover:text-amber-200 transition">
+          <button data-region-filter="favorites" class="region-filter-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/10 text-amber-300 hover:text-amber-200 transition">
             Yêu thích (<span id="countFavoriteSpots">0</span>)
           </button>
         </div>
+        <div id="spotsSubbarHint" class="flex items-center gap-1.5 text-[11px] text-cyan-300 shrink-0">
+          <i data-icon="sparkles" class="w-3.5 h-3.5 text-cyan-400 shrink-0"></i>
+          <span id="spotsSubbarHintText">Chọn địa điểm để xem dự báo &amp; cập nhật thông số chụp</span>
+        </div>
       </div>
 
-      <!-- Grid of Spot Cards -->
-      <div id="spotsGridContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        <!-- Dynamically rendered by JS -->
+      <!-- Spots Grid Container inside modal body -->
+      <div class="tool-modal__body p-3.5 sm:p-5 overflow-y-auto">
+        <div id="spotsGridContainer" class="spots-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Dynamically rendered by renderSpotsDirectoryGrid() -->
+        </div>
       </div>
-    </section>
-
-  </main>
+    </div>
+  </div>
 
   <!-- MODAL 1: CONTRIBUTE NEW PHOTOGRAPHY SPOT ("ĐÓNG GÓP ĐỊA ĐIỂM") -->
-  <div id="modalContributeSpot" class="fixed inset-0 z-[2000] hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-    <div class="glass-card rounded-2xl max-w-lg w-full p-5 border border-slate-700 shadow-2xl">
-      <div class="tool-screen-header flex items-center justify-between pb-3 border-b border-slate-800">
+  <div id="modalContributeSpot" class="tool-modal fixed inset-0 z-[2000] hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div class="tool-modal__panel glass-card rounded-2xl max-w-lg w-full p-5 border border-slate-700 shadow-2xl flex flex-col">
+      <div class="tool-modal__header tool-screen-header flex items-center justify-between pb-3 border-b border-slate-800">
         <div class="tool-screen-heading flex items-center gap-2">
           <div class="tool-screen-icon w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
             <i data-icon="map-pin-plus" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">
             <h3 class="text-base font-bold text-white">Đóng Góp Điểm Săn Ảnh Mới</h3>
-            <p class="text-[11px] text-slate-400">Lưu vào danh bạ cá nhân &amp; hiển thị trực tiếp trên bản đồ SkyRadar</p>
           </div>
         </div>
         <button id="btnCloseContributeModal" type="button" aria-label="Đóng cửa sổ đóng góp" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 transition">
@@ -801,7 +879,7 @@
         </button>
       </div>
 
-      <form id="formContributeSpot" class="space-y-3 mt-4 text-xs">
+      <form id="formContributeSpot" class="tool-modal__body space-y-3 mt-4 text-xs">
         <div>
           <label class="block text-slate-300 font-medium mb-1">Tên địa điểm săn ảnh *</label>
           <input id="inputSpotName" type="text" required placeholder="VD: Đỉnh Phia Oắc (Cao Bằng)" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-violet-500" />
@@ -849,7 +927,7 @@
           <textarea id="inputSpotNotes" rows="2" placeholder="VD: Hướng Đông Nam thoáng đãng, hợp săn biển mây tháng 10-3 và Ngân Hà..." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none"></textarea>
         </div>
 
-        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+        <div class="tool-modal__footer flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
           <button type="button" id="btnCancelContribute" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-medium">
             Hủy
           </button>
@@ -862,7 +940,7 @@
   </div>
 
   <!-- MODAL 2: FULL-STACK BACKEND ARCHITECTURE & API SOURCE CODE -->
-  <div id="modalBackendArchitecture" class="fixed inset-0 z-[2000] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+  <div id="modalBackendArchitecture" class="fixed inset-0 z-[2200] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
     <div class="glass-card rounded-2xl max-w-4xl w-full max-h-[88vh] flex flex-col border border-slate-700 shadow-2xl overflow-hidden">
       <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-2.5">
@@ -978,7 +1056,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
   </div>
 
   <!-- MODAL 3: CARTO GIS API KEY MANAGER & TELEMETRY -->
-  <div id="modalCartoConfig" class="fixed inset-0 z-[2000] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+  <div id="modalCartoConfig" class="fixed inset-0 z-[2200] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
     <div class="glass-card rounded-2xl max-w-lg w-full p-5 border border-amber-500/40 shadow-2xl">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <div class="flex items-center gap-2.5">
@@ -1037,7 +1115,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
           </div>
         </div>
 
-        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+        <div class="tool-modal__footer flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
           <button type="button" id="btnSaveCartoApiKey" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shadow-lg shadow-amber-500/20 transition">
             Áp dụng Carto API Key &amp; Tải lại Bản đồ
           </button>
@@ -1047,57 +1125,54 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
   </div>
 
   <!-- MODAL 4: ASTRONOMICAL EVENTS & BEST SPOTS PREDICTOR CALENDAR ("LỊCH THIÊN VĂN") -->
-  <div id="modalAstroCalendar" class="fixed inset-0 z-[2000] hidden items-center justify-center bg-black/75 backdrop-blur-md p-3 sm:p-5">
-    <div class="liquid-glass rounded-3xl max-w-5xl w-full max-h-[88vh] flex flex-col overflow-hidden">
-      <div class="tool-screen-header p-4 sm:p-5 border-b border-white/15 flex items-center justify-between gap-3">
+  <div id="modalAstroCalendar" class="tool-modal fixed inset-0 z-[2000] hidden items-center justify-center bg-black/75 backdrop-blur-md p-3 sm:p-5">
+    <div class="tool-modal__panel liquid-glass rounded-3xl max-w-5xl w-full max-h-[88vh] flex flex-col overflow-hidden">
+      <div class="tool-modal__header tool-screen-header p-4 sm:p-5 border-b border-white/15 flex items-center justify-between gap-3">
         <div class="tool-screen-heading flex items-center gap-3">
-          <div class="tool-screen-icon w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white flex items-center justify-center shadow-lg shadow-violet-600/30">
+          <div class="tool-screen-icon w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white flex items-center justify-center shadow-lg shadow-violet-600/30 shrink-0">
             <i data-icon="calendar-heart" class="w-5 h-5"></i>
           </div>
           <div class="min-w-0">
-            <h3 class="text-base sm:text-lg font-extrabold text-white">Lịch Thiên Văn &amp; Dự Đoán Điểm Săn Ảnh Lý Tưởng</h3>
-            <p class="text-xs text-slate-300">
-              Dự báo thời điểm &amp; gợi ý địa điểm tốt nhất để săn Dải Ngân Hà, Biển Mây, Mưa Sao Băng, Trăng &amp; Ráng Đỏ
-            </p>
+            <h3 class="text-base sm:text-lg font-extrabold text-white">Lịch Thiên Văn</h3>
           </div>
         </div>
-        <button id="btnCloseAstroCalendarModal" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 transition">
+        <button id="btnCloseAstroCalendarModal" aria-label="Đóng lịch thiên văn" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 transition shrink-0">
           <i data-icon="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- Filter Tabs by Event Category -->
-      <div class="px-4 sm:px-5 py-3 bg-slate-950/40 border-b border-white/10 flex items-center justify-between flex-wrap gap-2">
-        <div class="flex items-center gap-1.5 flex-wrap">
-          <button data-cal-filter="all" class="cal-filter-btn px-3 py-1 rounded-xl text-xs font-semibold bg-violet-600 text-white transition">Tất cả sự kiện</button>
-          <button data-cal-filter="milkyway" class="cal-filter-btn px-3 py-1 rounded-xl text-xs font-medium bg-white/10 text-slate-300 hover:text-white transition"><i data-icon="milky-way" class="w-3.5 h-3.5 inline-block align-[-3px]"></i> Săn Ngân Hà</button>
-          <button data-cal-filter="cloudsea" class="cal-filter-btn px-3 py-1 rounded-xl text-xs font-medium bg-white/10 text-slate-300 hover:text-white transition"><i data-icon="cloud" class="w-3.5 h-3.5 inline-block align-[-3px]"></i> Săn Biển Mây</button>
-          <button data-cal-filter="meteor" class="cal-filter-btn px-3 py-1 rounded-xl text-xs font-medium bg-white/10 text-slate-300 hover:text-white transition"><i data-icon="meteor" class="w-3.5 h-3.5 inline-block align-[-3px]"></i> Mưa Sao Băng</button>
-          <button data-cal-filter="moon" class="cal-filter-btn px-3 py-1 rounded-xl text-xs font-medium bg-white/10 text-slate-300 hover:text-white transition"><i data-icon="moon" class="w-3.5 h-3.5 inline-block align-[-3px]"></i> Sự Kiện Mặt Trăng</button>
+      <!-- Filter Tabs by Event Category (Auto-Layout Horizontal Ribbon on Mobile) -->
+      <div class="tool-modal__subbar cal-subbar px-4 sm:px-5 py-2.5 bg-slate-950/50 border-b border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div class="cal-filter-ribbon flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
+          <button data-cal-filter="all" class="cal-filter-btn is-active shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-violet-600 text-white transition">Tất cả sự kiện</button>
+          <button data-cal-filter="milkyway" class="cal-filter-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/10 text-slate-300 hover:text-white transition"><i data-icon="milky-way" class="w-3.5 h-3.5 inline-block align-[-2px] mr-1"></i>Săn Ngân Hà</button>
+          <button data-cal-filter="cloudsea" class="cal-filter-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/10 text-slate-300 hover:text-white transition"><i data-icon="cloud" class="w-3.5 h-3.5 inline-block align-[-2px] mr-1"></i>Săn Biển Mây</button>
+          <button data-cal-filter="meteor" class="cal-filter-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/10 text-slate-300 hover:text-white transition"><i data-icon="meteor" class="w-3.5 h-3.5 inline-block align-[-2px] mr-1"></i>Mưa Sao Băng</button>
+          <button data-cal-filter="moon" class="cal-filter-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/10 text-slate-300 hover:text-white transition"><i data-icon="moon" class="w-3.5 h-3.5 inline-block align-[-2px] mr-1"></i>Sự Kiện Mặt Trăng</button>
         </div>
-        <span class="text-[11px] font-mono text-cyan-300">Nhấp vào địa điểm gợi ý để bay tới &amp; nạp sẵn thông số chụp</span>
+        <div class="cal-subbar-hint flex items-center gap-1.5 text-[11px] text-cyan-300 shrink-0">
+          <i data-icon="sparkles" class="w-3.5 h-3.5 text-cyan-400 shrink-0"></i>
+          <span>Nhấp địa điểm gợi ý để bay tới &amp; nạp sẵn thông số chụp</span>
+        </div>
       </div>
 
-      <!-- Events List Grid -->
-      <div id="astroCalendarEventsGrid" class="p-4 sm:p-5 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+      <!-- Events List Grid (Auto-Layout Packed Grid) -->
+      <div id="astroCalendarEventsGrid" class="tool-modal__body p-3.5 sm:p-5 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs content-start">
         <!-- Populated dynamically by renderAstroCalendarModal() -->
       </div>
     </div>
   </div>
 
   <!-- MODAL 5: LIQUID GLASS USER GUIDE ("HƯỚNG DẪN SỬ DỤNG CHI TIẾT") -->
-  <div id="modalUserGuide" class="fixed inset-0 z-[2000] hidden items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-5">
-    <div class="liquid-glass rounded-3xl max-w-4xl w-full max-h-[88vh] flex flex-col overflow-hidden">
-      <div class="tool-screen-header p-4 sm:p-5 border-b border-white/15 flex items-center justify-between gap-3">
+  <div id="modalUserGuide" class="tool-modal fixed inset-0 z-[2000] hidden items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-5">
+    <div class="tool-modal__panel liquid-glass rounded-3xl max-w-4xl w-full max-h-[88vh] flex flex-col overflow-hidden">
+      <div class="tool-modal__header tool-screen-header p-4 sm:p-5 border-b border-white/15 flex items-center justify-between gap-3">
         <div class="tool-screen-heading flex items-center gap-3">
           <div class="tool-screen-icon w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/30">
             <i data-icon="book-open" class="w-5 h-5"></i>
           </div>
           <div class="min-w-0">
-            <h3 class="text-base sm:text-lg font-extrabold text-white">Cẩm Nang Hướng Dẫn Sử Dụng StarWatch</h3>
-            <p class="text-xs text-slate-300">
-              Cách đọc nhanh các chỉ số thiên văn, bản đồ phương vị, phân tầng mây và thông số chụp thực địa
-            </p>
+            <h3 class="text-base sm:text-lg font-extrabold text-white">Cẩm Nang</h3>
           </div>
         </div>
         <button id="btnCloseGuideModal" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 transition">
@@ -1105,7 +1180,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         </button>
       </div>
 
-      <div class="p-5 overflow-y-auto space-y-4 text-xs leading-relaxed text-slate-200">
+      <div class="tool-modal__body p-5 overflow-y-auto space-y-4 text-xs leading-relaxed text-slate-200">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Guide Box 1 -->
           <div class="p-4 rounded-2xl bg-white/5 border border-white/15 space-y-2">
@@ -1160,34 +1235,43 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         </div>
       </div>
 
-      <div class="p-4 border-t border-white/15 bg-slate-950/50 flex items-center justify-between text-xs">
-        <span class="text-slate-400"><i data-icon="lightbulb" class="w-3.5 h-3.5 inline-block align-[-3px]"></i> Mẹo: Bạn có thể bật chế độ <strong class="text-red-400">Đèn Đỏ (Night Vision)</strong> trong phần Cài đặt khi đang chụp đêm ngoài thực địa.</span>
-        <button id="btnAcknowledgeGuide" class="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 text-white font-bold shadow-lg">
-          <span class="guide-acknowledge-full">Đã hiểu · Bắt đầu khám phá</span>
-          <span class="guide-acknowledge-mobile">Đã hiểu</span>
+      <div class="tool-modal__footer p-3 sm:p-4 border-t border-white/15 bg-slate-950/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 text-xs">
+        <div class="guide-footer-tip flex items-start sm:items-center gap-2.5 p-2.5 sm:p-0 rounded-xl sm:rounded-none bg-slate-900/70 sm:bg-transparent border border-slate-800/80 sm:border-0 text-slate-300 min-w-0 flex-1">
+          <i data-icon="lightbulb" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5 sm:mt-0"></i>
+          <span class="guide-footer-tip-text text-[11px] sm:text-xs leading-relaxed text-slate-300">
+            Mẹo: Bạn có thể bật chế độ <strong class="text-rose-400 font-semibold">Đèn Đỏ (Night Vision)</strong> trong phần Cài đặt khi đang chụp đêm ngoài thực địa.
+          </span>
+        </div>
+        <button
+          id="btnAcknowledgeGuide"
+          class="hold-confirm w-full sm:w-auto shrink-0 min-h-[40px] sm:min-h-[36px] px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-white font-bold text-xs shadow-lg shadow-violet-600/25 flex items-center justify-center gap-1.5 transition active:scale-[0.99] cursor-pointer"
+          title="Nhấn giữ để đóng cẩm nang"
+          aria-label="Nhấn giữ để đóng cẩm nang"
+        >
+          <i data-icon="sparkles" class="w-3.5 h-3.5 text-cyan-200"></i>
+          <span>Đã hiểu · Nhấn giữ</span>
         </button>
       </div>
     </div>
   </div>
 
   <!-- APP INFORMATION MODAL -->
-  <div id="modalAppInfo" class="fixed inset-0 z-[2200] hidden items-center justify-center bg-black/75 backdrop-blur-md p-4" role="dialog" aria-modal="true" aria-labelledby="appInfoTitle">
-    <div class="liquid-glass rounded-3xl max-w-md w-full overflow-hidden">
-      <div class="p-5 border-b border-white/15 flex items-center justify-between gap-3">
+  <div id="modalAppInfo" class="tool-modal fixed inset-0 z-[2200] hidden items-center justify-center bg-black/75 backdrop-blur-md p-4" role="dialog" aria-modal="true" aria-labelledby="appInfoTitle">
+    <div class="tool-modal__panel liquid-glass rounded-3xl max-w-md w-full flex flex-col overflow-hidden">
+      <div class="tool-modal__header tool-screen-header p-5 border-b border-white/15 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-600/30 shrink-0">
             <i data-icon="starwatch-mark" class="starwatch-brand-mark w-6 h-6 text-white"></i>
           </div>
           <div class="min-w-0">
             <h2 id="appInfoTitle" class="text-lg font-extrabold text-white">StarWatch</h2>
-            <p class="text-xs text-slate-400">Thông tin ứng dụng</p>
           </div>
         </div>
         <button id="btnCloseAppInfo" type="button" aria-label="Đóng thông tin ứng dụng" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 transition shrink-0">
           <i data-icon="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <div class="p-5 space-y-4 text-sm">
+      <div class="tool-modal__body p-5 space-y-4 text-sm overflow-y-auto">
         <div class="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-3">
           <div class="flex items-center justify-between gap-3">
             <span class="text-slate-400">Tác giả</span>
@@ -1221,16 +1305,15 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
   </div>
 
   <!-- MODAL 6: UNIFIED SETTINGS MODAL ("CÀI ĐẶT": THEME, CARTO API KEY, BACKEND ARCHITECTURE) -->
-  <div id="modalSettings" class="fixed inset-0 z-[2000] hidden items-center justify-center bg-black/75 backdrop-blur-md p-3 sm:p-5">
-    <div class="liquid-glass rounded-3xl max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden">
-      <div class="tool-screen-header p-4 sm:p-5 border-b border-white/15 flex items-center justify-between">
+  <div id="modalSettings" class="tool-modal fixed inset-0 z-[2000] hidden items-center justify-center bg-black/75 backdrop-blur-md p-3 sm:p-5">
+    <div class="tool-modal__panel liquid-glass rounded-3xl max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden">
+      <div class="tool-modal__header tool-screen-header p-4 sm:p-5 border-b border-white/15 flex items-center justify-between">
         <div class="tool-screen-heading flex items-center gap-3">
           <div class="tool-screen-icon w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center">
             <i data-icon="settings" class="w-5 h-5"></i>
           </div>
           <div class="min-w-0">
-            <h3 class="text-base sm:text-lg font-extrabold text-white">Cài Đặt Hệ Thống StarWatch</h3>
-            <p class="text-xs text-slate-300">Chế độ giao diện, quản lý khóa Carto GIS API &amp; Kiến trúc Backend</p>
+            <h3 class="text-base sm:text-lg font-extrabold text-white">Cài Đặt</h3>
           </div>
         </div>
         <button id="btnCloseSettingsModal" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 transition">
@@ -1238,7 +1321,7 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
         </button>
       </div>
 
-      <div id="settingsModalBody" class="p-5 overflow-y-auto space-y-5 text-xs">
+      <div id="settingsModalBody" class="tool-modal__body p-5 overflow-y-auto space-y-5 text-xs">
         <!-- Section 1: Theme & Field Night-Vision Switcher -->
         <div class="p-4 rounded-2xl bg-white/5 border border-white/15 space-y-3">
           <div class="flex items-center justify-between">
@@ -1351,15 +1434,20 @@ app.listen(process.env.PORT || 4000, () => console.log('SkyRadar VN API listenin
   </div>
 
   <!-- FOOTER -->
-  <footer class="border-t border-slate-800/80 py-4 px-4 sm:px-6 text-center text-xs text-slate-500">
-    <div id="footerInner" class="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-      <div id="footerBrand">
-        <strong class="text-slate-300">StarWatch</strong> — Chạm vào Vũ Trụ · Bắt trọn Khoảnh Khắc Bầu Trời
-      </div>
-      <div id="footerMeta" class="flex items-center gap-4">
-        <span class="footer-meta-item"><span>Khí tượng:</span> <strong class="text-slate-400">Open-Meteo API</strong></span>
-        <span class="footer-meta-item"><span>Thiên văn:</span> <strong class="text-slate-400">VSOP87 / Stellarium Refraction Engine</strong></span>
-        <span class="footer-meta-item"><span>Ô nhiễm sáng:</span> <strong class="text-slate-400">VIIRS Bortle Scale</strong></span>
+  <footer id="appFooter" class="footer-section my-4 sm:my-6">
+    <div class="page-shell">
+      <div
+        id="footerInner"
+        class="border-t border-slate-800/80 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-center text-xs text-slate-500"
+      >
+        <div id="footerBrand" class="min-w-0">
+          <strong class="text-slate-300">StarWatch</strong> — Chạm vào Vũ Trụ · Bắt trọn Khoảnh Khắc Bầu Trời
+        </div>
+        <div id="footerMeta" class="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-1">
+          <span class="footer-meta-item"><span>Khí tượng:</span> <strong class="text-slate-400">Open-Meteo API</strong></span>
+          <span class="footer-meta-item"><span>Thiên văn:</span> <strong class="text-slate-400">VSOP87 / Stellarium Refraction Engine</strong></span>
+          <span class="footer-meta-item"><span>Ô nhiễm sáng:</span> <strong class="text-slate-400">VIIRS Bortle Scale</strong></span>
+        </div>
       </div>
     </div>
   </footer>

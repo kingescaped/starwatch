@@ -26,5 +26,6 @@ export const state = {
   // Camera Setup & Calendar state
   selectedGearMode: 'fullframe', // 'fullframe' | 'iphone18pro' | 'androidflagship'
   selectedSetupEvent: 'milkyway', // 'milkyway' | 'deepsky' | 'meteor' | 'moon' | 'cloudsea'
-  activeCalendarFilter: 'all'
+  activeCalendarFilter: 'all',
+  isDeleteSpotMode: false
 };

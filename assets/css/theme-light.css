@@ -188,3 +188,299 @@ html.light-theme .leaflet-popup-tip {
   border-color: #cbd5e1;
   box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2) !important;
 }
+
+html.light-theme #weatherMatrixTable .matrix-row-label {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-right-color: #cbd5e1 !important;
+  box-shadow: 2px 0 6px -1px rgba(15, 23, 42, 0.08);
+}
+
+html.light-theme #timePresets,
+html.light-theme #timelineControls {
+  border-bottom-color: #cbd5e1 !important;
+}
+
+html.light-theme .card-heading {
+  color: #0f172a !important;
+}
+
+html.light-theme .subcard-heading {
+  color: #334155 !important;
+}
+
+html.light-theme .section-description {
+  color: #475569 !important;
+  border-left-color: rgba(71, 85, 105, 0.4) !important;
+}
+
+html.light-theme #datePickerControl,
+html.light-theme #celestialTargetControl,
+html.light-theme #setupEventControl {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light-theme #datePickerControl:hover,
+html.light-theme #celestialTargetControl:hover,
+html.light-theme #setupEventControl:hover {
+  border-color: #a855f7 !important;
+}
+
+html.light-theme #celestialTargetControl > span,
+html.light-theme #setupEventControl > span {
+  color: #475569 !important;
+}
+
+html.light-theme #selectCelestialTarget,
+html.light-theme #selectSetupEventType {
+  color: #4c1d95 !important;
+}
+
+html.light-theme #datePickerControl input,
+html.light-theme #datePickerInput {
+  color: #0f172a !important;
+}
+
+html.light-theme #selectCelestialTarget option,
+html.light-theme #selectSetupEventType option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+html.light-theme #gearModeControls {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light-theme #gearModeControls .gear-tab-btn:not(.bg-violet-600) {
+  color: #64748b !important;
+  background: transparent !important;
+}
+
+html.light-theme #gearModeControls .gear-tab-btn:not(.bg-violet-600):hover {
+  color: #0f172a !important;
+}
+
+/* ==========================================================================
+   BORTLE SCALE DYNAMIC PALETTE (LIGHT THEME OVERRIDES)
+   ========================================================================== */
+
+html.light-theme .bortle-badge--tier-1,
+html.light-theme .bortle-pill--tier-1 {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(5, 150, 105, 0.4) !important;
+  color: #047857 !important;
+}
+
+html.light-theme .bortle-badge--tier-2,
+html.light-theme .bortle-pill--tier-2 {
+  background-color: rgba(132, 204, 22, 0.15) !important;
+  border-color: rgba(101, 163, 13, 0.4) !important;
+  color: #4d7c0f !important;
+}
+
+html.light-theme .bortle-badge--tier-3,
+html.light-theme .bortle-pill--tier-3 {
+  background-color: rgba(234, 179, 8, 0.15) !important;
+  border-color: rgba(202, 138, 4, 0.4) !important;
+  color: #a16207 !important;
+}
+
+html.light-theme .bortle-badge--tier-4,
+html.light-theme .bortle-pill--tier-4 {
+  background-color: rgba(249, 115, 22, 0.15) !important;
+  border-color: rgba(234, 88, 12, 0.4) !important;
+  color: #c2410c !important;
+}
+
+html.light-theme .bortle-badge--tier-5,
+html.light-theme .bortle-pill--tier-5 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(220, 38, 38, 0.4) !important;
+  color: #b91c1c !important;
+}
+
+html.light-theme .bortle-dot--tier-1 { background-color: #059669 !important; }
+html.light-theme .bortle-dot--tier-2 { background-color: #65a30d !important; }
+html.light-theme .bortle-dot--tier-3 { background-color: #ca8a04 !important; }
+html.light-theme .bortle-dot--tier-4 { background-color: #ea580c !important; }
+html.light-theme .bortle-dot--tier-5 { background-color: #dc2626 !important; }
+
+html.light-theme .bortle-text--tier-1 { color: #047857 !important; }
+html.light-theme .bortle-text--tier-2 { color: #4d7c0f !important; }
+html.light-theme .bortle-text--tier-3 { color: #a16207 !important; }
+html.light-theme .bortle-text--tier-4 { color: #c2410c !important; }
+html.light-theme .bortle-text--tier-5 { color: #b91c1c !important; }
+
+/* ==========================================================================
+   UNIVERSAL SEARCH DROPDOWN (LIGHT THEME OVERRIDES)
+   ========================================================================== */
+
+html.light-theme .search-dropdown {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(203, 213, 225, 0.95);
+  box-shadow:
+    0 20px 40px -10px rgba(15, 23, 42, 0.18),
+    0 10px 20px -5px rgba(15, 23, 42, 0.1),
+    0 0 0 1px rgba(109, 40, 217, 0.15);
+}
+
+html.light-theme .search-dropdown__section {
+  background: rgba(241, 245, 249, 0.95);
+  border-bottom-color: #cbd5e1;
+}
+
+html.light-theme .search-dropdown__item {
+  border-bottom-color: rgba(226, 232, 240, 0.8);
+}
+
+html.light-theme .search-dropdown__item:hover {
+  background-color: rgba(109, 40, 217, 0.06);
+}
+
+html.light-theme .search-dropdown__item-title {
+  color: #0f172a;
+}
+
+html.light-theme .search-dropdown__item-subtitle {
+  color: #64748b;
+}
+
+html.light-theme .search-dropdown__item-elev {
+  color: #b45309;
+}
+
+html.light-theme .search-dropdown__coord-item {
+  background: rgba(109, 40, 217, 0.05);
+  border-bottom-color: rgba(226, 232, 240, 0.8);
+}
+
+html.light-theme .search-dropdown__coord-item:hover {
+  background: rgba(109, 40, 217, 0.1);
+}
+
+html.light-theme .search-dropdown__empty {
+  color: #64748b;
+}
+
+/* ==========================================================================
+   ASTRONOMICAL CALENDAR MODAL (LIGHT THEME OVERRIDES)
+   ========================================================================== */
+
+html.light-theme .cal-subbar {
+  background: #f8fafc !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+
+html.light-theme .cal-filter-btn:not(.is-active) {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+html.light-theme .cal-filter-btn:not(.is-active):hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html.light-theme .cal-subbar-hint {
+  color: #0369a1 !important;
+}
+
+html.light-theme .astro-event-card {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06) !important;
+}
+
+html.light-theme .astro-event-card__title {
+  color: #0f172a !important;
+}
+
+html.light-theme .astro-event-card__desc {
+  color: #475569 !important;
+}
+
+html.light-theme .cal-jump-spot-btn {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+
+html.light-theme .cal-jump-spot-btn:hover {
+  background: #ede9fe !important;
+  border-color: #a78bfa !important;
+  color: #5b21b6 !important;
+}
+
+/* User Guide Modal Footer (Light Theme) */
+html.light-theme .tool-modal__footer {
+  background: rgba(248, 250, 252, 0.96) !important;
+  border-top-color: #e2e8f0 !important;
+}
+
+html.light-theme .guide-footer-tip {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light-theme .guide-footer-tip-text {
+  color: #334155 !important;
+}
+
+/* Spots Directory Modal Card & Subbar (Light Theme) */
+html.light-theme .spot-card-item {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light-theme .spot-card-item:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08) !important;
+}
+
+html.light-theme .spot-card-item h4 {
+  color: #0f172a !important;
+}
+
+html.light-theme .spot-card-item p {
+  color: #475569 !important;
+}
+
+/* Spots Directory Delete Action (Light Theme) */
+html.light-theme .btn-delete-spot-action {
+  background: rgba(244, 63, 94, 0.1) !important;
+  border-color: rgba(244, 63, 94, 0.4) !important;
+  color: #be123c !important;
+}
+
+html.light-theme .btn-delete-spot-action:hover {
+  background: rgba(244, 63, 94, 0.18) !important;
+  border-color: rgba(244, 63, 94, 0.55) !important;
+  color: #9f1239 !important;
+}
+
+html.light-theme .hold-confirm.is-holding,
+html.light-theme .hold-confirm.is-complete {
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+/* Footer (Light Theme) */
+html.light-theme #footerInner {
+  border-top-color: #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+html.light-theme #footerBrand strong {
+  color: #0f172a !important;
+}
+
+html.light-theme .footer-meta-item span {
+  color: #64748b !important;
+}
+
+html.light-theme .footer-meta-item strong {
+  color: #334155 !important;
+}

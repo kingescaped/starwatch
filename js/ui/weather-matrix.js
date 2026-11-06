@@ -118,7 +118,7 @@ export function renderWeatherMatrixTable() {
 
   const buildRow = (labelHtml, renderCellFn) => `
     <tr class="hover:bg-slate-900/40 transition">
-      <td class="matrix-row-label sticky left-0 z-10 bg-slate-950/95 px-3 py-2 font-sans font-semibold text-xs text-slate-200 border-r border-slate-800">
+      <td class="matrix-row-label sticky left-0 z-10 px-3 py-2 font-sans font-semibold text-xs text-slate-200 border-r border-slate-800">
         ${labelHtml}
       </td>
       ${dayHours.map((hw, hIdx) => {
@@ -134,7 +134,7 @@ export function renderWeatherMatrixTable() {
   tbody.innerHTML = [
     // Row 0: Hour Header
     `<tr class="bg-slate-900/90 text-slate-300">
-      <th class="matrix-row-label sticky left-0 z-10 bg-slate-900 px-3 py-2 text-xs font-sans font-bold border-r border-slate-800">Giờ (GMT+7)</th>
+      <th class="matrix-row-label sticky left-0 z-10 px-3 py-2 text-xs font-sans font-bold border-r border-slate-800">Giờ (GMT+7)</th>
       ${dayHours.map((hw, hIdx) => {
         const isSelectedCol = hIdx === activeHour;
         const isPastHour = isWeatherMatrixHourPast(hw.hour);

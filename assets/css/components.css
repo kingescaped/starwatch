@@ -30,6 +30,12 @@ html.light-theme .liquid-glass {
     inset 0 1px 2px 0 rgba(255, 255, 255, 0.9);
 }
 
+/* Mobile-only search affordances; desktop keeps the inline search field. */
+.mobile-search-toggle,
+.mobile-search-close {
+  display: none;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 7px;
@@ -61,30 +67,18 @@ html.light-theme .leaflet-layer.astro-dark-tiles .leaflet-tile {
   -webkit-filter: none;
 }
 
-#btnAcknowledgeGuide .guide-acknowledge-mobile {
-  display: none;
+/* Auto-Layout User Guide Modal Footer */
+.guide-footer-tip {
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-@media (max-width: 639px) {
-  #btnAcknowledgeGuide {
-    flex: 0 0 auto;
-    padding: 0.375rem 0.625rem;
-    font-size: 0.75rem;
-    line-height: 1.25rem;
-    white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  #btnAcknowledgeGuide .guide-acknowledge-full {
-    display: none;
-  }
-
-  #btnAcknowledgeGuide .guide-acknowledge-mobile {
-    display: inline;
-  }
+/* Guide acknowledgement uses the shared press-and-hold gesture in green. */
+#btnAcknowledgeGuide {
+  --hold-confirm-color: #22c55e;
+  --hold-confirm-duration: 1200ms;
+  --hold-confirm-glow: 0 0 20px rgba(34, 197, 94, 0.55);
 }
+
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {
   background: rgba(15, 23, 42, 0.95) !important;
   color: #f8fafc !important;
@@ -134,19 +128,53 @@ html.light-theme #activeSpotBar[data-collapsed="true"] .active-spot-indicator > 
   stroke: #ffffff;
 }
 
+/* Auto-Layout Dome Darkness Badge: Icon on left, 2-row text on right (Title on top, parenthesized subtitle below) */
 .dome-darkness-badge {
   box-sizing: border-box;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.45rem;
+  padding: 0.3rem 0.625rem !important;
+  border-radius: 0.625rem;
+  user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  min-height: 2.25rem;
+}
+
+.dome-darkness-badge svg,
+.dome-darkness-badge [data-icon] {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.dome-darkness-badge__content {
   display: flex;
-  flex: 0 0 10rem;
-  width: 10rem;
-  height: 2.75rem;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: center;
-  overflow: hidden;
-  text-align: center;
+  text-align: left;
   line-height: 1.15;
-  overflow-wrap: anywhere;
-  padding: 0.25rem 0.5rem !important;
+}
+
+.dome-darkness-badge__title {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.dome-darkness-badge__sub {
+  font-size: 9.5px;
+  opacity: 0.8;
+  font-family: var(--font-mono, monospace);
+  line-height: 1.2;
+  white-space: nowrap;
+  margin-top: 1px;
 }
 
 .sky-elevation-chart {
@@ -259,6 +287,951 @@ body.modal-scroll-locked {
   min-width: 0;
 }
 
+/* The sky-phase readout can be long ("Mặt trời 32.2° · Trăng lưỡi liềm cuối tháng").
+   Keep it on a single line so it never wraps and pushes the time slider down. */
+#lblCurrentTimeDisplay {
+  white-space: nowrap;
+}
+
+#lblSkyPhaseDescription {
+  min-width: 0;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   UNIFIED WORKSPACE TYPOGRAPHY STANDARDS (DESIGN.md)
+   ========================================================================== */
+
+.card-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.card-heading svg,
+.card-heading [data-icon] {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: 0 0 1.125rem;
+}
+
+.section-description {
+  margin-top: 0.375rem;
+  padding-left: 0.5rem;
+  border-left: 2px solid rgba(148, 163, 184, 0.35);
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.subcard-heading {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #cbd5e1;
+  line-height: 1.3;
+}
+
+.metric-value {
+  font-family: var(--font-mono, monospace);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+/* ==========================================================================
+   BORTLE SCALE DYNAMIC PALETTE (TIER 1 -> 5: GREEN -> RED)
+   ========================================================================== */
+
+.bortle-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 0.375rem;
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+/* Tier 1 (1.0 - 3.0): Emerald / Xanh lá cây */
+.bortle-badge--tier-1,
+.bortle-pill--tier-1 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(52, 211, 153, 0.35) !important;
+  color: #34d399 !important;
+}
+.bortle-dot--tier-1 { background-color: #34d399 !important; }
+.bortle-text--tier-1 { color: #34d399 !important; }
+
+/* Tier 2 (3.1 - 4.2): Lime / Xanh mạ chanh */
+.bortle-badge--tier-2,
+.bortle-pill--tier-2 {
+  background-color: rgba(132, 204, 22, 0.15) !important;
+  border-color: rgba(163, 230, 53, 0.35) !important;
+  color: #a3e635 !important;
+}
+.bortle-dot--tier-2 { background-color: #a3e635 !important; }
+.bortle-text--tier-2 { color: #a3e635 !important; }
+
+/* Tier 3 (4.3 - 5.5): Yellow / Vàng tươi */
+.bortle-badge--tier-3,
+.bortle-pill--tier-3 {
+  background-color: rgba(234, 179, 8, 0.15) !important;
+  border-color: rgba(250, 204, 21, 0.35) !important;
+  color: #facc15 !important;
+}
+.bortle-dot--tier-3 { background-color: #facc15 !important; }
+.bortle-text--tier-3 { color: #facc15 !important; }
+
+/* Tier 4 (5.6 - 7.0): Orange / Cam */
+.bortle-badge--tier-4,
+.bortle-pill--tier-4 {
+  background-color: rgba(249, 115, 22, 0.15) !important;
+  border-color: rgba(251, 146, 60, 0.35) !important;
+  color: #fb923c !important;
+}
+.bortle-dot--tier-4 { background-color: #fb923c !important; }
+.bortle-text--tier-4 { color: #fb923c !important; }
+
+/* Tier 5 (7.1 - 9.0): Red / Đỏ */
+.bortle-badge--tier-5,
+.bortle-pill--tier-5 {
+  background-color: rgba(239, 68, 68, 0.18) !important;
+  border-color: rgba(248, 113, 113, 0.4) !important;
+  color: #f87171 !important;
+}
+.bortle-dot--tier-5 { background-color: #f87171 !important; }
+.bortle-text--tier-5 { color: #f87171 !important; }
+
+/* ==========================================================================
+   UNIVERSAL SEARCH DROPDOWN & AUTO-LAYOUT RESULTS
+   ========================================================================== */
+
+.search-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 100;
+  max-height: 22rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: rgba(15, 23, 42, 0.98);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(51, 65, 85, 0.85);
+  border-radius: 0.875rem;
+  box-shadow:
+    0 20px 40px -10px rgba(0, 0, 0, 0.85),
+    0 10px 20px -5px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(139, 92, 246, 0.25);
+}
+
+.search-dropdown__section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: rgba(30, 41, 59, 0.8);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.search-dropdown__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.35);
+  text-decoration: none;
+}
+
+.search-dropdown__item:last-child {
+  border-bottom: none;
+}
+
+.search-dropdown__item:hover {
+  background-color: rgba(139, 92, 246, 0.15);
+}
+
+.search-dropdown__item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.search-dropdown__item-title {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f8fafc;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-dropdown__item-subtitle {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-dropdown__item-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.search-dropdown__item-elev {
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  font-weight: 500;
+  color: #fcd34d;
+}
+
+.search-dropdown__coord-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.35);
+  background: rgba(139, 92, 246, 0.08);
+  transition: background-color 0.15s ease;
+}
+
+.search-dropdown__coord-item:hover {
+  background: rgba(139, 92, 246, 0.18);
+}
+
+.search-dropdown__empty {
+  padding: 1rem 0.75rem;
+  text-align: center;
+  font-size: 11px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* ==========================================================================
+   ASTRONOMICAL CALENDAR MODAL (AUTO-LAYOUT & MOBILE RIBBON)
+   ========================================================================== */
+
+.cal-subbar {
+  transition: all 0.18s ease;
+}
+
+.cal-filter-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cal-filter-ribbon::-webkit-scrollbar {
+  display: none;
+}
+
+.cal-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+  height: 2.125rem;
+  padding: 0 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+@media (min-width: 640px) {
+  .cal-filter-btn {
+    height: 2.25rem;
+    font-size: 12px;
+    padding: 0 0.875rem;
+  }
+}
+
+.cal-filter-btn.is-active,
+.region-filter-btn.is-active {
+  background: var(--accent-primary, #8b5cf6) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+  font-weight: 600;
+}
+
+/* Spots Directory Modal & Delete Mode
+   The card action row keeps one fixed height so swapping "Xem dự báo"
+   for the delete button never reflows the grid. */
+.spot-card-actions {
+  min-height: 2rem;
+}
+
+.spot-card-forecast {
+  height: 2rem;
+  white-space: nowrap;
+}
+
+.btn-delete-spot-action {
+  --hold-confirm-color: #f43f5e;
+  --hold-confirm-duration: 1100ms;
+  --hold-confirm-glow: 0 0 18px rgba(244, 63, 94, 0.55);
+  height: 2rem;
+  padding: 0 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(244, 63, 94, 0.45);
+  background: rgba(244, 63, 94, 0.12);
+  color: #fda4af;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  animation: deleteBtnPopIn 0.2s cubic-bezier(0.2, 0.75, 0.3, 1) both;
+}
+
+.btn-delete-spot-action:hover {
+  background: rgba(244, 63, 94, 0.22);
+  border-color: rgba(248, 113, 113, 0.7);
+  color: #fecdd3;
+}
+
+.btn-delete-spot-action:focus-visible {
+  outline: 2px solid rgba(248, 113, 113, 0.85);
+  outline-offset: 2px;
+}
+
+@keyframes deleteBtnPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ─── Reusable press-and-hold confirm ───────────────────────────────
+   Any element with `.hold-confirm` fills with a colour sweep while held.
+   `js/ui/hold-confirm.js` adds `.is-holding` on press and `.is-complete`
+   when the hold lasts `--hold-confirm-duration` (default 1100ms).
+   Reuse it elsewhere by overriding only the colour variables:
+     --hold-confirm-color   fill colour        (default #e11d48)
+     --hold-confirm-duration hold time         (default 1100ms)
+     --hold-confirm-glow    completed shadow   (default rose glow)
+   The sweep itself (hold-confirm-sweep) stays identical. */
+.hold-confirm {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+}
+
+.hold-confirm::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--hold-confirm-color, #e11d48);
+  border-radius: inherit;
+  transform: scaleX(0);
+  transform-origin: left center;
+  opacity: 0;
+  transition: transform 180ms ease-out, opacity 180ms ease-out;
+}
+
+/* Keep icon and label above the sweep; the fill sits over the element's own
+   background (solid or gradient) instead of behind it. */
+.hold-confirm > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hold-confirm.is-holding::before {
+  opacity: 1;
+  animation: hold-confirm-sweep var(--hold-confirm-duration, 1100ms) linear forwards;
+}
+
+.hold-confirm.is-complete::before {
+  opacity: 1;
+  animation: none;
+  transform: scaleX(1);
+}
+
+.hold-confirm.is-holding,
+.hold-confirm.is-complete {
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.hold-confirm.is-complete {
+  background-color: var(--hold-confirm-color, #e11d48);
+  box-shadow: var(--hold-confirm-glow, 0 0 18px rgba(244, 63, 94, 0.55));
+}
+
+@keyframes hold-confirm-sweep {
+  from {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+.spot-card-item {
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.spot-card-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.35);
+}
+
+#astroCalendarEventsGrid {
+  align-content: start;
+}
+
+.astro-event-card {
+  position: relative;
+  height: 100%;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.astro-event-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+@media (min-width: 768px) {
+  .astro-event-card__title {
+    min-height: 2.625rem;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .astro-event-card__desc {
+    min-height: 3.25rem;
+  }
+
+  .astro-event-card__spots {
+    margin-top: auto;
+  }
+
+  .astro-event-card__spot-list {
+    min-height: 4.25rem;
+    align-content: flex-start;
+  }
+}
+
+.cal-jump-spot-btn {
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.cal-jump-spot-btn:active {
+  transform: scale(0.97);
+}
+
+/* ==========================================================================
+   MAP OVERLAY TOGGLE BUTTONS (VIIRS BORTLE, SIMULATED CLOUDS, AZIMUTH)
+   ========================================================================== */
+
+.map-overlay-toggles {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.map-overlay-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.5rem;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  border: 1px solid transparent;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.map-overlay-btn svg,
+.map-overlay-btn [data-icon] {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: 0 0 0.875rem;
+  transition: opacity 0.18s ease;
+}
+
+/* Active states (ON) with distinct theme coloration and luminescent glow */
+.map-overlay-btn--bortle:not(.is-off):not(.opacity-40):not([aria-pressed="false"]) {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.55);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.22);
+}
+
+.map-overlay-btn--cloud:not(.is-off):not(.opacity-40):not([aria-pressed="false"]) {
+  background: rgba(6, 182, 212, 0.2);
+  color: #67e8f9;
+  border-color: rgba(6, 182, 212, 0.55);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.22);
+}
+
+.map-overlay-btn--azimuth:not(.is-off):not(.opacity-40):not([aria-pressed="false"]) {
+  background: rgba(139, 92, 246, 0.25);
+  color: #ddd6fe;
+  border-color: rgba(139, 92, 246, 0.55);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.22);
+}
+
+/* Inactive states (OFF) with muted surface and dim icon */
+.map-overlay-btn.is-off,
+.map-overlay-btn.opacity-40,
+.map-overlay-btn[aria-pressed="false"] {
+  background: rgba(15, 23, 42, 0.65) !important;
+  color: #64748b !important;
+  border-color: rgba(51, 65, 85, 0.75) !important;
+  box-shadow: none !important;
+  opacity: 0.65 !important;
+}
+
+.map-overlay-btn.is-off:hover,
+.map-overlay-btn.opacity-40:hover,
+.map-overlay-btn[aria-pressed="false"]:hover {
+  color: #94a3b8 !important;
+  border-color: rgba(100, 116, 139, 0.75) !important;
+  opacity: 0.85 !important;
+}
+
+.map-overlay-btn.is-off svg,
+.map-overlay-btn.opacity-40 svg,
+.map-overlay-btn[aria-pressed="false"] svg {
+  opacity: 0.45;
+}
+
+/* Light theme overrides for toggle buttons */
+html.light-theme .map-overlay-btn.is-off,
+html.light-theme .map-overlay-btn.opacity-40,
+html.light-theme .map-overlay-btn[aria-pressed="false"] {
+  background: #f1f5f9 !important;
+  color: #94a3b8 !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* ==========================================================================
+   BASEMAP STYLE SWITCHER (SEGMENTED CONTROL)
+   ========================================================================== */
+
+#mapTileControls,
+.map-tile-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background-color: rgba(2, 6, 23, 0.85);
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  border-radius: 0.75rem;
+  user-select: none;
+}
+
+.map-tile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.5rem;
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 500;
+  color: #94a3b8;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+}
+
+.map-tile-btn:hover {
+  color: #ffffff;
+}
+
+.map-tile-btn.bg-violet-600,
+.map-tile-btn.is-active {
+  background-color: #7c3aed !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+html.light-theme #mapTileControls,
+html.light-theme .map-tile-controls {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light-theme .map-tile-btn {
+  color: #64748b;
+}
+
+html.light-theme .map-tile-btn:hover {
+  color: #0f172a;
+}
+
+html.light-theme .map-tile-btn.bg-violet-600,
+html.light-theme .map-tile-btn.is-active {
+  background-color: #7c3aed !important;
+  color: #ffffff !important;
+}
+
+@media (min-width: 640px) {
+  #masterTimeLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 0.625rem;
+    column-gap: 1.25rem;
+    align-items: center;
+  }
+
+  #timePresets {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 0.625rem;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.45);
+  }
+
+  #timePresets::-webkit-scrollbar {
+    display: none;
+  }
+
+  .time-presets-group {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+  }
+
+  #timelineControls {
+    grid-column: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  #timelineReadout {
+    flex: 1 1 0%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  #timelineReadoutHeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  #lblCurrentTimeDisplay {
+    white-space: nowrap;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  #lblSkyPhaseDescription {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.6875rem;
+    color: #94a3b8;
+    text-align: right;
+  }
+
+  #timeMinutesSlider {
+    width: 100%;
+  }
+
+  /* Unified Auto-Layout Pill Controls (Desktop) */
+  #datePickerControl,
+  #celestialTargetControl,
+  #setupEventControl {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 2.25rem;
+    min-height: 2.25rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.75rem;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(51, 65, 85, 0.7);
+    box-sizing: border-box;
+    white-space: nowrap;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  #datePickerControl:hover,
+  #celestialTargetControl:hover,
+  #setupEventControl:hover {
+    border-color: rgba(139, 92, 246, 0.5);
+  }
+
+  #celestialTargetControl {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  #celestialTargetControl > span,
+  #setupEventControl > span {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #94a3b8;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  #celestialTargetControl select,
+  #setupEventControl select {
+    width: auto;
+    max-width: 19rem;
+    height: 100%;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ddd6fe;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  #datePickerControl input {
+    height: 100%;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    font-size: 0.75rem;
+    font-family: var(--font-mono, monospace);
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  /* Camera Setup Controls (Desktop Auto-Layout) */
+  #cameraSetupControls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  #gearModeControls {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    height: 2.25rem;
+    padding: 0.1875rem;
+    border-radius: 0.75rem;
+    background: rgba(2, 6, 23, 0.9);
+    border: 1px solid rgba(51, 65, 85, 0.7);
+  }
+
+  #gearModeControls .gear-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    height: 1.875rem;
+    padding: 0.25rem 0.625rem;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+
+  #gearModeControls .gear-tab-btn > svg,
+  #gearModeControls .gear-tab-btn [data-icon] {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+}
+/* Auto-Layout User Guide Modal Footer (Mobile) */
+.guide-footer-tip {
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+  background: rgba(15, 23, 42, 0.95) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Range Slider Styling */
+input[type="range"].sky-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"].sky-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0f172a 0%, #3b0764 20%, #f59e0b 27%, #38bdf8 50%, #ea580c 73%, #3b0764 80%, #0f172a 100%);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+input[type="range"].sky-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #8b5cf6;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.9);
+  margin-top: -7px;
+  transition: transform 0.15s ease;
+}
+input[type="range"].sky-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(1.18); }
+}
+.pulse-ring {
+  animation: pulseGlow 2.4s infinite ease-in-out;
+}
+
+html.light-theme #activeSpotBar[data-collapsed="true"] .active-spot-indicator > svg {
+  color: #ffffff !important;
+  stroke: #ffffff;
+}
+
+/* Auto-Layout Dome Darkness Badge: Icon on left, 2-row text on right (Title on top, parenthesized subtitle below) */
+.dome-darkness-badge {
+  box-sizing: border-box;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.45rem;
+  padding: 0.3rem 0.625rem !important;
+  border-radius: 0.625rem;
+  user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  min-height: 2.25rem;
+}
+
+.dome-darkness-badge svg,
+.dome-darkness-badge [data-icon] {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.dome-darkness-badge__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+  line-height: 1.15;
+}
+
+.dome-darkness-badge__title {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.dome-darkness-badge__sub {
+  font-size: 9.5px;
+  opacity: 0.8;
+  font-family: var(--font-mono, monospace);
+  line-height: 1.2;
+  white-space: nowrap;
+  margin-top: 1px;
+}
+
 .section-description {
   margin-top: 0.5rem;
   padding-left: 0.625rem;
@@ -266,72 +1239,6 @@ body.modal-scroll-locked {
   color: #94a3b8;
   font-size: 0.75rem;
   line-height: 1.5;
-}
-
-@media (min-width: 1280px) {
-  #masterTimeLayout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: stretch;
-  }
-
-  #timePresets {
-    min-width: 0;
-  }
-
-  #timelineControls {
-    display: grid;
-    grid-template-columns: auto auto minmax(0, 1fr);
-    align-items: center;
-  }
-
-  #timelineReadout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  #timelineReadoutHeader {
-    display: grid;
-    grid-template-columns: max-content minmax(0, 1fr);
-    align-items: center;
-    column-gap: 0.75rem;
-  }
-
-  #lblCurrentTimeDisplay {
-    white-space: nowrap;
-  }
-
-  #lblSkyPhaseDescription {
-    min-width: 0;
-    text-align: right;
-    line-height: 1.35;
-  }
-
-  #timeMinutesSlider {
-    grid-column: 1 / -1;
-  }
-
-  #celestialTargetControl {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    grid-column: 1 / -1;
-  }
-
-  #celestialTargetControl select {
-    width: 100%;
-    min-width: 0;
-  }
-}
-
-@media (min-width: 1536px) {
-  #masterTimeLayout {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.15fr) minmax(0, 0.9fr);
-  }
-
-  #celestialTargetControl {
-    grid-column: auto;
-  }
 }
 
 @media (max-width: 639px) {
@@ -342,10 +1249,10 @@ body.modal-scroll-locked {
   }
 
   body {
-    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    padding-bottom: 0 !important;
   }
 
-  header.glass-card {
+  .app-header {
     height: auto !important;
     min-height: 3.5rem;
     padding-top: 0.5rem;
@@ -354,33 +1261,62 @@ body.modal-scroll-locked {
     -webkit-backdrop-filter: none !important;
   }
 
-  header > div {
+  .app-header > .header-frame {
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      "brand"
-      "search";
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "brand searchToggle";
     gap: 0.5rem;
+    align-items: center;
   }
 
-  header > div > div:first-child {
+  .header-brand {
     grid-area: brand;
     min-width: 0;
   }
 
-  header > div > div:nth-child(2) {
-    grid-area: search;
-    width: 100%;
+  .header-search {
+    grid-area: searchToggle;
+    display: none !important;
+    position: fixed;
+    top: calc(3.5rem + 0.5rem);
+    left: var(--shell-pad);
+    right: var(--shell-pad);
+    z-index: 1300;
+    width: auto;
     max-width: none;
+    margin: 0;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    background: var(--bg-card);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 18px 40px rgba(2, 6, 23, 0.55);
+  }
+
+  html.mobile-search-open .header-search {
+    display: flex !important;
+  }
+
+  .mobile-search-toggle {
+    grid-area: searchToggle;
+    display: inline-flex;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+  }
+
+  .mobile-search-close {
+    display: inline-flex;
+  }
+
+  #headerSearchPanel > div:first-child {
+    flex: 1 1 auto;
     min-width: 0;
   }
 
   #quickSpotSearchInput {
     font-size: 16px;
-  }
-
-  html.mobile-search-active section.sticky {
-    position: static !important;
   }
 
   .mobile-directory-button {
@@ -392,7 +1328,8 @@ body.modal-scroll-locked {
 
   #mobileToolNav {
     position: fixed;
-    z-index: 1200;
+    z-index: 2500 !important;
+    pointer-events: auto !important;
     left: 50vw;
     bottom: calc(0.75rem + env(safe-area-inset-bottom));
     display: flex;
@@ -430,7 +1367,43 @@ body.modal-scroll-locked {
     color: #334155;
   }
 
+  /* Mobile Bottom Navigation Sliding Indicator */
+  .mobile-nav-indicator {
+    position: absolute;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    left: 0;
+    width: 0;
+    border-radius: 1rem;
+    background: rgba(139, 92, 246, 0.28);
+    box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.45), 0 4px 14px rgba(139, 92, 246, 0.32);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    visibility: hidden;
+    will-change: transform, width;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), width 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, visibility 0.2s ease;
+  }
+
+  html.light-theme .mobile-nav-indicator {
+    background: rgba(109, 40, 217, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(109, 40, 217, 0.35);
+  }
+
+  html.red-vision-theme .mobile-nav-indicator {
+    background: rgba(239, 68, 68, 0.25);
+    box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.5), 0 4px 14px rgba(239, 68, 68, 0.3);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-nav-indicator {
+      transition: none !important;
+    }
+  }
+
   #mobileToolNav > button {
+    position: relative;
+    z-index: 2;
     display: flex;
     min-width: 0;
     min-height: 3.35rem;
@@ -442,10 +1415,29 @@ body.modal-scroll-locked {
     padding: 0.35rem 0.15rem;
     border: 0;
     border-radius: 1rem;
-    background: transparent;
+    background: transparent !important;
     color: #cbd5e1;
     text-align: center;
     -webkit-tap-highlight-color: transparent;
+    box-shadow: none !important;
+    transition: color 0.18s ease, transform 0.18s ease;
+  }
+
+  #mobileToolNav > button.is-nav-active {
+    background: transparent !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  #mobileToolNav > button.is-nav-active > svg[data-icon] {
+    filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.75));
+    transform: scale(1.08);
+  }
+
+  html.light-theme #mobileToolNav > button.is-nav-active {
+    background: transparent !important;
+    color: #6d28d9 !important;
+    box-shadow: none !important;
   }
 
   #mobileToolNav > button > svg[data-icon] {
@@ -455,14 +1447,15 @@ body.modal-scroll-locked {
   }
 
   #mobileToolNav > button > span {
-    display: block;
+    display: block !important;
     max-width: 100%;
     overflow: hidden;
-    font-size: 0.5625rem;
+    font-size: 0.625rem;
     font-weight: 600;
-    line-height: 1;
+    line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
+    margin-top: 1px;
   }
 
   #mobileToolNav #btnOpenSpotsDirectory {
@@ -473,27 +1466,8 @@ body.modal-scroll-locked {
     order: 1;
   }
 
-  #mobileToolNav #btnOpenAstroCalendarModal > span {
-    display: inline;
-    font-size: 0;
-  }
-
-  #mobileToolNav #btnOpenAstroCalendarModal > span::after {
-    content: "Sự kiện";
-    font-size: 0.5625rem;
-  }
-
   #mobileToolNav #btnOpenContributeModal {
     order: 2;
-  }
-
-  #mobileToolNav #btnOpenContributeModal > span {
-    font-size: 0;
-  }
-
-  #mobileToolNav #btnOpenContributeModal > span::after {
-    content: "Đóng góp";
-    font-size: 0.5625rem;
   }
 
   #mobileToolNav #btnOpenGuideModal {
@@ -528,21 +1502,34 @@ body.modal-scroll-locked {
   }
 
   .dome-darkness-badge {
-    flex: 0 0 5.5rem;
-    width: 5.5rem;
-    height: 3.5rem;
-    font-size: 10px;
-    padding: 0.25rem !important;
+    padding: 0.25rem 0.5rem !important;
+    gap: 0.35rem;
+    min-height: 2rem;
+    width: auto !important;
+    max-width: none !important;
+    flex-shrink: 0 !important;
   }
 
-  #modalSettings,
+  .dome-darkness-badge svg,
+  .dome-darkness-badge [data-icon] {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .dome-darkness-badge__title {
+    font-size: 10px;
+  }
+
+  .dome-darkness-badge__sub {
+    font-size: 8.5px;
+  }
+
   #modalCartoConfig,
   #modalBackendArchitecture {
     align-items: flex-start;
     overflow-y: auto;
   }
 
-  #modalSettings > div,
   #modalCartoConfig > div,
   #modalBackendArchitecture > div {
     max-height: calc(100vh - 1rem);
@@ -550,67 +1537,51 @@ body.modal-scroll-locked {
     margin-block: auto;
   }
 
-  #modalAstroCalendar,
-  #modalUserGuide,
-  #modalSettings,
-  #modalContributeSpot {
-    align-items: stretch;
-    justify-content: stretch;
-    padding: 0;
-    background: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+  .tool-modal.hidden,
+  div[id^="modal"].hidden {
+    display: none !important;
   }
 
-  #modalAstroCalendar > div,
-  #modalUserGuide > div,
-  #modalSettings > div,
-  #modalContributeSpot > div {
-    width: 100%;
-    max-width: none;
-    height: 100vh;
-    height: 100dvh;
-    max-height: none;
-    margin: 0;
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    border: 0;
-    border-radius: 0;
-    background: #0f172a;
-    box-shadow: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
-  html.light-theme #modalAstroCalendar > div,
-  html.light-theme #modalUserGuide > div,
-  html.light-theme #modalSettings > div,
-  html.light-theme #modalContributeSpot > div {
-    background: #f8fafc;
-  }
-
-  #modalContributeSpot {
-    overflow: hidden;
-  }
-
-  #modalContributeSpot > div {
-    box-sizing: border-box;
-    width: 100%;
-    min-width: 0;
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+  .tool-modal:not(.hidden) {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2000 !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
     padding: 0 !important;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    background: rgba(7, 11, 20, 0.8) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    overflow: hidden !important;
   }
 
+  .tool-modal__panel {
+    box-sizing: border-box;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    max-height: 100% !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #0f172a !important;
+    box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  html.light-theme .tool-modal__panel {
+    background: #f8fafc !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
   #formContributeSpot {
     box-sizing: border-box;
     flex: 1 1 auto;
@@ -618,7 +1589,7 @@ body.modal-scroll-locked {
     overflow-y: auto;
     margin: 0 !important;
     padding: 1rem;
-    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)) !important;
     overscroll-behavior: contain;
   }
 
@@ -645,47 +1616,56 @@ body.modal-scroll-locked {
     flex: 0 1 auto;
   }
 
-  #modalAstroCalendar > div,
-  #modalUserGuide > div,
-  #modalSettings > div {
-    overflow: hidden;
-  }
-
-  #modalAstroCalendar #astroCalendarEventsGrid,
-  #modalUserGuide > div > .overflow-y-auto,
-  #settingsModalBody {
-    min-height: 0;
-    flex: 1 1 auto;
+  .tool-modal__body {
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
     overscroll-behavior: contain;
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)) !important;
   }
 
-  #modalSettings > div {
-    height: 100vh;
-    height: 100dvh;
-    max-height: none;
-    margin-block: 0;
+  /* Auto-Layout Modal Footer on Mobile:
+     Top of #mobileToolNav = 5.0rem (0.75rem bottom + 4.25rem height).
+     Bottom padding = 5.0rem + 0.75rem (12px gap) = 5.75rem + safe-area.
+     This guarantees the gap between #btnAcknowledgeGuide and #mobileToolNav is exactly 12px,
+     perfectly balanced 1:1 with the 12px gap between .guide-footer-tip and #btnAcknowledgeGuide. */
+  .tool-modal__footer {
+    box-sizing: border-box;
+    padding-top: 0.75rem !important;
+    padding-inline: 1rem !important;
+    gap: 0.75rem !important;
+    padding-bottom: calc(5.75rem + env(safe-area-inset-bottom)) !important;
   }
 
-  #modalSettings {
-    width: 100vw;
-    overflow: hidden;
+  .tool-modal__panel:has(.tool-modal__footer) .tool-modal__body,
+  #modalUserGuide .tool-modal__body {
+    padding-bottom: 1.25rem !important;
+  }
+
+  #formContributeSpot .tool-modal__footer {
+    padding-bottom: 0 !important;
+    padding-top: 0.75rem !important;
+    padding-inline: 0 !important;
+  }
+
+  #btnAcknowledgeGuide {
+    margin: 0 !important;
   }
 
   .tool-screen-header {
     box-sizing: border-box;
-    flex: 0 0 8rem;
-    height: 8rem;
-    min-height: 8rem;
+    flex: 0 0 auto;
+    min-height: 3.75rem;
     gap: 0.75rem;
-    align-items: flex-start;
-    padding: 1rem !important;
+    align-items: center;
+    padding: 0.75rem 1rem !important;
+    padding-top: max(0.75rem, env(safe-area-inset-top)) !important;
   }
 
   .tool-screen-heading {
     min-width: 0;
     flex: 1 1 auto;
     gap: 0.75rem;
-    align-items: flex-start;
+    align-items: center;
   }
 
   .tool-screen-heading > :first-child {
@@ -708,13 +1688,7 @@ body.modal-scroll-locked {
   }
 
   .tool-screen-header p {
-    display: -webkit-box;
-    margin-top: 0.3rem;
-    font-size: 0.6875rem;
-    line-height: 1.45;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    display: none !important;
   }
 
   .tool-screen-header > button {
@@ -730,6 +1704,7 @@ body.modal-scroll-locked {
 
   #settingsModalBody {
     padding: 0.75rem;
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)) !important;
     overscroll-behavior: contain;
   }
 
@@ -745,16 +1720,25 @@ body.modal-scroll-locked {
   #settingsModalBody .theme-btn {
     min-width: 0;
     min-height: 3.25rem;
-    padding: 0;
+    padding: 0.5rem 0.25rem;
     align-items: center;
     justify-content: center;
+    gap: 0.25rem;
   }
 
   #settingsModalBody > :first-child > div:first-child > div > p {
     display: none;
   }
 
-  #settingsModalBody .theme-btn > span {
+  #settingsModalBody .theme-btn > span:first-of-type {
+    display: block;
+    font-size: 0.6875rem;
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  #settingsModalBody .theme-btn > span:last-of-type {
     display: none;
   }
 
@@ -788,22 +1772,18 @@ body.modal-scroll-locked {
     width: 100%;
   }
 
-  section.sticky {
-    top: 6rem;
-  }
-
-  section.sticky > div {
+  .spot-bar__inner {
     align-items: stretch !important;
     flex-direction: column !important;
     gap: 0.5rem;
   }
 
-  section.sticky > div > div:first-child {
+  .spot-bar__identity {
     flex: none !important;
     width: 100%;
   }
 
-  section.sticky > div > div:first-child > div:last-child > div:last-child {
+  #activeSpotTelemetry {
     column-gap: 0.5rem;
     row-gap: 0.25rem;
   }
@@ -812,132 +1792,143 @@ body.modal-scroll-locked {
     white-space: nowrap;
   }
 
-  section.sticky > div > div:last-child {
-    flex-wrap: nowrap !important;
-    overflow-x: auto;
-    padding-bottom: 0.125rem;
-    scrollbar-width: none;
-  }
-
-  section.sticky > div > div:last-child::-webkit-scrollbar {
-    display: none;
-  }
-
-  section.sticky > div > div:last-child > * {
-    flex: 0 0 auto !important;
-  }
-
-  body > section:not(.sticky) > div > div > div:last-child {
-    flex-wrap: wrap;
-    width: 100%;
-    min-width: 0;
-  }
-
-  #selectCelestialTarget {
-    flex: 1 1 100%;
-    min-width: 0;
-    max-width: 100%;
-    width: 100%;
-  }
-
   #masterTimeLayout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
   }
 
   #timePresets {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
     min-width: 0;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.45) !important;
+  }
+
+  #datePickerControl,
+  #timePresets > div:first-child {
+    width: auto !important;
+    max-width: fit-content !important;
+    align-self: flex-start !important;
+    box-sizing: border-box;
+  }
+
+  .time-presets-group {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    padding-bottom: 2px;
+  }
+
+  .time-presets-group::-webkit-scrollbar {
+    display: none;
+  }
+
+  .time-presets-group .time-jump-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    min-height: 2rem;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.6875rem;
   }
 
   #timelineControls {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 0.5rem;
-    padding: 0.75rem;
-  }
-
-  #selectPlaybackSpeed {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 0.625rem;
+    row-gap: 0.375rem;
     width: 100%;
     min-width: 0;
-    font-size: 0.75rem !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 0 0.5rem 0 !important;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.45);
+  }
+
+  #btnPlayTimeline {
+    grid-column: 1;
+    grid-row: 1;
+    width: 2.375rem;
+    height: 2.375rem;
+    flex-shrink: 0;
   }
 
   #timelineReadout {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    min-width: 0;
+    display: contents;
   }
 
   #timelineReadoutHeader {
-    display: grid;
-    grid-template-columns: max-content minmax(0, 1fr);
-    align-items: center;
-    column-gap: 0.75rem;
-    row-gap: 0.5rem;
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    overflow: hidden;
+    line-height: 1.25;
   }
 
   #lblCurrentTimeDisplay {
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.25;
     white-space: nowrap;
   }
 
   #lblSkyPhaseDescription {
+    font-size: 0.6875rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #94a3b8;
+    text-align: left;
+  }
+
+  #selectPlaybackSpeed {
+    grid-column: 3;
+    grid-row: 1;
+    width: auto;
     min-width: 0;
-    text-align: right;
-    line-height: 1.35;
+    height: 2.25rem;
+    padding: 0 0.5rem;
+    font-size: 0.6875rem !important;
+    justify-self: end;
+    flex-shrink: 0;
   }
 
   #timeMinutesSlider {
     grid-column: 1 / -1;
-  }
-
-  #celestialTargetControl {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    align-items: center;
-    gap: 0.5rem;
+    grid-row: 2;
     width: 100%;
-    min-width: 0;
-    padding: 0.625rem;
-    border: 1px solid rgba(51, 65, 85, 0.8);
-    border-radius: 0.75rem;
-    background: #0f172a;
+    margin: 0;
+    height: 1.5rem;
   }
 
-  #celestialTargetControl label {
-    grid-column: 1 / -1;
-    gap: 0.5rem;
-    color: #cbd5e1;
-    font-size: 0.75rem;
-  }
 
-  #celestialTargetControl select {
-    grid-column: 1 / -1;
-    min-width: 0;
-    max-width: 100%;
-    width: 100%;
-    min-height: 2.75rem;
-    padding: 0.625rem 0.75rem;
-    border-color: rgba(148, 163, 184, 0.22);
-    border-radius: 0.625rem;
-    background-color: #0f172a;
-  }
-
-  #spotsGridContainer {
+  #spotsGridContainer,
+  .spots-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.5rem;
   }
 
-  #spotsGridContainer .spot-card-item {
-    aspect-ratio: 1 / 1;
-    height: calc((100vw - 4.5625rem) / 2);
+  #spotsGridContainer .spot-card-item,
+  .spots-grid .spot-card-item {
     min-width: 0;
     min-height: 0;
     overflow: hidden;
     padding: 0.625rem;
   }
-
   #spotsGridContainer .spot-card-item > div:first-child {
     min-height: 0;
     overflow: hidden;
@@ -984,37 +1975,104 @@ body.modal-scroll-locked {
   }
 
   #weatherMatrixTable .matrix-row-label {
-    width: 6rem;
-    min-width: 6rem;
-    max-width: 6rem;
+    width: 6.25rem;
+    min-width: 6.25rem;
+    max-width: 6.25rem;
     padding-inline: 0.5rem;
     white-space: normal;
     overflow-wrap: anywhere;
     line-height: 1.3;
   }
-
   #weatherMatrixTable .matrix-hour-cell {
     min-width: 3rem;
     padding-inline: 0.25rem;
   }
 
-  #mapTileControls {
-    flex-wrap: nowrap;
-    gap: 0;
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
+  /* Basemap switcher on mobile: 4-column equal grid filling 100% width, no empty void */
+  #mapTileControls,
+  .map-tile-controls {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0.25rem !important;
+    width: 100% !important;
+    padding: 0.25rem !important;
+    overflow-x: visible !important;
+    box-sizing: border-box;
   }
 
-  #mapTileControls::-webkit-scrollbar {
+  #mapTileControls .map-tile-btn,
+  .map-tile-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 0% !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 0.375rem 0.125rem !important;
+    font-size: 10.5px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Unified typography adjustments for mobile view */
+  .card-heading {
+    font-size: 14px;
+    gap: 0.375rem;
+  }
+
+  .card-heading svg,
+  .card-heading [data-icon] {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 1rem;
+  }
+
+  .section-description {
+    font-size: 11px;
+    line-height: 1.4;
+    margin-top: 0.25rem;
+  }
+
+  .metric-value {
+    font-size: 14px;
+  }
+
+  /* Map overlay toggles on mobile: strictly 3-column equal grid across 1 row, NO horizontal rolling */
+  .map-overlay-toggles {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.375rem !important;
+    width: 100% !important;
+    overflow-x: visible !important;
+  }
+
+  .map-overlay-toggles .map-overlay-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 0.375rem 0.25rem !important;
+    font-size: 11px !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  .region-filter-group,
+  #forecastDayTabs {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .region-filter-group::-webkit-scrollbar,
+  #forecastDayTabs::-webkit-scrollbar {
     display: none;
   }
 
-  #mapTileControls .map-tile-btn {
+  .region-filter-group > button,
+  #forecastDayTabs > button {
     flex: 0 0 auto;
     white-space: nowrap;
-    padding-inline: 0.5rem;
-    font-size: 10px;
   }
 
   #cameraSetupIntro {
@@ -1031,126 +2089,210 @@ body.modal-scroll-locked {
     font-size: 0.75rem;
   }
 
+  footer.footer-section {
+    margin-top: 1rem;
+    margin-bottom: 0;
+    padding-top: 0 !important;
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  /* Keep the delete gesture inside one stable row on touch screens. */
+  .spot-card-actions {
+    min-height: 2.25rem;
+  }
+
+  .spot-card-forecast,
+  .btn-delete-spot-action {
+    height: 2.25rem;
+  }
+
   #footerInner {
-    align-items: stretch;
-    gap: 0.75rem;
+    box-sizing: border-box;
+    width: 100%;
   }
 
-  #footerBrand {
-    text-align: center;
-    line-height: 1.5;
-  }
-
-  #footerMeta {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-    text-align: left;
-  }
-
-  #footerMeta .footer-meta-item {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding-block: 0.5rem;
-    border-top: 1px solid rgba(51, 65, 85, 0.65);
-    line-height: 1.4;
-  }
-
-  #footerMeta .footer-meta-item strong {
-    max-width: 62%;
-    text-align: right;
-    overflow-wrap: anywhere;
+  .footer-meta-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
   }
 
   #cameraSetupControls {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  #setupEventControl {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: 0.375rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
     width: 100%;
-    min-width: 0;
   }
 
+  /* Unified Auto-Layout Pill Controls (Mobile) */
+  #datePickerControl,
+  #timePresets > div:first-child {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.375rem !important;
+    width: auto !important;
+    max-width: fit-content !important;
+    height: 2.25rem !important;
+    min-height: 2.25rem !important;
+    padding: 0.25rem 0.625rem !important;
+    border-radius: 0.75rem !important;
+    background-color: #0f172a !important;
+    border: 1px solid rgba(148, 163, 184, 0.22) !important;
+    box-sizing: border-box !important;
+    align-self: flex-start !important;
+    flex-shrink: 0 !important;
+  }
+
+  #datePickerControl input,
+  #datePickerInput {
+    width: auto !important;
+    height: 100%;
+    padding: 0;
+    border: none !important;
+    border-radius: 0;
+    background: transparent !important;
+    font-size: 0.8125rem !important;
+    font-family: var(--font-mono, monospace);
+    font-weight: 600;
+    color: #ffffff;
+    outline: none;
+    cursor: pointer;
+  }
+
+  #celestialTargetControl,
+  #setupEventControl {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0.375rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 2.25rem !important;
+    min-height: 2.25rem !important;
+    padding: 0.25rem 0.625rem !important;
+    border-radius: 0.75rem !important;
+    background-color: #0f172a !important;
+    border: 1px solid rgba(148, 163, 184, 0.22) !important;
+    box-sizing: border-box !important;
+  }
+
+  #celestialTargetControl > svg,
+  #celestialTargetControl > [data-icon],
+  #setupEventControl > svg,
+  #setupEventControl > [data-icon] {
+    flex-shrink: 0 !important;
+  }
+
+  #celestialTargetControl > span,
   #setupEventControl > span {
     font-size: 0.75rem;
     font-weight: 600;
     color: #cbd5e1;
+    white-space: nowrap;
+    flex-shrink: 0 !important;
   }
 
+  #selectCelestialTarget,
   #selectSetupEventType {
-    grid-column: 1 / -1;
+    flex: 1 1 auto;
     min-width: 0;
-    width: 100%;
-    min-height: 2.75rem;
-    padding: 0.625rem 0.75rem;
-    border: 1px solid rgba(148, 163, 184, 0.22);
-    border-radius: 0.625rem;
-    background-color: #0f172a;
-    font-size: 0.875rem !important;
+    width: auto !important;
+    max-width: 100% !important;
+    height: 100%;
+    padding: 0;
+    border: none !important;
+    border-radius: 0;
+    background: transparent !important;
+    font-size: 0.75rem !important;
+    font-weight: 600;
+    color: #ddd6fe;
+    text-align: left !important;
+    text-align-last: left !important;
+    direction: ltr;
+    outline: none;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   #gearModeControls {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.25rem !important;
+    width: 100% !important;
+    padding: 0.25rem !important;
+    border-radius: 0.75rem !important;
+    background-color: rgba(2, 6, 23, 0.9) !important;
+    border: 1px solid rgba(51, 65, 85, 0.7) !important;
+    box-sizing: border-box;
   }
 
   #gearModeControls .gear-tab-btn {
-    min-width: 0;
-    min-height: 3.75rem;
-    justify-content: center;
-    flex-direction: column;
-    gap: 0.375rem;
-    padding: 0.5rem 0.375rem;
-    text-align: center;
-    line-height: 1.2;
-    border: 1px solid rgba(148, 163, 184, 0.16);
+    min-width: 0 !important;
+    height: 2.125rem !important;
+    min-height: 2.125rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-direction: row !important;
+    gap: 0.25rem !important;
+    padding: 0.25rem 0.25rem !important;
+    text-align: center !important;
+    line-height: 1 !important;
+    border-radius: 0.5rem !important;
+    font-size: 11px !important;
+    white-space: nowrap !important;
+    border: none !important;
+    cursor: pointer;
+    transition: all 0.15s ease;
   }
 
-  #gearModeControls {
-    gap: 0.375rem;
-    align-items: stretch;
+  #gearModeControls .gear-tab-btn.bg-violet-600 {
+    background-color: #7c3aed !important;
+    color: #ffffff !important;
+    font-weight: 600;
   }
 
   #gearModeControls .gear-tab-btn:not(.bg-violet-600) {
-    background: rgba(15, 23, 42, 0.8);
+    background: transparent !important;
+    color: #94a3b8 !important;
+    font-weight: 500;
   }
 
-  #gearModeControls .gear-tab-btn > svg[data-icon] {
-    width: 1.5rem;
-    height: 1.5rem;
-    flex: 0 0 auto;
+  #gearModeControls .gear-tab-btn > svg,
+  #gearModeControls .gear-tab-btn [data-icon] {
+    width: 0.875rem !important;
+    height: 0.875rem !important;
+    flex: 0 0 0.875rem !important;
   }
 
   #gearModeControls .gear-tab-btn span {
-    max-width: 100%;
-    font-size: 0.625rem;
-    white-space: normal;
-    overflow-wrap: anywhere;
+    font-size: 11px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
   }
 
-  html.light-theme #celestialTargetControl {
-    border-color: #cbd5e1;
-    background: #ffffff;
+  html.light-theme #datePickerControl,
+  html.light-theme #celestialTargetControl,
+  html.light-theme #setupEventControl {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
   }
 
-  html.light-theme #celestialTargetControl label,
+  html.light-theme #celestialTargetControl > span,
   html.light-theme #setupEventControl > span {
-    color: #475569;
+    color: #475569 !important;
   }
 
-  html.light-theme #celestialTargetControl select,
+  html.light-theme #selectCelestialTarget,
   html.light-theme #selectSetupEventType {
-    border-color: #cbd5e1;
-    background-color: #ffffff !important;
-    color: #6b21a8 !important;
+    color: #4c1d95 !important;
+  }
+
+  html.light-theme #datePickerControl input,
+  html.light-theme #datePickerInput {
+    color: #0f172a !important;
   }
 
   html.light-theme #gearModeControls .gear-tab-btn:not(.bg-violet-600) {
@@ -1166,15 +2308,32 @@ body.modal-scroll-locked {
   }
 }
 
-@media (max-width: 359px) {
-  header > div {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      "brand"
-      "search";
+@keyframes setupSectionPulse {
+  0% {
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.8), 0 0 24px rgba(139, 92, 246, 0.35);
   }
-
-  section.sticky {
-    top: 6.5rem;
+  60% {
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.4), 0 0 14px rgba(139, 92, 246, 0.2);
+  }
+  100% {
+    box-shadow: none;
   }
 }
+
+.camera-setup-highlight {
+  animation: setupSectionPulse 1.8s ease-out;
+}
+
+/* Ensure all tabview headers hide any subtitle descriptions across mobile & desktop */
+.tool-screen-header p,
+.tool-modal__header p {
+  display: none !important;
+}
+
+@media (min-width: 640px) {
+  .mobile-nav-indicator {
+    display: none !important;
+  }
+}
+
+

@@ -1,3 +1,5 @@
+import { resetHoldConfirmWithin } from './hold-confirm.js';
+
 const modalAnimationCleanups = new WeakMap();
 
 function clearToolModalAnimation(modal) {
@@ -40,6 +42,7 @@ function getToolModalAnimationName(direction) {
 
 export function openToolModal(modal) {
   clearToolModalAnimation(modal);
+  resetHoldConfirmWithin(modal);
   modal.classList.remove('hidden');
   modal.classList.add('flex');
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -52,10 +55,11 @@ export function openToolModal(modal) {
   );
 }
 
-export function closeToolModal(modal) {
+export function closeToolModal(modal, { immediate = false } = {}) {
   if (modal.classList.contains('hidden')) return;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (immediate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     clearToolModalAnimation(modal);
+    resetHoldConfirmWithin(modal);
     modal.classList.add('hidden');
     modal.classList.remove('flex');
     return;
@@ -68,6 +72,7 @@ export function closeToolModal(modal) {
     () => {
       modal.classList.add('hidden');
       modal.classList.remove('flex');
+      resetHoldConfirmWithin(modal);
     }
   );
 }

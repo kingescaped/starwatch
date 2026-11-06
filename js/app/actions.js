@@ -2,6 +2,7 @@ import { computeDailyEphemerisSummary } from '../astro/ephemeris.js';
 import { computePhotographyScores } from '../astro/scoring.js';
 import { formatHHMM } from '../astro/time.js';
 import { state } from '../core/state.js';
+import { getBortleColorInfo } from '../core/utils.js';
 import { leafletMap, renderAllSpotMarkersOnMap } from '../map/map.js';
 import { drawMapCanvasOverlays } from '../map/overlays.js';
 import { updateFavoriteButton } from '../services/favorites.js';
@@ -27,8 +28,16 @@ export function updateAllViews() {
   document.getElementById('activeSpotCoords').textContent = `${spot.lat.toFixed(4)}, ${spot.lon.toFixed(4)}`;
   document.getElementById('activeSpotElevation').textContent = `${spot.elevation.toLocaleString()} m`;
 
-  const bortleText = spot.bortle <= 3.0 ? 'Rất tối' : (spot.bortle <= 4.2 ? 'Tối' : (spot.bortle <= 5.8 ? 'Trung bình' : 'Sáng đô thị'));
-  document.getElementById('activeSpotBortle').textContent = `Bortle ${spot.bortle} (${bortleText})`;
+  const bortleInfo = getBortleColorInfo(spot.bortle);
+  const bortleEl = document.getElementById('activeSpotBortle');
+  const bortleDot = document.getElementById('activeSpotBortleDot');
+  if (bortleEl) {
+    bortleEl.textContent = `Bortle ${spot.bortle} (${bortleInfo.name})`;
+    bortleEl.className = `${bortleInfo.textTierClass} font-mono font-bold`;
+  }
+  if (bortleDot) {
+    bortleDot.className = `w-2 h-2 rounded-full ${bortleInfo.dotClass}`;
+  }
 
   // 2. Get current hour weather & compute Photography Scores
   const activeHour = Math.min(23, Math.floor(state.selectedMinutes / 60));
@@ -75,8 +84,9 @@ export function updateAllViews() {
   document.getElementById('lblTargetPeakQuick').textContent = formatHHMM(eph.targetPeakMin);
 
   document.getElementById('lblCurrentTimeDisplay').textContent = `${formatHHMM(state.selectedMinutes)} GMT+7`;
-  document.getElementById('lblSkyPhaseDescription').textContent =
-    `Mặt trời ${evalNow.sun.altitude.toFixed(1)}° · ${evalNow.moon.phaseName}`;
+  const skyPhaseLabel = document.getElementById('lblSkyPhaseDescription');
+  skyPhaseLabel.textContent = `Mặt trời ${evalNow.sun.altitude.toFixed(1)}° · ${evalNow.moon.phaseName}`;
+  skyPhaseLabel.title = skyPhaseLabel.textContent;
 
   document.getElementById('ephemerisDateLabel').textContent = state.selectedDateStr;
   document.getElementById('ephAstroDawn').textContent = formatHHMM(eph.astroDawnMin);
@@ -100,6 +110,7 @@ export function selectSpot(spot, flyMap = true) {
   updateFavoriteButton();
   renderAllSpotMarkersOnMap();
   renderSpotsDirectoryGrid();
+  updateAllViews();
   if (flyMap && leafletMap) {
     leafletMap.flyTo([spot.lat, spot.lon], Math.max(leafletMap.getZoom(), 8), { duration: 0.9 });
   }
@@ -130,7 +141,11 @@ export function setMapSimulationPlayback(isPlaying) {
     state.showHimawariOverlay = true;
     state.showAzimuthVectors = true;
     ['btnToggleBortleOverlay', 'btnToggleHimawariOverlay', 'btnToggleAzimuthVectors'].forEach(id => {
-      document.getElementById(id).classList.remove('opacity-40');
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.classList.remove('opacity-40', 'is-off');
+        btn.setAttribute('aria-pressed', 'true');
+      }
     });
 
     const timeSlider = document.getElementById('timeMinutesSlider');

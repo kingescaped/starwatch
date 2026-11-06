@@ -2,7 +2,7 @@ import { DEG2RAD } from '../astro/time.js';
 import { CARTO_CONFIG } from '../config/carto.js';
 import { emit } from '../core/events.js';
 import { state } from '../core/state.js';
-import { escapeHTML, getSpotKey } from '../core/utils.js';
+import { escapeHTML, getBortleColorInfo, getSpotKey } from '../core/utils.js';
 import { leafletMap, setLeafletMap } from '../map/context.js';
 import { VIETNAM_LIGHT_DOMES } from '../map/light-domes.js';
 import { drawMapCanvasOverlays } from '../map/overlays.js';
@@ -275,8 +275,9 @@ export function renderAllSpotMarkersOnMap() {
     });
 
     const marker = L.marker([spot.lat, spot.lon], { icon: customIcon }).addTo(leafletMap);
+    const bortleInfo = getBortleColorInfo(spot.bortle);
     marker.bindTooltip(
-      `<div class="text-xs font-bold">${escapeHTML(spot.shortName || spot.name)}</div><div class="text-[10px] text-slate-300">Bortle ${escapeHTML(spot.bortle)} · ${escapeHTML(spot.elevation)}m</div>`,
+      `<div class="text-xs font-bold">${escapeHTML(spot.shortName || spot.name)}</div><div class="text-[10px] text-slate-300"><span class="${bortleInfo.textTierClass} font-mono font-semibold">Bortle ${escapeHTML(spot.bortle)}</span> · ${escapeHTML(spot.elevation)}m</div>`,
       { direction: 'top', offset: [0, -8] }
     );
     marker.on('click', (ev) => {

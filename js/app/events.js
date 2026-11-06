@@ -4,18 +4,19 @@ import { getCurrentVietnamDateTime } from '../astro/time.js';
 import { CARTO_CONFIG, DEFAULT_CARTO_API_KEY } from '../config/carto.js';
 import { on } from '../core/events.js';
 import { state } from '../core/state.js';
-import { fetchNominatim } from '../core/utils.js';
-import { estimateBortleAtCoord, estimateTerrainElevation, setMapBaseTile, syncLeafletMapSize, updateCartoTelemetryUI } from '../map/map.js';
+import { fetchNominatim, getBortleColorInfo, getSpotKey } from '../core/utils.js';
+import { estimateBortleAtCoord, estimateTerrainElevation, renderAllSpotMarkersOnMap, setMapBaseTile, syncLeafletMapSize, updateCartoTelemetryUI } from '../map/map.js';
 import { drawMapCanvasOverlays } from '../map/overlays.js';
 import { toggleActiveSpotFavorite } from '../services/favorites.js';
 import { requestCurrentLocation, reverseGeocodeSpot } from '../services/geocoding.js';
-import { loadSpotsFromStorage } from '../services/spots-store.js';
+import { deleteSpotFromStorage, loadSpotsFromStorage } from '../services/spots-store.js';
 import { fetchWeatherForActiveSpot } from '../services/weather.js';
 import { renderAstroCalendarModal } from '../ui/astro-calendar.js';
-import { renderCameraSetupGuide } from '../ui/camera-guide.js';
+import { renderCameraSetupGuide, scrollToCameraSetup } from '../ui/camera-guide.js';
 import { iconMarkup, renderIcons } from '../ui/icons.js';
+import { attachHoldToConfirm } from '../ui/hold-confirm.js';
 import { drawTopDownSkyDome } from '../ui/sky-dome.js';
-import { renderSpotsDirectoryGrid } from '../ui/spots-directory.js';
+import { renderSpotsDirectoryGrid, resetDeleteSpotMode } from '../ui/spots-directory.js';
 import { closeToolModal, openToolModal } from '../ui/tool-modal.js';
 import { matrixHourRefreshTimer, renderForecastDayTabs, revealSelectedMatrixHour, scheduleMatrixHourRefresh, scrollToWeatherMatrix } from '../ui/weather-matrix.js';
 
@@ -23,22 +24,130 @@ import { matrixHourRefreshTimer, renderForecastDayTabs, revealSelectedMatrixHour
  * DOM event listeners and initialization wiring.
  */
 
+let modalOverlays = [];
+let backgroundScrollLocked = false;
+let lockedScrollY = 0;
+let pendingScrollAfterModalUnlock = null;
+let modalObserver = null;
+
+export function syncMobileNavIndicator() {
+  const mobileNav = document.getElementById('mobileToolNav');
+  if (!mobileNav) return;
+  const isMobile = window.matchMedia('(max-width: 639.98px)').matches;
+  let indicator = document.getElementById('mobileNavIndicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'mobileNavIndicator';
+    indicator.className = 'mobile-nav-indicator';
+    indicator.setAttribute('aria-hidden', 'true');
+    mobileNav.appendChild(indicator);
+  }
+
+  if (!isMobile) {
+    indicator.style.opacity = '0';
+    indicator.style.visibility = 'hidden';
+    indicator.dataset.active = 'false';
+    return;
+  }
+
+  const activeBtn = mobileNav.querySelector('button.is-nav-active');
+  if (activeBtn) {
+    const navRect = mobileNav.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
+    const x = btnRect.left - navRect.left;
+    const width = btnRect.width;
+
+    if (indicator.dataset.active === 'true') {
+      indicator.style.transform = `translateX(${x}px)`;
+      indicator.style.width = `${width}px`;
+    } else {
+      indicator.style.transition = 'none';
+      indicator.style.transform = `translateX(${x}px)`;
+      indicator.style.width = `${width}px`;
+      void indicator.offsetWidth;
+      indicator.style.transition = '';
+      indicator.dataset.active = 'true';
+    }
+    indicator.style.opacity = '1';
+    indicator.style.visibility = 'visible';
+  } else {
+    indicator.dataset.active = 'false';
+    indicator.style.opacity = '0';
+    indicator.style.visibility = 'hidden';
+  }
+}
+
+export function syncBackgroundScrollLock() {
+  if (!modalOverlays.length) {
+    modalOverlays = [...document.querySelectorAll('.tool-modal, div[id^="modal"].fixed')];
+  }
+
+  // Synchronize mobile bottom nav tab active indicators
+  const navMap = [
+    ['modalAstroCalendar', 'btnOpenAstroCalendarModal'],
+    ['modalContributeSpot', 'btnOpenContributeModal'],
+    ['modalSpotsDirectory', 'btnOpenSpotsDirectory'],
+    ['modalUserGuide', 'btnOpenGuideModal'],
+    ['modalSettings', 'btnOpenSettingsModal']
+  ];
+  navMap.forEach(([modalId, btnId]) => {
+    const modalEl = document.getElementById(modalId);
+    const btnEl = document.getElementById(btnId);
+    if (modalEl && btnEl) {
+      const isOpen = !modalEl.classList.contains('hidden');
+      btnEl.classList.toggle('is-nav-active', isOpen);
+      btnEl.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+  });
+
+  // Reset delete mode if spots directory is closed
+  const spotsModal = document.getElementById('modalSpotsDirectory');
+  if (spotsModal && spotsModal.classList.contains('hidden') && state.isDeleteSpotMode) {
+    resetDeleteSpotMode();
+  }
+
+  syncMobileNavIndicator();
+
+  const hasOpenModal = modalOverlays.some(modal => !modal.classList.contains('hidden'));
+  if (hasOpenModal === backgroundScrollLocked) return;
+
+  if (hasOpenModal) {
+    lockedScrollY = window.scrollY;
+    backgroundScrollLocked = true;
+    document.body.style.setProperty('--modal-scroll-lock-top', `-${lockedScrollY}px`);
+    document.body.style.setProperty('--modal-scroll-lock-width', `${document.body.getBoundingClientRect().width}px`);
+    document.documentElement.classList.add('modal-scroll-locked');
+    document.body.classList.add('modal-scroll-locked');
+    return;
+  }
+
+  backgroundScrollLocked = false;
+  document.documentElement.classList.remove('modal-scroll-locked');
+  document.body.classList.remove('modal-scroll-locked');
+  document.body.style.removeProperty('--modal-scroll-lock-top');
+  document.body.style.removeProperty('--modal-scroll-lock-width');
+
+  if (pendingScrollAfterModalUnlock) {
+    const scrollFn = pendingScrollAfterModalUnlock;
+    pendingScrollAfterModalUnlock = null;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollFn();
+      });
+    });
+    return;
+  }
+
+  window.scrollTo(0, lockedScrollY);
+}
+
 export function initEventListeners() {
    const activeSpotBar = document.getElementById('activeSpotBar');
    const activeSpotBarToggle = document.getElementById('activeSpotBarToggle');
+   const spotBarMobileQuery = window.matchMedia('(max-width: 639px)');
    let activeSpotBarAnimation = null;
-   activeSpotBarToggle.addEventListener('click', () => {
-     const startHeight = activeSpotBar.getBoundingClientRect().height;
-     if (activeSpotBarAnimation) {
-       activeSpotBarAnimation.onfinish = null;
-       activeSpotBarAnimation.cancel();
-       activeSpotBarAnimation = null;
-       activeSpotBar.style.removeProperty('height');
-       activeSpotBar.style.removeProperty('box-sizing');
-       activeSpotBar.style.removeProperty('overflow');
-     }
 
-     const isCollapsed = activeSpotBar.dataset.collapsed !== 'true';
+   const applySpotBarState = (isCollapsed) => {
      activeSpotBar.dataset.collapsed = String(isCollapsed);
      activeSpotBarToggle.setAttribute('aria-expanded', String(!isCollapsed));
      activeSpotBarToggle.setAttribute(
@@ -51,7 +160,22 @@ export function initEventListeners() {
      activeSpotBar.querySelectorAll('.active-spot-bar-detail').forEach(detail => {
        detail.inert = isCollapsed;
      });
+   };
 
+   const setSpotBarCollapsed = (isCollapsed, { animate = true } = {}) => {
+     const startHeight = activeSpotBar.getBoundingClientRect().height;
+     if (activeSpotBarAnimation) {
+       activeSpotBarAnimation.onfinish = null;
+       activeSpotBarAnimation.cancel();
+       activeSpotBarAnimation = null;
+       activeSpotBar.style.removeProperty('height');
+       activeSpotBar.style.removeProperty('box-sizing');
+       activeSpotBar.style.removeProperty('overflow');
+     }
+
+     applySpotBarState(isCollapsed);
+
+     if (!animate || spotBarMobileQuery.matches) return;
      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
      const endHeight = activeSpotBar.getBoundingClientRect().height;
@@ -69,40 +193,73 @@ export function initEventListeners() {
        activeSpotBar.style.removeProperty('box-sizing');
        activeSpotBar.style.removeProperty('overflow');
      };
+   };
+
+   activeSpotBarToggle.addEventListener('click', () => {
+     setSpotBarCollapsed(activeSpotBar.dataset.collapsed !== 'true');
    });
 
-   const modalOverlays = [...document.querySelectorAll('div[id^="modal"].fixed.inset-0')];
-  let backgroundScrollLocked = false;
-  let lockedScrollY = 0;
+   // Mobile starts compact; desktop keeps the full bar. Load/resize re-syncs after layout settles.
+   let lastSpotBarMobile = null;
+   const syncSpotBarForViewport = () => {
+     const isMobile = spotBarMobileQuery.matches;
+     if (isMobile === lastSpotBarMobile) return;
+     lastSpotBarMobile = isMobile;
+     setSpotBarCollapsed(isMobile, { animate: false });
+   };
+   syncSpotBarForViewport();
+   window.addEventListener('load', syncSpotBarForViewport, { once: true });
+   window.addEventListener('resize', syncSpotBarForViewport);
+   spotBarMobileQuery.addEventListener('change', syncSpotBarForViewport);
 
-  const syncBackgroundScrollLock = () => {
-    const hasOpenModal = modalOverlays.some(modal => !modal.classList.contains('hidden'));
-    if (hasOpenModal === backgroundScrollLocked) return;
+   // Keep --chrome-h equal to the real sticky header + spot bar height so
+   // scroll margins never drift when the bar collapses or the header wraps.
+   const appChrome = document.getElementById('appChrome');
+   if (appChrome) {
+     let chromeHeightFrame = null;
+     const syncChromeHeight = () => {
+       chromeHeightFrame = null;
+       const height = Math.round(appChrome.getBoundingClientRect().height);
+       document.documentElement.style.setProperty('--chrome-h', `${height}px`);
+     };
+     const scheduleChromeHeightSync = () => {
+       if (chromeHeightFrame !== null) return;
+       chromeHeightFrame = window.requestAnimationFrame(syncChromeHeight);
+     };
+     syncChromeHeight();
+     if ('ResizeObserver' in window) {
+       new ResizeObserver(scheduleChromeHeightSync).observe(appChrome);
+     }
+     window.addEventListener('resize', scheduleChromeHeightSync);
+   }
 
-    if (hasOpenModal) {
-      lockedScrollY = window.scrollY;
-      backgroundScrollLocked = true;
-      document.body.style.setProperty('--modal-scroll-lock-top', `-${lockedScrollY}px`);
-      document.body.style.setProperty('--modal-scroll-lock-width', `${document.body.getBoundingClientRect().width}px`);
-      document.documentElement.classList.add('modal-scroll-locked');
-      document.body.classList.add('modal-scroll-locked');
-      return;
+    // Mobile bottom nav placement: outside of app-chrome on mobile so it is not trapped
+    // in the app-chrome stacking context, and inside header-frame on desktop.
+    const mobileToolNav = document.getElementById('mobileToolNav');
+    const headerFrame = document.querySelector('.header-frame');
+    const syncNavPlacement = () => {
+      if (!mobileToolNav) return;
+      const isMobile = spotBarMobileQuery.matches;
+      if (isMobile && mobileToolNav.parentElement !== document.body) {
+        document.body.appendChild(mobileToolNav);
+      } else if (!isMobile && headerFrame && mobileToolNav.parentElement !== headerFrame) {
+        headerFrame.appendChild(mobileToolNav);
+      }
+      syncMobileNavIndicator();
+    };
+    syncNavPlacement();
+    window.addEventListener('resize', syncNavPlacement);
+    spotBarMobileQuery.addEventListener('change', syncNavPlacement);
+
+    modalOverlays = [...document.querySelectorAll('.tool-modal, div[id^="modal"].fixed')];
+    if (!modalObserver) {
+      modalObserver = new MutationObserver(syncBackgroundScrollLock);
+      modalOverlays.forEach(modal => modalObserver.observe(modal, {
+        attributes: true,
+        attributeFilter: ['class']
+      }));
     }
-
-    backgroundScrollLocked = false;
-    document.documentElement.classList.remove('modal-scroll-locked');
-    document.body.classList.remove('modal-scroll-locked');
-    document.body.style.removeProperty('--modal-scroll-lock-top');
-    document.body.style.removeProperty('--modal-scroll-lock-width');
-    window.scrollTo(0, lockedScrollY);
-  };
-
-  const modalObserver = new MutationObserver(syncBackgroundScrollLock);
-  modalOverlays.forEach(modal => modalObserver.observe(modal, {
-    attributes: true,
-    attributeFilter: ['class']
-  }));
-  syncBackgroundScrollLock();
+    syncBackgroundScrollLock();
 
   // Date input default to today in Vietnam timezone
   const currentVietnamDateTime = getCurrentVietnamDateTime();
@@ -210,21 +367,27 @@ export function initEventListeners() {
   }
 
   // Map Overlay Toggle Buttons (Bortle, simulated clouds, Azimuth Vectors)
+  const syncToggleBtnState = (btn, isActive) => {
+    btn.setAttribute('aria-pressed', String(isActive));
+    btn.classList.toggle('is-off', !isActive);
+    btn.classList.toggle('opacity-40', !isActive);
+  };
+
   document.getElementById('btnToggleBortleOverlay').addEventListener('click', (e) => {
     state.showBortleOverlay = !state.showBortleOverlay;
-    e.currentTarget.classList.toggle('opacity-40', !state.showBortleOverlay);
+    syncToggleBtnState(e.currentTarget, state.showBortleOverlay);
     drawMapCanvasOverlays();
   });
 
   document.getElementById('btnToggleHimawariOverlay').addEventListener('click', (e) => {
     state.showHimawariOverlay = !state.showHimawariOverlay;
-    e.currentTarget.classList.toggle('opacity-40', !state.showHimawariOverlay);
+    syncToggleBtnState(e.currentTarget, state.showHimawariOverlay);
     drawMapCanvasOverlays();
   });
 
   document.getElementById('btnToggleAzimuthVectors').addEventListener('click', (e) => {
     state.showAzimuthVectors = !state.showAzimuthVectors;
-    e.currentTarget.classList.toggle('opacity-40', !state.showAzimuthVectors);
+    syncToggleBtnState(e.currentTarget, state.showAzimuthVectors);
     drawMapCanvasOverlays();
   });
 
@@ -233,9 +396,9 @@ export function initEventListeners() {
     btn.addEventListener('click', () => {
       const styleMode = btn.getAttribute('data-map-tile');
       document.querySelectorAll('.map-tile-btn').forEach(b => {
-        b.className = 'map-tile-btn px-2.5 py-0.5 rounded text-slate-400 hover:text-white';
+        b.className = 'map-tile-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white';
       });
-      btn.className = 'map-tile-btn px-2.5 py-0.5 rounded bg-violet-600 text-white font-medium';
+      btn.className = 'map-tile-btn px-2.5 py-1 rounded-lg bg-violet-600 text-white font-medium is-active';
       setMapBaseTile(styleMode);
     });
   });
@@ -311,41 +474,55 @@ export function initEventListeners() {
   // Search Input & Global Map Geocoding (OpenStreetMap Nominatim + Google Maps URL / Coords + Local Spots)
   const searchInput = document.getElementById('quickSpotSearchInput');
   const searchDropdown = document.getElementById('quickSearchDropdown');
+  const searchPanel = document.getElementById('headerSearchPanel');
+  const searchToggle = document.getElementById('btnToggleMobileSearch');
+  const searchClose = document.getElementById('btnCloseMobileSearch');
+  const searchMobileQuery = window.matchMedia('(max-width: 639px)');
   let geocodeDebounceTimer = null;
   let remoteSearchId = 0;
-  let searchFocusScrollY = null;
 
-  const restoreSearchFocusScroll = () => {
-    if (searchFocusScrollY === null || document.activeElement !== searchInput) return;
-    window.scrollTo(0, searchFocusScrollY);
-  };
+  const setMobileSearchOpen = (open, { focus = false } = {}) => {
+    document.documentElement.classList.toggle('mobile-search-open', open);
+    if (searchToggle) searchToggle.setAttribute('aria-expanded', String(open));
 
-  const captureSearchFocusScroll = () => {
-    if (window.matchMedia('(max-width: 639px)').matches) {
-      searchFocusScrollY = window.scrollY;
+    if (open) {
+      if (focus) requestAnimationFrame(() => searchInput.focus({ preventScroll: true }));
+      return;
     }
+
+    searchInput.blur();
+    searchDropdown.classList.add('hidden');
   };
 
-  searchInput.addEventListener('pointerdown', captureSearchFocusScroll);
-  searchInput.addEventListener('touchstart', captureSearchFocusScroll, { passive: true });
-
-  searchInput.addEventListener('focus', () => {
-    if (!window.matchMedia('(max-width: 639px)').matches) return;
-    if (searchFocusScrollY === null) searchFocusScrollY = window.scrollY;
-    document.documentElement.classList.add('mobile-search-active');
-    requestAnimationFrame(restoreSearchFocusScroll);
-  });
-
-  searchInput.addEventListener('blur', () => {
-    document.documentElement.classList.remove('mobile-search-active');
-    searchFocusScrollY = null;
-  });
-
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
-      requestAnimationFrame(restoreSearchFocusScroll);
+  if (searchToggle) {
+    searchToggle.addEventListener('click', () => {
+      const open = !document.documentElement.classList.contains('mobile-search-open');
+      setMobileSearchOpen(open, { focus: open });
     });
   }
+
+  if (searchClose) {
+    searchClose.addEventListener('click', () => {
+      setMobileSearchOpen(false);
+    });
+  }
+
+  searchInput.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    setMobileSearchOpen(false);
+    searchDropdown.classList.add('hidden');
+    if (searchToggle) searchToggle.focus({ preventScroll: true });
+  });
+
+  searchInput.addEventListener('focus', () => {
+    if (searchInput.value.trim().length >= 1) {
+      searchInput.dispatchEvent(new Event('input'));
+    }
+  });
+
+  searchMobileQuery.addEventListener('change', (event) => {
+    if (!event.matches) setMobileSearchOpen(false);
+  });
 
   searchInput.addEventListener('input', (e) => {
     const rawQuery = e.target.value.trim();
@@ -372,56 +549,83 @@ export function initEventListeners() {
         const lat = parseFloat(gmapsMatch ? gmapsMatch[1] : coordMatch[1]);
         const lon = parseFloat(gmapsMatch ? gmapsMatch[2] : coordMatch[3]);
         html += `
-          <div data-custom-lat="${lat}" data-custom-lon="${lon}" data-custom-name="Tọa độ Bản đồ (${lat.toFixed(4)}, ${lon.toFixed(4)})" class="p-2.5 hover:bg-violet-600/25 cursor-pointer flex items-center justify-between text-xs">
-            <span class="text-cyan-300 font-mono">${iconMarkup('map-pin', 'w-3.5 h-3.5 inline-block align-[-3px]')} Nhảy tới tọa độ: ${lat.toFixed(4)}, ${lon.toFixed(4)}</span>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-violet-500/30 text-violet-200">Tải dự báo</span>
+          <div data-custom-lat="${lat}" data-custom-lon="${lon}" data-custom-name="Tọa độ Bản đồ (${lat.toFixed(4)}, ${lon.toFixed(4)})" class="search-dropdown__coord-item">
+            <span class="text-cyan-300 font-mono flex items-center gap-1.5 font-semibold text-xs">
+              ${iconMarkup('map-pin', 'w-3.5 h-3.5 text-cyan-400 shrink-0')}
+              Nhảy tới tọa độ: ${lat.toFixed(4)}, ${lon.toFixed(4)}
+            </span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-semibold bg-violet-500/25 text-violet-200 border border-violet-500/40 shrink-0">Tải dự báo</span>
           </div>
         `;
       }
 
       if (matches.length > 0) {
-        html += `<div class="px-2.5 py-1 bg-slate-900/90 text-[10px] font-semibold uppercase tracking-wider text-violet-300">Danh bạ Điểm Săn Ảnh StarWatch</div>`;
-        html += matches.map(s => `
-          <div data-spot-id="${s.id}" class="p-2.5 hover:bg-white/10 cursor-pointer flex items-center justify-between text-xs">
-            <div>
-              <div class="font-bold text-white">${s.name}</div>
-              <div class="text-[10px] text-slate-400">${s.region} · Độ cao ${s.elevation}m</div>
+        html += `<div class="search-dropdown__section text-violet-300">
+          <span class="flex items-center gap-1.5">
+            ${iconMarkup('map-pin', 'w-3 h-3 text-violet-400 shrink-0')}
+            <span>Danh bạ Điểm Săn Ảnh StarWatch</span>
+          </span>
+          <span class="text-[10px] font-mono text-violet-400/90 font-normal">(${matches.length})</span>
+        </div>`;
+        html += matches.map(s => {
+          const bortleInfo = getBortleColorInfo(s.bortle);
+          return `
+            <div data-spot-id="${s.id}" class="search-dropdown__item">
+              <div class="search-dropdown__item-main">
+                <div class="search-dropdown__item-title">
+                  ${iconMarkup('sparkles', 'w-3.5 h-3.5 text-violet-400 shrink-0')}
+                  <span class="truncate">${s.name}</span>
+                </div>
+                <div class="search-dropdown__item-subtitle">${s.region} · Độ cao ${s.elevation}m</div>
+              </div>
+              <div class="search-dropdown__item-meta">
+                <span class="${bortleInfo.badgeClass} text-[10px] px-2 py-0.5 rounded">Bortle ${s.bortle}</span>
+              </div>
             </div>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Bortle ${s.bortle}</span>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
 
-      html += `<div class="px-2.5 py-1 bg-slate-900/90 text-[10px] font-semibold uppercase tracking-wider text-cyan-300 flex items-center justify-between">
-        <span>${iconMarkup('globe', 'w-3.5 h-3.5 inline-block align-[-3px]')} Kết quả Tìm kiếm Bản đồ mở rộng</span>
-        ${isSearchingRemote ? '<span class="animate-pulse text-amber-300">Đang tìm...</span>' : ''}
+      html += `<div class="search-dropdown__section text-cyan-300">
+        <span class="flex items-center gap-1.5">
+          ${iconMarkup('globe', 'w-3 h-3 text-cyan-400 shrink-0')}
+          <span>Kết quả Tìm kiếm Bản đồ mở rộng</span>
+        </span>
+        ${isSearchingRemote ? '<span class="inline-flex items-center gap-1 text-[10px] text-amber-400 font-normal"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> Đang tìm...</span>' : ''}
       </div>`;
 
       if (remotePlaces.length > 0) {
         html += remotePlaces.map(p => {
           const estB = estimateBortleAtCoord(p.lat, p.lon);
           const estElev = estimateTerrainElevation(p.lat, p.lon);
+          const bortleInfo = getBortleColorInfo(estB);
           return `
             <div
               data-custom-lat="${p.lat}"
               data-custom-lon="${p.lon}"
               data-custom-name="${p.shortTitle.replace(/"/g, '&quot;')}"
               data-custom-province="${p.regionLabel.replace(/"/g, '&quot;')}"
-              class="p-2.5 hover:bg-cyan-500/20 cursor-pointer flex items-center justify-between gap-2 text-xs"
+              class="search-dropdown__item"
             >
-              <div class="min-w-0">
-                <div class="font-bold text-white truncate">${iconMarkup('map-pin', 'w-3.5 h-3.5 inline-block align-[-3px]')} ${p.shortTitle}</div>
-                <div class="text-[10px] text-slate-300 truncate">${p.fullAddress}</div>
+              <div class="search-dropdown__item-main">
+                <div class="search-dropdown__item-title">
+                  ${iconMarkup('map-pin', 'w-3.5 h-3.5 text-cyan-400 shrink-0')}
+                  <span class="truncate">${p.shortTitle}</span>
+                </div>
+                <div class="search-dropdown__item-subtitle">${p.fullAddress}</div>
               </div>
-              <div class="text-right shrink-0">
-                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-200 block">Bortle ~${estB}</span>
-                <span class="text-[9px] font-mono text-amber-300">~${estElev}m</span>
+              <div class="search-dropdown__item-meta">
+                <span class="${bortleInfo.badgeClass} text-[10px] px-2 py-0.5 rounded">Bortle ~${estB}</span>
+                <span class="search-dropdown__item-elev">~${estElev}m</span>
               </div>
             </div>
           `;
         }).join('');
       } else if (!isSearchingRemote) {
-        html += `<div class="p-2.5 text-[11px] text-slate-400">Nhập tên bất kỳ núi, đèo, hồ, xã/huyện hoặc dán link Google Maps để định vị.</div>`;
+        html += `<div class="search-dropdown__empty">
+          ${iconMarkup('search', 'w-3.5 h-3.5 text-slate-500 shrink-0')}
+          <span>Nhập tên núi, đèo, hồ, địa danh hoặc dán link Google Maps để tra cứu.</span>
+        </div>`;
       }
 
       searchDropdown.innerHTML = html;
@@ -434,6 +638,7 @@ export function initEventListeners() {
           if (spot) selectSpot(spot, true);
           searchDropdown.classList.add('hidden');
           searchInput.value = '';
+          setMobileSearchOpen(false);
         });
       });
 
@@ -459,6 +664,7 @@ export function initEventListeners() {
           }, true);
           searchDropdown.classList.add('hidden');
           searchInput.value = '';
+          setMobileSearchOpen(false);
         });
       });
     };
@@ -495,12 +701,72 @@ export function initEventListeners() {
     if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
       searchDropdown.classList.add('hidden');
     }
+
+    if (document.documentElement.classList.contains('mobile-search-open')
+      && !(searchPanel && searchPanel.contains(e.target))
+      && !(searchToggle && searchToggle.contains(e.target))) {
+      setMobileSearchOpen(false);
+    }
+
+    if (spotBarMobileQuery.matches
+      && activeSpotBar.dataset.collapsed === 'false'
+      && !activeSpotBar.contains(e.target)) {
+      setSpotBarCollapsed(true, { animate: false });
+    }
   });
 
-  // Scroll to spots directory
-  document.getElementById('btnOpenSpotsDirectory').addEventListener('click', () => {
-    document.getElementById('spotsGridContainer').scrollIntoView({ behavior: 'smooth' });
-  });
+  // Helper to cleanly switch or toggle tool modals with synchronized animations
+  const toggleToolModal = (targetModal, onBeforeOpen) => {
+    if (!targetModal) return;
+    const isOpen = !targetModal.classList.contains('hidden');
+    if (isOpen) {
+      if (targetModal === modalSpots) resetDeleteSpotMode();
+      closeToolModal(targetModal);
+      syncBackgroundScrollLock();
+      return;
+    }
+    modalOverlays.forEach(m => {
+      if (m !== targetModal && !m.classList.contains('hidden')) {
+        if (m === modalSpots) resetDeleteSpotMode();
+        closeToolModal(m, { immediate: true });
+      }
+    });
+    if (onBeforeOpen) onBeforeOpen();
+    openToolModal(targetModal);
+    syncBackgroundScrollLock();
+  };
+
+  // Curated & Community Spots Directory Modal ("Địa điểm")
+  const modalSpots = document.getElementById('modalSpotsDirectory');
+  const btnOpenSpots = document.getElementById('btnOpenSpotsDirectory');
+  const btnCloseSpots = document.getElementById('btnCloseSpotsDirectoryModal');
+  const btnToggleDelete = document.getElementById('btnToggleDeleteSpotMode');
+
+  if (btnOpenSpots) {
+    btnOpenSpots.addEventListener('click', () => {
+      toggleToolModal(modalSpots, () => renderSpotsDirectoryGrid());
+    });
+  }
+  if (btnCloseSpots) {
+    btnCloseSpots.addEventListener('click', () => {
+      resetDeleteSpotMode();
+      closeToolModal(modalSpots);
+    });
+  }
+  if (modalSpots) {
+    modalSpots.addEventListener('click', (e) => {
+      if (e.target === modalSpots) {
+        resetDeleteSpotMode();
+        closeToolModal(modalSpots);
+      }
+    });
+  }
+  if (btnToggleDelete) {
+    btnToggleDelete.addEventListener('click', () => {
+      state.isDeleteSpotMode = !state.isDeleteSpotMode;
+      renderSpotsDirectoryGrid();
+    });
+  }
 
   // Jump to Camera Setup Guide section from Sticky Bar
   const btnJumpSetup = document.getElementById('btnJumpToCameraSetup');
@@ -523,43 +789,65 @@ export function initEventListeners() {
     btn.addEventListener('click', () => {
       state.selectedGearMode = btn.getAttribute('data-gear-mode');
       document.querySelectorAll('.gear-tab-btn').forEach(b => {
-        b.className = 'gear-tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white flex items-center gap-1.5 transition';
+        b.classList.remove('bg-violet-600', 'text-white', 'font-semibold');
+        b.classList.add('text-slate-400', 'font-medium');
       });
-      btn.className = 'gear-tab-btn px-3 py-1.5 rounded-lg font-semibold bg-violet-600 text-white flex items-center gap-1.5 transition';
+      btn.classList.remove('text-slate-400', 'font-medium');
+      btn.classList.add('bg-violet-600', 'text-white', 'font-semibold');
       renderCameraSetupGuide();
     });
   });
 
-  // Astronomical Events Calendar Modal
+  // Astronomical Events Calendar Modal ("Sự kiện")
   const modalAstroCal = document.getElementById('modalAstroCalendar');
-  document.getElementById('btnOpenAstroCalendarModal').addEventListener('click', () => {
-    renderAstroCalendarModal();
-    openToolModal(modalAstroCal);
-  });
-  document.getElementById('btnCloseAstroCalendarModal').addEventListener('click', () => {
-    closeToolModal(modalAstroCal);
-  });
+  const btnOpenAstroCal = document.getElementById('btnOpenAstroCalendarModal');
+  if (btnOpenAstroCal) {
+    btnOpenAstroCal.addEventListener('click', () => {
+      toggleToolModal(modalAstroCal, () => renderAstroCalendarModal());
+    });
+  }
+  const btnCloseAstroCal = document.getElementById('btnCloseAstroCalendarModal');
+  if (btnCloseAstroCal) {
+    btnCloseAstroCal.addEventListener('click', () => closeToolModal(modalAstroCal));
+  }
+  if (modalAstroCal) {
+    modalAstroCal.addEventListener('click', (e) => {
+      if (e.target === modalAstroCal) closeToolModal(modalAstroCal);
+    });
+  }
   document.querySelectorAll('.cal-filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       state.activeCalendarFilter = btn.getAttribute('data-cal-filter');
       document.querySelectorAll('.cal-filter-btn').forEach(b => {
-        b.className = 'cal-filter-btn px-3 py-1 rounded-xl text-xs font-medium bg-white/10 text-slate-300 hover:text-white transition';
+        b.classList.remove('is-active', 'bg-violet-600', 'text-white', 'font-semibold');
+        b.classList.add('bg-white/10', 'text-slate-300', 'font-medium');
+        b.setAttribute('aria-pressed', 'false');
       });
-      btn.className = 'cal-filter-btn px-3 py-1 rounded-xl text-xs font-semibold bg-violet-600 text-white transition';
+      btn.classList.add('is-active', 'bg-violet-600', 'text-white', 'font-semibold');
+      btn.classList.remove('bg-white/10', 'text-slate-300', 'font-medium');
+      btn.setAttribute('aria-pressed', 'true');
       renderAstroCalendarModal();
     });
   });
 
-  // Liquid Glass User Guide Modal
+  // Liquid Glass User Guide Modal ("Hướng dẫn")
   const modalGuide = document.getElementById('modalUserGuide');
   const closeGuide = () => {
     closeToolModal(modalGuide);
   };
-  document.getElementById('btnOpenGuideModal').addEventListener('click', () => {
-    openToolModal(modalGuide);
-  });
-  document.getElementById('btnCloseGuideModal').addEventListener('click', closeGuide);
-  document.getElementById('btnAcknowledgeGuide').addEventListener('click', closeGuide);
+  const btnOpenGuide = document.getElementById('btnOpenGuideModal');
+  if (btnOpenGuide) {
+    btnOpenGuide.addEventListener('click', () => toggleToolModal(modalGuide));
+  }
+  const btnCloseGuide = document.getElementById('btnCloseGuideModal');
+  if (btnCloseGuide) btnCloseGuide.addEventListener('click', closeGuide);
+  const btnAckGuide = document.getElementById('btnAcknowledgeGuide');
+  if (btnAckGuide) attachHoldToConfirm(btnAckGuide, { onComplete: closeGuide });
+  if (modalGuide) {
+    modalGuide.addEventListener('click', (e) => {
+      if (e.target === modalGuide) closeGuide();
+    });
+  }
 
   // App Information Modal
   const modalAppInfo = document.getElementById('modalAppInfo');
@@ -592,17 +880,27 @@ export function initEventListeners() {
     }
   });
 
-  // Unified Settings Modal
+  // Unified Settings Modal ("Cài đặt")
   const modalSettings = document.getElementById('modalSettings');
   const settingsCartoInput = document.getElementById('settingsCartoKeyInput');
-  document.getElementById('btnOpenSettingsModal').addEventListener('click', () => {
-    if (settingsCartoInput) settingsCartoInput.value = CARTO_CONFIG.apiKey;
-    updateCartoTelemetryUI();
-    openToolModal(modalSettings);
-  });
-  document.getElementById('btnCloseSettingsModal').addEventListener('click', () => {
-    closeToolModal(modalSettings);
-  });
+  const btnOpenSettings = document.getElementById('btnOpenSettingsModal');
+  if (btnOpenSettings) {
+    btnOpenSettings.addEventListener('click', () => {
+      toggleToolModal(modalSettings, () => {
+        if (settingsCartoInput) settingsCartoInput.value = CARTO_CONFIG.apiKey;
+        updateCartoTelemetryUI();
+      });
+    });
+  }
+  const btnCloseSettings = document.getElementById('btnCloseSettingsModal');
+  if (btnCloseSettings) {
+    btnCloseSettings.addEventListener('click', () => closeToolModal(modalSettings));
+  }
+  if (modalSettings) {
+    modalSettings.addEventListener('click', (e) => {
+      if (e.target === modalSettings) closeToolModal(modalSettings);
+    });
+  }
   document.getElementById('btnSettingsApplyCartoKey').addEventListener('click', () => {
     const newKey = (settingsCartoInput.value || '').trim() || DEFAULT_CARTO_API_KEY;
     CARTO_CONFIG.apiKey = newKey;
@@ -640,16 +938,21 @@ export function initEventListeners() {
     });
   });
 
-  // Contribute New Spot Modal
+  // Contribute New Spot Modal ("Đóng góp")
   const modalContribute = document.getElementById('modalContributeSpot');
   const openContribute = () => {
-    if (state.activeSpot) {
-      document.getElementById('inputSpotLat').value = state.activeSpot.lat;
-      document.getElementById('inputSpotLon').value = state.activeSpot.lon;
-      document.getElementById('inputSpotElevation').value = state.activeSpot.elevation;
-      document.getElementById('inputSpotBortle').value = state.activeSpot.bortle;
-    }
-    openToolModal(modalContribute);
+    toggleToolModal(modalContribute, () => {
+      if (state.activeSpot) {
+        const latInput = document.getElementById('inputSpotLat');
+        const lonInput = document.getElementById('inputSpotLon');
+        const elevInput = document.getElementById('inputSpotElevation');
+        const bortleInput = document.getElementById('inputSpotBortle');
+        if (latInput && !latInput.value) latInput.value = state.activeSpot.lat;
+        if (lonInput && !lonInput.value) lonInput.value = state.activeSpot.lon;
+        if (elevInput && !elevInput.value) elevInput.value = state.activeSpot.elevation;
+        if (bortleInput && !bortleInput.value) bortleInput.value = state.activeSpot.bortle;
+      }
+    });
   };
   const closeContribute = () => {
     closeToolModal(modalContribute);
@@ -658,6 +961,11 @@ export function initEventListeners() {
   document.getElementById('btnOpenContributeModal').addEventListener('click', openContribute);
   document.getElementById('btnCloseContributeModal').addEventListener('click', closeContribute);
   document.getElementById('btnCancelContribute').addEventListener('click', closeContribute);
+  if (modalContribute) {
+    modalContribute.addEventListener('click', (e) => {
+      if (e.target === modalContribute) closeContribute();
+    });
+  }
 
   document.getElementById('formContributeSpot').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -681,6 +989,9 @@ export function initEventListeners() {
       existing.push(newSpot);
       localStorage.setItem('skyradar_custom_spots_v1', JSON.stringify(existing));
     } catch (err) {}
+
+    // Clear form inputs after user clicks save
+    document.getElementById('formContributeSpot').reset();
 
     loadSpotsFromStorage();
     closeContribute();
@@ -731,12 +1042,74 @@ export function initAppEvents() {
 
   on('spot:select', (detail = {}) => {
     if (!detail.spot) return;
+    const modalSpots = document.getElementById('modalSpotsDirectory');
+    if (modalSpots && !modalSpots.classList.contains('hidden')) {
+      closeToolModal(modalSpots);
+    }
     selectSpot(detail.spot, Boolean(detail.flyMap));
-    if (detail.scrollToMatrix) scrollToWeatherMatrix();
+    if (detail.scrollToMatrix) {
+      pendingScrollAfterModalUnlock = () => scrollToWeatherMatrix();
+      if (backgroundScrollLocked || document.body.classList.contains('modal-scroll-locked')) {
+        syncBackgroundScrollLock();
+      } else {
+        pendingScrollAfterModalUnlock = null;
+        scrollToWeatherMatrix();
+      }
+    }
+    if (detail.scrollToCameraSetup) {
+      pendingScrollAfterModalUnlock = () => scrollToCameraSetup();
+      if (backgroundScrollLocked || document.body.classList.contains('modal-scroll-locked')) {
+        syncBackgroundScrollLock();
+      } else {
+        pendingScrollAfterModalUnlock = null;
+        scrollToCameraSetup();
+      }
+    }
+  });
+
+  on('spot:delete', ({ spot, spotKey }) => {
+    const identifier = spot?.id || spotKey;
+    const key = spotKey || (spot ? getSpotKey(spot) : null);
+    deleteSpotFromStorage(identifier, key);
+    renderAllSpotMarkersOnMap();
+    renderSpotsDirectoryGrid();
+
+    // If active / default spot was deleted or is no longer present in spots, load the first spot in the spots table
+    const activeKey = state.activeSpot ? getSpotKey(state.activeSpot) : null;
+    const isCurrentActiveDeleted =
+      !state.activeSpot ||
+      state.activeSpot.id === identifier ||
+      (key && state.activeSpot.id === key) ||
+      (activeKey && (activeKey === key || activeKey === identifier)) ||
+      !state.spots.some(s => s.id === state.activeSpot.id || getSpotKey(s) === activeKey);
+
+    if (isCurrentActiveDeleted) {
+      if (state.spots.length > 0) {
+        selectSpot(state.spots[0], true);
+      } else {
+        state.activeSpot = null;
+      }
+    }
   });
 
   on('ui:scroll-to-matrix', () => {
-    scrollToWeatherMatrix();
+    pendingScrollAfterModalUnlock = () => scrollToWeatherMatrix();
+    if (backgroundScrollLocked || document.body.classList.contains('modal-scroll-locked')) {
+      syncBackgroundScrollLock();
+    } else {
+      pendingScrollAfterModalUnlock = null;
+      scrollToWeatherMatrix();
+    }
+  });
+
+  on('ui:scroll-to-camera-setup', () => {
+    pendingScrollAfterModalUnlock = () => scrollToCameraSetup();
+    if (backgroundScrollLocked || document.body.classList.contains('modal-scroll-locked')) {
+      syncBackgroundScrollLock();
+    } else {
+      pendingScrollAfterModalUnlock = null;
+      scrollToCameraSetup();
+    }
   });
 
   on('spot:reverse-geocode', (detail = {}) => {

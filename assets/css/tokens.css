@@ -8,6 +8,29 @@
   --text-secondary: #94a3b8;
   --accent-primary: #8b5cf6;
   --accent-secondary: #38bdf8;
+
+  /* Layout scale (4px rhythm). */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --shell-max: 1600px;
+  --shell-pad: 12px;
+  --header-h: 56px;
+  --spotbar-h: 56px;
+
+  /* Fallback; js/app/events.js keeps this equal to the real chrome height. */
+  --chrome-h: 7rem;
+
+  --z-chrome: 1000;
 }
 
 html.light-theme {
@@ -19,6 +42,12 @@ html.light-theme {
   --text-secondary: #475569;
   --accent-primary: #6d28d9;
   --accent-secondary: #0284c7;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --shell-pad: 24px;
+  }
 }
 
 /* Field Red-Light Night Vision Mode for Astrophotographers */
