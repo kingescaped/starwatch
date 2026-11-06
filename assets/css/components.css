@@ -258,17 +258,10 @@ html.light-theme #activeSpotBar[data-collapsed="true"] .active-spot-indicator > 
   }
 }
 
-html.modal-scroll-locked {
-  overflow-y: hidden;
-}
-
+html.modal-scroll-locked,
 body.modal-scroll-locked {
-  position: fixed;
-  top: var(--modal-scroll-lock-top);
-  left: 0;
-  right: 0;
-  width: var(--modal-scroll-lock-width, 100%);
-  overflow: hidden;
+  overflow: hidden !important;
+  overscroll-behavior: contain !important;
 }
 
 #modalCartoConfig,
@@ -1249,7 +1242,17 @@ html.light-theme #activeSpotBar[data-collapsed="true"] .active-spot-indicator > 
   }
 
   body {
+    padding-top: var(--chrome-h, 6.375rem) !important;
     padding-bottom: 0 !important;
+  }
+
+  .app-chrome {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: var(--z-chrome, 2400) !important;
   }
 
   .app-header {
@@ -1542,9 +1545,15 @@ html.light-theme #activeSpotBar[data-collapsed="true"] .active-spot-indicator > 
     display: none !important;
   }
 
-  .tool-modal:not(.hidden) {
+  .tool-modal:not(.hidden),
+  div[id^="modal"].fixed:not(.hidden) {
     position: fixed !important;
-    inset: 0 !important;
+    top: var(--chrome-h, 6.375rem) !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: calc(100dvh - var(--chrome-h, 6.375rem)) !important;
+    max-height: calc(100dvh - var(--chrome-h, 6.375rem)) !important;
     z-index: 2000 !important;
     display: flex !important;
     align-items: stretch !important;
@@ -1562,9 +1571,7 @@ html.light-theme #activeSpotBar[data-collapsed="true"] .active-spot-indicator > 
     min-width: 0 !important;
     max-width: none !important;
     height: 100% !important;
-    height: 100dvh !important;
     max-height: 100% !important;
-    max-height: 100dvh !important;
     min-height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -2331,8 +2338,17 @@ html.light-theme #activeSpotBar[data-collapsed="true"] .active-spot-indicator > 
 }
 
 @media (min-width: 640px) {
+  body {
+    padding-top: 0 !important;
+  }
+
   .mobile-nav-indicator {
     display: none !important;
+  }
+
+  .tool-modal,
+  div[id^="modal"].fixed {
+    padding-top: calc(var(--chrome-h, 5.5rem) + 1.25rem) !important;
   }
 }
 

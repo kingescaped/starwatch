@@ -6,6 +6,17 @@ version tự động vì là static site deploy trực tiếp lên GitHub Pages.
 
 ## [Unreleased] — 2026-11-06
 
+- **Khắc phục phần đầu (Logo StarWatch & Thanh Địa Điểm) bị biến mất khi mở/thoát tabview và popup**:
+  - **Nguyên nhân**:
+    1. Thứ tự xếp lớp (`z-index`): `--z-chrome` trước đây chỉ đặt mức `1000`, trong khi các modal tabview có `z-index: 2000` (hoặc `2200`), khiến `#appChrome` (Header logo và Active Spot Bar) bị chìm hoàn toàn xuống dưới và biến mất mỗi khi mở tabview.
+    2. Bố cục toàn màn hình trên mobile: `.tool-modal:not(.hidden)` chiếm `inset: 0` từ `top: 0` đến đáy màn hình, đè phủ lên toàn bộ thanh điều hướng trên cùng.
+    3. Cơ chế scroll lock `body.modal-scroll-locked`: đặt `position: fixed; top: -lockedScrollY` khiến `body` bị giật ngược lên trên khi đang cuộn dở, dẫn đến việc khi đóng modal thì trình duyệt mobile không kịp re-stick hoặc làm biến mất `#appChrome`.
+  - **Khắc phục**:
+    - Nâng `--z-chrome` lên `2400` trong `tokens.css` và `layout.css` để thanh đầu luôn nổi trên các modal (`z-index: 2000`).
+    - Trên mobile (`< 640px`), cố định `#appChrome` với `position: fixed !important; top: 0; left: 0; right: 0; z-index: 2400;` kèm `padding-top: var(--chrome-h)` cho `body`. Toàn bộ các `.tool-modal` chuyển sang bắt đầu từ `top: var(--chrome-h)` kéo dài xuống tới thanh tab đáy (`#mobileToolNav` ở `z-index: 2500`).
+    - Tối ưu `modal-scroll-locked`: loại bỏ `position: fixed` trên `body`, chuyển sang `overflow: hidden !important; overscroll-behavior: contain !important;` giúp giữ nguyên vẹn vị trí scroll tuyệt đối của trang, không làm giật hay biến mất thanh header khi mở và đóng popup.
+    - Cập nhật `DESIGN.md` và đồng bộ class `tool-modal` cho toàn bộ các popup phụ.
+
 - **Tối ưu trải nghiệm Tabview Mobile, Cân đối thẻ Lịch Thiên Văn & Khôi phục địa điểm mặc định**:
   - **Xoá toàn bộ chú thích dưới tiêu đề trong modal tabview**: Gỡ bỏ các dòng phụ đề `<p>` dưới `<h3>` trên toàn bộ modal (`#modalSpotsDirectory`, `#modalContributeSpot`, `#modalAstroCalendar`, `#modalUserGuide`, `#modalSettings`, `#modalAppInfo`). Thiết lập `.tool-screen-header` và `.tool-screen-heading` căn giữa theo chiều dọc (`align-items: center`), gọn gàng trên cả desktop lẫn mobile.
   - **Cân đối chiều cao thẻ Lịch Thiên Văn trên Desktop (`.astro-event-card`)**: Chuyển sang `align-self: stretch; height: 100%`, cố định chiều cao tiêu đề (`min-height: 2.625rem`) và phần mô tả (`min-height: 3.25rem`) trên `≥ 768px`, ghim danh sách địa điểm gợi ý xuống đáy (`margin-top: auto; min-height: 4.25rem;`), đảm bảo 2 thẻ con trong cùng một hàng luôn cân đối và bằng nhau tuyệt đối.

@@ -114,8 +114,6 @@ export function syncBackgroundScrollLock() {
   if (hasOpenModal) {
     lockedScrollY = window.scrollY;
     backgroundScrollLocked = true;
-    document.body.style.setProperty('--modal-scroll-lock-top', `-${lockedScrollY}px`);
-    document.body.style.setProperty('--modal-scroll-lock-width', `${document.body.getBoundingClientRect().width}px`);
     document.documentElement.classList.add('modal-scroll-locked');
     document.body.classList.add('modal-scroll-locked');
     return;
@@ -124,8 +122,6 @@ export function syncBackgroundScrollLock() {
   backgroundScrollLocked = false;
   document.documentElement.classList.remove('modal-scroll-locked');
   document.body.classList.remove('modal-scroll-locked');
-  document.body.style.removeProperty('--modal-scroll-lock-top');
-  document.body.style.removeProperty('--modal-scroll-lock-width');
 
   if (pendingScrollAfterModalUnlock) {
     const scrollFn = pendingScrollAfterModalUnlock;
