@@ -30,7 +30,7 @@
   /* Fallback; js/app/events.js keeps this equal to the real chrome height. */
   --chrome-h: 7rem;
 
-  --z-chrome: 2400;
+  --z-chrome: 1000;
 }
 
 html.light-theme {
