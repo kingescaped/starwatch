@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "StarWatch",
+    "slug": "starwatch",
+    "version": "1.2.0",
+    "orientation": "default",
+    "scheme": "starwatch",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#05070D",
+    "splash": {
+      "backgroundColor": "#05070D"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.lvqstd.starwatch"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#05070D"
+      },
+      "package": "dev.lvqstd.starwatch"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-status-bar"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
