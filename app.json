@@ -22,7 +22,13 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "single"
+      "output": "single",
+      "lang": "vi",
+      "themeColor": "#05070D",
+      "favicon": "./assets/favicon.png",
+      "name": "StarWatch · Chạm vào Vũ Trụ",
+      "shortName": "StarWatch",
+      "description": "Dự báo săn Ngân Hà, săn mây, vòm trời 3D và bản đồ ô nhiễm sáng Bortle."
     },
     "plugins": [
       "expo-router",

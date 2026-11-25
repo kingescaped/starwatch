@@ -7,9 +7,9 @@ import { SegmentedControl } from '../../design-system/primitives/SegmentedContro
 import { TierBadge } from '../../design-system/primitives/TierBadge';
 import { ActionButton } from '../../design-system/primitives/ActionButton';
 import { AppIcon } from '../../design-system/icons/AppIcon';
-import { GoogleGIcon } from '../../design-system/icons/GoogleGIcon';
 import { useAppState } from '../../state/AppStateContext';
 import { AccountPlansSection } from './AccountPlansSection';
+import { GoogleSignInWidget } from './GoogleSignInWidget';
 import { ModalShell } from './ModalShell';
 
 interface AccountOverlayProps {
@@ -20,7 +20,7 @@ export function AccountOverlay({ isMobileView = false }: AccountOverlayProps) {
   const { colors } = useTheme();
   const {
     user, isAdmin, effectivePlan, authBusy, authError, clearAuthError,
-    login, loginWithGoogle, register, logout, updateProfile, changePlan,
+    login, loginWithGoogle, loginWithGoogleCredential, register, logout, updateProfile, changePlan,
     openOverlay, closeOverlay, closeMobileSubScreen,
   } = useAppState();
 
@@ -83,7 +83,7 @@ export function AccountOverlay({ isMobileView = false }: AccountOverlayProps) {
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 13,
+    fontSize: isMobileView ? 16 : 13,
     fontFamily: FONT_FAMILIES.sansRegular,
     color: colors.textPrimary,
   };
@@ -154,29 +154,13 @@ export function AccountOverlay({ isMobileView = false }: AccountOverlayProps) {
             <View style={{ height: 1, flex: 1, backgroundColor: colors.borderSubtle }} />
           </View>
 
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={authTab === 'login' ? 'Đăng nhập bằng Google' : 'Đăng ký bằng Google'}
-            disabled={authBusy}
-            onPress={() => { setLocalMsg(null); clearAuthError(); loginWithGoogle(); }}
-            style={({ pressed }) => ({
-              height: 44,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: colors.borderStrong,
-              backgroundColor: colors.cardInner,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 10,
-              opacity: authBusy ? 0.5 : pressed ? 0.82 : 1,
-            })}
-          >
-            <GoogleGIcon size={17} />
-            <Text style={{ fontSize: 13, fontFamily: FONT_FAMILIES.sansSemiBold, color: colors.textPrimary }}>
-              {authTab === 'login' ? 'Đăng nhập bằng Google' : 'Đăng ký bằng Google'}
-            </Text>
-          </Pressable>
+          <GoogleSignInWidget
+            mode={authTab}
+            busy={authBusy}
+            onCredential={loginWithGoogleCredential}
+            onFallbackPopup={loginWithGoogle}
+            onClearErrors={() => { setLocalMsg(null); clearAuthError(); }}
+          />
         </View>
       ) : (
         <View style={{ gap: 14 }}>

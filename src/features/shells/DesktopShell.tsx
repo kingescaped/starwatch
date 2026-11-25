@@ -1,6 +1,8 @@
 import React from 'react';
-import { ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useTheme } from '../../design-system/theme/ThemeContext';
+import { AppIcon } from '../../design-system/icons/AppIcon';
+import { FONT_FAMILIES } from '../../design-system/tokens/typography';
 import { BREAKPOINTS } from '../../design-system/tokens/spacing';
 import { useAppState } from '../../state/AppStateContext';
 import { DesktopHeader } from '../navigation/DesktopHeader';
@@ -27,11 +29,39 @@ import { FullscreenSkyOverlay } from '../overlays/FullscreenSkyOverlay';
 
 export function DesktopShell() {
   const { colors } = useTheme();
-  const { activeOverlay } = useAppState();
+  const { activeOverlay, gpsError, clearGpsError } = useAppState();
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <DesktopHeader />
+
+      {gpsError && activeOverlay !== 'spots' ? (
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+            maxWidth: BREAKPOINTS.maxContentWidth,
+            width: '100%',
+            alignSelf: 'center',
+            marginTop: 10,
+            paddingHorizontal: 14,
+            paddingVertical: 9,
+            borderRadius: 12,
+            backgroundColor: colors.accentRoseBg,
+            borderWidth: 1,
+            borderColor: colors.accentRoseBorder,
+          }}
+        >
+          <Text style={{ flex: 1, fontSize: 12, fontFamily: FONT_FAMILIES.sansMedium, color: colors.accentRose }}>
+            {gpsError}
+          </Text>
+          <Pressable onPress={clearGpsError} hitSlop={8}>
+            <AppIcon name="x" size={14} color={colors.accentRose} />
+          </Pressable>
+        </View>
+      ) : null}
 
       <ScrollView
         style={{ flex: 1 }}

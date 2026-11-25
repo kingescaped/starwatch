@@ -9,6 +9,54 @@ body,
   background-color: #05070d;
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
+input,
+textarea,
+select,
+button {
+  touch-action: manipulation;
+}
+
+input,
+textarea,
+select {
+  outline: none !important;
+  outline-style: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible {
+  outline: none !important;
+  outline-width: 0 !important;
+  box-shadow: none !important;
+}
+
+button:focus,
+button:focus-visible,
+[role='button']:focus,
+[role='button']:focus-visible,
+[tabindex]:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Keep >= 16px on mobile inputs so iOS Safari never auto-zooms on focus */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+    line-height: 1.35 !important;
+  }
 }
 
 /* Subtle dark scrollbar for web viewports */

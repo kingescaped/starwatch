@@ -30,14 +30,44 @@ if (!fs.existsSync(indexPath)) {
   process.exit(1);
 }
 
+let html = fs.readFileSync(indexPath, 'utf8');
+if (baseUrl) {
+  for (const asset of ['favicon.svg', 'favicon-32x32.png', 'apple-touch-icon.png', 'manifest.webmanifest']) {
+    html = html.replaceAll(`./${asset}`, `${baseUrl}/${asset}`);
+  }
+  fs.writeFileSync(indexPath, html, 'utf8');
+
+  const manifestPath = path.join(distDir, 'manifest.webmanifest');
+  if (fs.existsSync(manifestPath)) {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    manifest.start_url = `${baseUrl}/`;
+    manifest.scope = `${baseUrl}/`;
+    if (Array.isArray(manifest.icons)) {
+      manifest.icons = manifest.icons.map((item) => ({
+        ...item,
+        src: String(item.src || '').replace(/^\.\//, `${baseUrl}/`),
+      }));
+    }
+    fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  }
+}
+
 fs.writeFileSync(path.join(distDir, '.nojekyll'), '');
 fs.copyFileSync(indexPath, path.join(distDir, '404.html'));
 
-const html = fs.readFileSync(indexPath, 'utf8');
-const expectedPrefix = `${baseUrl}/_expo/`;
-if (!html.includes(expectedPrefix)) {
-  console.error(`Expected "${expectedPrefix}" asset paths inside ${indexPath}`);
-  process.exit(1);
+const requiredSnippets = [
+  `${baseUrl}/_expo/`,
+  `${baseUrl}/favicon.svg`,
+  `${baseUrl}/apple-touch-icon.png`,
+  'viewport-fit=cover',
+  'maximum-scale=1',
+];
+
+for (const snippet of requiredSnippets) {
+  if (!html.includes(snippet)) {
+    console.error(`Expected "${snippet}" inside ${indexPath}`);
+    process.exit(1);
+  }
 }
 
 console.log(`PAGES_EXPORT_READY baseUrl=${baseUrl || '/'} path=${distDir}`);

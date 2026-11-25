@@ -33,7 +33,7 @@ const THEME_SLOT_STEP = 28 + 2;
 
 export function DesktopHeader() {
   const { mode, setMode, colors } = useTheme();
-  const { user, isAdmin, effectivePlan, activeOverlay, openOverlay, closeOverlay, settings, updateSettings, showToast } = useAppState();
+  const { user, isAdmin, effectivePlan, activeOverlay, openOverlay, closeOverlay, settings, updateSettings, showToast, locatingGps, locateCurrentPosition } = useAppState();
   const activeThemeIdx = Math.max(0, THEME_BUTTONS.findIndex((item) => item.mode === mode));
   const themeSlideX = useRef(new Animated.Value(activeThemeIdx * THEME_SLOT_STEP)).current;
   const mountedThemeRef = useRef(false);
@@ -107,7 +107,7 @@ export function DesktopHeader() {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            width: 240,
+            width: 224,
             paddingHorizontal: 12,
             paddingVertical: 8,
             borderRadius: 999,
@@ -126,6 +126,25 @@ export function DesktopHeader() {
           <Text style={{ fontSize: 11, fontFamily: FONT_FAMILIES.monoMedium, color: colors.textMuted }}>
             ⌘ K
           </Text>
+        </Pressable>
+
+        <Pressable
+          accessibilityLabel="Lấy vị trí hiện tại"
+          disabled={locatingGps}
+          onPress={() => { void locateCurrentPosition(); }}
+          style={({ pressed }) => ({
+            width: 34,
+            height: 34,
+            borderRadius: 999,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: locatingGps ? colors.pillActiveBg : colors.card,
+            borderWidth: 1,
+            borderColor: locatingGps ? colors.accentCyanBorder : colors.borderSubtle,
+            opacity: pressed ? 0.8 : 1,
+          })}
+        >
+          <AppIcon name="locate" size={15} color={colors.accentCyan} />
         </Pressable>
       </View>
 

@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { THEMES, ThemeColors, ThemeMode } from '../tokens/colors';
+import { patchLocalPrefs, readLocalPrefs } from '../../services/localPrefsStorage';
 import { playUiSound } from '../../utils/soundEngine';
 
 interface ThemeContextValue {
@@ -13,11 +14,17 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+function resolveInitialTheme(): ThemeMode {
+  const saved = readLocalPrefs().themeMode;
+  return saved === 'light' || saved === 'red' || saved === 'dark' ? saved : 'dark';
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>('dark');
+  const [mode, setModeState] = useState<ThemeMode>(resolveInitialTheme);
 
   const setMode = useCallback((next: ThemeMode) => {
     setModeState(next);
+    patchLocalPrefs({ themeMode: next });
     playUiSound('theme');
   }, []);
 

@@ -7,9 +7,11 @@ import { StatusPill } from '../../design-system/primitives/StatusPill';
 import { ActionButton } from '../../design-system/primitives/ActionButton';
 import { AppIcon } from '../../design-system/icons/AppIcon';
 import { filterSpots } from '../../data/spots';
+import { GeocodedPlace } from '../../services/locationClient';
 import { useAppState } from '../../state/AppStateContext';
 import { SpotFilter } from '../../state/types';
 import { ModalShell } from './ModalShell';
+import { SpotSearchResults } from './SpotSearchResults';
 
 interface SpotsOverlayProps {
   isMobileView?: boolean;
@@ -26,6 +28,7 @@ export function SpotsOverlay({ isMobileView = false }: SpotsOverlayProps) {
     setSpotSearch,
     spotFilter,
     setSpotFilter,
+    selectGeocodedPlace,
     closeOverlay,
     openOverlay,
     setMobileTab,
@@ -47,13 +50,24 @@ export function SpotsOverlay({ isMobileView = false }: SpotsOverlayProps) {
     else closeOverlay();
   };
 
+  const handleSelectRemotePlace = async (place: GeocodedPlace) => {
+    await selectGeocodedPlace(place);
+    if (isMobileView) setMobileTab('observe');
+    else closeOverlay();
+  };
+
+  const handleGpsLocated = () => {
+    if (isMobileView) setMobileTab('observe');
+    else closeOverlay();
+  };
+
   return (
     <ModalShell
-      title={isMobileView ? 'Điểm Săn Ảnh Vũ Trụ' : 'Điểm Săn Ảnh & Tìm Kiếm Google Maps'}
+      title={isMobileView ? 'Điểm Săn Ảnh Vũ Trụ' : 'Điểm Săn Ảnh & Tìm Kiếm Địa Điểm'}
       subtitle={
         isMobileView
-          ? `${spots.length} điểm hiện có · ${savedCount} điểm đã lưu · ${favCount} yêu thích`
-          : `${spots.length} điểm tuyển chọn + tìm kiếm tọa độ toàn Việt Nam`
+          ? `${spots.length} điểm hiện có · Tìm bất kỳ tỉnh thành / tọa độ GPS`
+          : `${spots.length} điểm tuyển chọn + tìm kiếm mọi địa danh, núi & tọa độ GPS`
       }
       width={MODAL_WIDTHS.wide}
       onClose={closeOverlay}
@@ -90,14 +104,25 @@ export function SpotsOverlay({ isMobileView = false }: SpotsOverlayProps) {
           placeholderTextColor={colors.textMuted}
           style={{
             flex: 1,
-            fontSize: 13,
+            fontSize: isMobileView ? 16 : 13,
             fontFamily: FONT_FAMILIES.sansRegular,
             color: colors.textPrimary,
             paddingVertical: 2,
           }}
         />
+        {spotSearch.trim() ? (
+          <Pressable onPress={() => setSpotSearch('')} accessibilityLabel="Xóa từ khóa" hitSlop={8}>
+            <AppIcon name="x" size={14} color={colors.textMuted} />
+          </Pressable>
+        ) : null}
         <StatusPill label={`${filtered.length} điểm`} tone="cyan" small mono />
       </View>
+
+      <SpotSearchResults
+        query={spotSearch}
+        onSelectPlace={handleSelectRemotePlace}
+        onGpsLocated={handleGpsLocated}
+      />
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>

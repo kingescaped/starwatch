@@ -29,7 +29,16 @@ import { FullscreenSkyOverlay } from '../overlays/FullscreenSkyOverlay';
 export function MobileShell() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const { mobileTab, setMobileTab, mobileSubScreen, selectedSpot } = useAppState();
+  const {
+    mobileTab,
+    setMobileTab,
+    mobileSubScreen,
+    selectedSpot,
+    locatingGps,
+    gpsError,
+    clearGpsError,
+    locateCurrentPosition,
+  } = useAppState();
 
   const renderMainBody = () => {
     if (mobileSubScreen === 'contribute') return <ContributeOverlay isMobileView />;
@@ -49,21 +58,16 @@ export function MobileShell() {
     return (
       <View style={{ flex: 1, minHeight: 0 }}>
         <View
-          style={[
-            {
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 10,
-              paddingHorizontal: 16,
-              paddingVertical: 10,
-              backgroundColor: colors.headerBg,
-              borderBottomWidth: 1,
-              borderBottomColor: colors.borderSubtle,
-            },
-            Platform.OS === 'web'
-              ? ({ backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)' } as never)
-              : null,
-          ]}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            backgroundColor: colors.bg,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.borderSubtle,
+          }}
         >
           <Pressable
             onPress={() => setMobileTab('spots')}
@@ -99,6 +103,25 @@ export function MobileShell() {
           </Pressable>
 
           <Pressable
+            onPress={() => { void locateCurrentPosition(); }}
+            disabled={locatingGps}
+            accessibilityLabel="Lấy vị trí hiện tại"
+            style={({ pressed }) => ({
+              width: 42,
+              height: 42,
+              borderRadius: 999,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: locatingGps ? colors.pillActiveBg : colors.card,
+              borderWidth: 1,
+              borderColor: locatingGps ? colors.accentCyanBorder : colors.borderSubtle,
+              opacity: pressed ? 0.85 : 1,
+            })}
+          >
+            <AppIcon name="locate" size={16} color={colors.accentCyan} />
+          </Pressable>
+
+          <Pressable
             onPress={() => setMobileTab('spots')}
             accessibilityLabel="Tìm địa điểm"
             style={({ pressed }) => ({
@@ -117,6 +140,32 @@ export function MobileShell() {
           </Pressable>
         </View>
 
+        {gpsError ? (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 8,
+              marginHorizontal: 16,
+              marginTop: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: 12,
+              backgroundColor: colors.accentRoseBg,
+              borderWidth: 1,
+              borderColor: colors.accentRoseBorder,
+            }}
+          >
+            <Text style={{ flex: 1, fontSize: 12, fontFamily: FONT_FAMILIES.sansMedium, color: colors.accentRose }}>
+              {gpsError}
+            </Text>
+            <Pressable onPress={clearGpsError} hitSlop={8}>
+              <AppIcon name="x" size={14} color={colors.accentRose} />
+            </Pressable>
+          </View>
+        ) : null}
+
         <ScrollView
           style={{ flex: 1, minHeight: 0 }}
           contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 14 }}
@@ -133,19 +182,31 @@ export function MobileShell() {
     );
   };
 
+  const webSafeTop =
+    Platform.OS === 'web'
+      ? ({ paddingTop: 'env(safe-area-inset-top, 0px)' } as never)
+      : { paddingTop: insets.top };
+
+  const webSafeBottom =
+    Platform.OS === 'web'
+      ? ({ bottom: 'max(10px, env(safe-area-inset-bottom, 0px))' } as never)
+      : { bottom: Math.max(10, insets.bottom) };
+
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
+    <View style={[{ flex: 1, backgroundColor: colors.bg }, webSafeTop]}>
       <View style={{ flex: 1 }}>{renderMainBody()}</View>
 
       <View
         pointerEvents="box-none"
-        style={{
-          position: 'absolute',
-          left: 12,
-          right: 12,
-          bottom: Math.max(10, insets.bottom),
-          gap: 8,
-        }}
+        style={[
+          {
+            position: 'absolute',
+            left: 12,
+            right: 12,
+            gap: 8,
+          },
+          webSafeBottom,
+        ]}
       >
         {mobileTab === 'observe' && !mobileSubScreen ? (
           <TonightSummaryCard variant="mobileCollapsible" />

@@ -29,6 +29,14 @@ function RootStack() {
     document.body.style.backgroundColor = colors.bg;
     document.body.style.margin = '0';
 
+    let themeMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+    if (!themeMeta) {
+      themeMeta = document.createElement('meta');
+      themeMeta.name = 'theme-color';
+      document.head.appendChild(themeMeta);
+    }
+    themeMeta.content = colors.bg;
+
     if (!document.getElementById('starwatch-google-fonts')) {
       const link = document.createElement('link');
       link.id = 'starwatch-google-fonts';

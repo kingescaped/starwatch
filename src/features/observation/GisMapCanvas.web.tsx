@@ -45,6 +45,8 @@ export function GisMapCanvas({ height = 390, fill = false, compact = false }: Gi
     cloudSystems,
     skyScene,
     inspectMapPoint,
+    locateCurrentPosition,
+    locatingGps,
     openOverlay,
     openMobileSubScreen,
   } = useAppState();
@@ -82,7 +84,10 @@ export function GisMapCanvas({ height = 390, fill = false, compact = false }: Gi
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    map.flyTo([selectedSpot.lat, selectedSpot.lng], Math.max(map.getZoom(), 6), { duration: 0.65 });
+    const isDynamic = selectedSpot.id === 'gps-current' || selectedSpot.id.startsWith('search-');
+    map.flyTo([selectedSpot.lat, selectedSpot.lng], Math.max(map.getZoom(), isDynamic ? 9 : 6), {
+      duration: 0.65,
+    });
   }, [selectedSpot.id, selectedSpot.lat, selectedSpot.lng]);
 
   useEffect(() => {
@@ -187,7 +192,19 @@ export function GisMapCanvas({ height = 390, fill = false, compact = false }: Gi
         <Pressable onPress={() => mapRef.current?.zoomOut()} style={{ paddingHorizontal: 10, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: colors.borderSubtle }}>
           <Text style={{ fontSize: 13, fontFamily: FONT_FAMILIES.monoBold, color: colors.textPrimary }}>−</Text>
         </Pressable>
-        <Pressable onPress={() => mapRef.current?.setView([selectedSpot.lat, selectedSpot.lng], 6, { animate: true })} style={{ paddingHorizontal: 9, paddingVertical: 7, alignItems: 'center' }}>
+        <Pressable
+          accessibilityLabel="Căn giữa điểm đang chọn"
+          onPress={() => mapRef.current?.setView([selectedSpot.lat, selectedSpot.lng], 6, { animate: true })}
+          style={{ paddingHorizontal: 9, paddingVertical: 7, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: colors.borderSubtle }}
+        >
+          <AppIcon name="crosshair" size={13} color={colors.textSecondary} />
+        </Pressable>
+        <Pressable
+          accessibilityLabel="Vị trí hiện tại (GPS)"
+          disabled={locatingGps}
+          onPress={() => { void locateCurrentPosition(); }}
+          style={{ paddingHorizontal: 9, paddingVertical: 7, alignItems: 'center', backgroundColor: locatingGps ? colors.pillActiveBg : 'transparent' }}
+        >
           <AppIcon name="locate" size={13} color={colors.accentCyan} />
         </Pressable>
       </View>

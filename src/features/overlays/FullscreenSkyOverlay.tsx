@@ -36,20 +36,15 @@ export function FullscreenSkyOverlay({ isMobileView = false }: FullscreenSkyOver
 
   const mobileHeader = isMobileView ? (
     <View
-      style={[
-        {
-          paddingHorizontal: 16,
-          paddingTop: 12,
-          paddingBottom: 10,
-          backgroundColor: colors.headerBg,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.borderSubtle,
-          gap: 6,
-        },
-        Platform.OS === 'web'
-          ? ({ backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)' } as never)
-          : null,
-      ]}
+      style={{
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        paddingBottom: 10,
+        backgroundColor: colors.bg,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.borderSubtle,
+        gap: 6,
+      }}
     >
       <Pressable
         onPress={handleExit}

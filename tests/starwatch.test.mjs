@@ -33,6 +33,8 @@ import {
 } from '../src/utils/accessPolicy.ts';
 import { buildSmoothPath, mapXToHourIndex } from '../src/features/observation/altitudeChartMath.ts';
 import { projectSpotToMap } from '../src/features/observation/gisMapHelpers.ts';
+import { buildDynamicSpot, parseCoordinateQuery } from '../src/services/locationClient.ts';
+import { mergeFetchedSpots } from '../src/services/localPrefsStorage.ts';
 import { isSoundEnabled, playUiSound, setSoundEnabled } from '../src/utils/soundEngine.ts';
 import { previewCameraGearLocally } from '../src/data/cameraCatalog.ts';
 import { estimateBortleAtCoords } from '../server/src/domain/bortle.ts';
@@ -567,10 +569,24 @@ test('Google auth endpoint validates tokens and UI wires header displayName and 
   assert.ok(headerSrc.split('\n').length <= 300);
 
   const accountSrc = readSrc('src/features/overlays/AccountOverlay.tsx');
-  assert.ok(accountSrc.includes('GoogleGIcon'));
-  assert.ok(accountSrc.includes('Đăng nhập bằng Google'));
-  assert.ok(accountSrc.includes('Đăng ký bằng Google'));
+  assert.ok(accountSrc.includes('GoogleSignInWidget'));
+  assert.ok(accountSrc.includes('loginWithGoogleCredential'));
   assert.ok(accountSrc.split('\n').length <= 300);
+
+  const widgetSrc = readSrc('src/features/overlays/GoogleSignInWidget.tsx');
+  assert.ok(widgetSrc.includes('use_fedcm_for_prompt: true'));
+  assert.ok(widgetSrc.includes('renderButton'));
+  assert.ok(widgetSrc.includes('gsi.prompt()'));
+  assert.ok(widgetSrc.includes('GoogleGIcon'));
+  assert.ok(widgetSrc.includes('Đăng nhập bằng Google'));
+  assert.ok(widgetSrc.includes('Đăng ký bằng Google'));
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(widgetSrc));
+  assert.ok(widgetSrc.split('\n').length <= 300);
+
+  const googleClientSrc = readSrc('src/services/googleAuthClient.ts');
+  assert.ok(googleClientSrc.includes('signInWithCredential'));
+  assert.ok(googleClientSrc.includes('accounts.google.com/gsi/client'));
+  assert.ok(googleClientSrc.split('\n').length <= 300);
 
   const googleIconSrc = readSrc('src/design-system/icons/GoogleGIcon.tsx');
   assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(googleIconSrc));
@@ -670,4 +686,78 @@ test('GitHub Pages config sets optional baseUrl cleanly and workflow has no hard
   assert.ok(workflow.includes('npm run export:pages'));
   assert.ok(workflow.includes('${{ secrets.EXPO_PUBLIC_FIREBASE_API_KEY }}'));
   assert.ok(!/AIzaSy|PRIVATE KEY-----/.test(workflow));
+});
+
+test('GPS coordinate parser, dynamic spot merge, mobile blur/zoom fixes, and web icons are valid', () => {
+  assert.deepEqual(parseCoordinateQuery('21.0285, 105.8542'), { lat: 21.0285, lng: 105.8542 });
+  assert.deepEqual(parseCoordinateQuery('21.2981°N 104.4652°E'), { lat: 21.2981, lng: 104.4652 });
+  assert.deepEqual(parseCoordinateQuery('33.8688°S, 151.2093°W'), { lat: -33.8688, lng: -151.2093 });
+  assert.deepEqual(parseCoordinateQuery('-33.8688, 151.2093'), { lat: -33.8688, lng: 151.2093 });
+  assert.equal(parseCoordinateQuery('95.0, 105.8'), null);
+  assert.equal(parseCoordinateQuery('Đà Nẵng'), null);
+
+  const gpsSpot = buildDynamicSpot({
+    id: 'gps-current',
+    name: 'Hà Nội',
+    subtitle: '(GPS)',
+    region: 'Việt Nam',
+    province: 'Hà Nội',
+    lat: 21.0285,
+    lng: 105.8542,
+    elevation: 15,
+    bortle: 8.5,
+    sqm: 18.2,
+    tags: ['Vị trí GPS'],
+    statusText: 'GPS Live',
+  });
+  const merged = mergeFetchedSpots(INITIAL_SPOTS, [gpsSpot], { 'ta-xua': false, 'gps-current': true });
+  assert.equal(merged[0].id, 'gps-current');
+  assert.equal(merged[0].isFavorite, true);
+  assert.equal(merged.find((s) => s.id === 'ta-xua')?.isFavorite, false);
+
+  const mobileShell = readSrc('src/features/shells/MobileShell.tsx');
+  assert.ok(!mobileShell.includes('backdropFilter'), 'MobileShell top header must not use blur backdropFilter');
+  assert.ok(mobileShell.includes('locateCurrentPosition'), 'MobileShell must wire GPS locate button');
+  assert.ok(readSrc('src/features/navigation/DesktopHeader.tsx').includes('locateCurrentPosition'));
+
+  const modalShell = readSrc('src/features/overlays/ModalShell.tsx');
+  const modalMobileSlice = modalShell.slice(modalShell.indexOf('if (isMobileView)'), modalShell.indexOf('return (\n    <Modal'));
+  assert.ok(!modalMobileSlice.includes('backdropFilter'), 'ModalShell mobile header must not use blur backdropFilter');
+  const full3dSrc = readSrc('src/features/overlays/FullscreenSkyOverlay.tsx');
+  assert.ok(!full3dSrc.slice(0, full3dSrc.indexOf('const mobileHeader') + 500).includes('backdropFilter'), 'FullscreenSkyOverlay mobile header must not use blur backdropFilter');
+
+  const css = readSrc('global.css');
+  assert.ok(css.includes('font-size: 16px !important'), 'global.css must prevent iOS Safari input auto-zoom');
+  assert.ok(css.includes('outline: none !important'), 'global.css must remove white focus outline on inputs');
+
+  const indexHtml = readSrc('public/index.html');
+  for (const snippet of ['viewport-fit=cover', 'maximum-scale=1', 'favicon.svg', 'favicon-32x32.png', 'apple-touch-icon.png', 'manifest.webmanifest']) {
+    assert.ok(indexHtml.includes(snippet), `public/index.html missing ${snippet}`);
+  }
+
+  for (const pngRel of [
+    'public/favicon-32x32.png',
+    'public/apple-touch-icon.png',
+    'public/icon-192.png',
+    'public/icon-512.png',
+    'assets/favicon.png',
+  ]) {
+    const bytes = fs.readFileSync(path.join(root, pngRel));
+    assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', `${pngRel} must have PNG header`);
+  }
+
+  for (const relPath of [
+    'src/services/localPrefsStorage.ts',
+    'src/services/locationClient.ts',
+    'src/state/useLocationSearchController.ts',
+    'src/features/overlays/SpotSearchResults.tsx',
+    'src/features/overlays/SpotsOverlay.tsx',
+    'src/features/shells/MobileShell.tsx',
+    'src/features/shells/DesktopShell.tsx',
+    'src/features/navigation/DesktopHeader.tsx',
+  ]) {
+    const src = readSrc(relPath);
+    assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(src), `${relPath} must not hardcode hex colors`);
+    assert.ok(src.split('\n').length <= 300, `${relPath} must stay <= 300 lines`);
+  }
 });

@@ -87,7 +87,7 @@ export function ContributeOverlay({ isMobileView = false }: ContributeOverlayPro
             backgroundColor: colors.inputBg,
             borderWidth: 1,
             borderColor: colors.borderSubtle,
-            fontSize: 13,
+            fontSize: isMobileView ? 16 : 13,
             fontFamily: FONT_FAMILIES.sansRegular,
             color: colors.textPrimary,
           }}
@@ -112,7 +112,7 @@ export function ContributeOverlay({ isMobileView = false }: ContributeOverlayPro
               backgroundColor: colors.inputBg,
               borderWidth: 1,
               borderColor: colors.borderSubtle,
-              fontSize: 13,
+              fontSize: isMobileView ? 16 : 13,
               fontFamily: FONT_FAMILIES.monoMedium,
               color: colors.textPrimary,
             }}
@@ -144,7 +144,7 @@ export function ContributeOverlay({ isMobileView = false }: ContributeOverlayPro
             backgroundColor: colors.inputBg,
             borderWidth: 1,
             borderColor: colors.borderSubtle,
-            fontSize: 13,
+            fontSize: isMobileView ? 16 : 13,
             fontFamily: FONT_FAMILIES.monoMedium,
             color: colors.textPrimary,
           }}
@@ -187,7 +187,7 @@ export function ContributeOverlay({ isMobileView = false }: ContributeOverlayPro
             backgroundColor: colors.inputBg,
             borderWidth: 1,
             borderColor: colors.borderSubtle,
-            fontSize: 13,
+            fontSize: isMobileView ? 16 : 13,
             fontFamily: FONT_FAMILIES.sansRegular,
             color: colors.textPrimary,
             minHeight: 54,

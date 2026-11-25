@@ -7,9 +7,18 @@ import { computeAstroSetup, type AstroSetupSpec } from '../data/advisor';
 import { DEFAULT_CAMERA_GEAR, previewCameraGearLocally, type CameraGearProfile } from '../data/cameraCatalog';
 import { ToastType } from '../design-system/primitives/ToastBanner';
 import { apiClient } from '../services/apiClient';
+import type { GeocodedPlace } from '../services/locationClient';
+import {
+  buildFavoriteOverrides,
+  isDynamicSpotId,
+  mergeFetchedSpots,
+  patchLocalPrefs,
+  readLocalPrefs,
+} from '../services/localPrefsStorage';
 import { getEffectivePlan, hasUnlimitedAccess as checkUnlimitedAccess, isAdminUser } from '../utils/accessPolicy';
 import { playUiSound, setSoundEnabled } from '../utils/soundEngine';
 import { useAuthStateController } from './useAuthStateController';
+import { useLocationSearchController } from './useLocationSearchController';
 import type {
   AppSettings,
   BasemapId,
@@ -43,6 +52,11 @@ interface AppStateContextValue {
   selectSpot: (spotId: string) => void;
   toggleFavoriteSpot: (spotId: string) => void;
   addSpot: (input: { name: string; lat: number; lng: number; elevation: number; tags: string[]; safetyNote: string }) => void;
+  locatingGps: boolean;
+  gpsError: string | null;
+  clearGpsError: () => void;
+  locateCurrentPosition: () => Promise<boolean>;
+  selectGeocodedPlace: (place: GeocodedPlace) => Promise<void>;
   spotSearch: string;
   setSpotSearch: (q: string) => void;
   spotFilter: SpotFilter;
@@ -127,6 +141,7 @@ interface AppStateContextValue {
   authError: string | null;
   login: (email: string, password: string) => Promise<boolean>;
   loginWithGoogle: () => Promise<boolean>;
+  loginWithGoogleCredential: (googleIdToken: string) => Promise<boolean>;
   register: (email: string, password: string, displayName: string) => Promise<boolean>;
   logout: () => void;
   updateProfile: (patch: Partial<Pick<UserAccount, 'displayName' | 'bio' | 'cameraProfile' | 'cameraSpecs'>>) => Promise<boolean>;
@@ -147,15 +162,18 @@ const DEFAULT_SKY_SCENE: SkySceneData = {
 const AppStateContext = createContext<AppStateContextValue | null>(null);
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
-  const [spots, setSpots] = useState<Spot[]>(INITIAL_SPOTS);
-  const [selectedSpotId, setSelectedSpotId] = useState('ta-xua');
+  const [initialPrefs] = useState(() => readLocalPrefs());
+  const [spots, setSpots] = useState<Spot[]>(() =>
+    mergeFetchedSpots(INITIAL_SPOTS, initialPrefs.recentSpots ?? [], initialPrefs.favoriteOverrides ?? {})
+  );
+  const [selectedSpotId, setSelectedSpotId] = useState(() => initialPrefs.selectedSpotId || 'ta-xua');
   const [spotSearch, setSpotSearch] = useState('');
   const [spotFilter, setSpotFilter] = useState<SpotFilter>('all');
   const [selectedTargetId, setSelectedTargetId] = useState('sgr-a');
   const [hourIndex, setHourIndex] = useState(3);
   const [isPlayingTime, setIsPlayingTime] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<'10m' | '60m'>('10m');
-  const [basemap, setBasemap] = useState<BasemapId>('satellite');
+  const [basemap, setBasemap] = useState<BasemapId>(() => initialPrefs.basemap ?? 'satellite');
   const [showLightPollution, setShowLightPollution] = useState(true);
   const [showCloudLayer, setShowCloudLayer] = useState(true);
   const [showAzimuthRays, setShowAzimuthRays] = useState(true);
@@ -166,9 +184,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [skyDragTool, setSkyDragTool] = useState<SkyDragTool>('rotate');
   const [skyRotationOffset, setSkyRotationOffset] = useState(0);
   const [shootingMode, setShootingMode] = useState<ShootingMode>('milkyWay');
-  const [deviceType, setDeviceType] = useState<DeviceType>('camera');
-  const [focalLength, setFocalLength] = useState<FocalLength>('14mm');
-  const [cameraGear, setCameraGear] = useState<CameraGearProfile>(DEFAULT_CAMERA_GEAR);
+  const [deviceType, setDeviceType] = useState<DeviceType>(() =>
+    initialPrefs.cameraGear?.sensorType === 'phone' ? 'phone' : 'camera'
+  );
+  const [focalLength, setFocalLength] = useState<FocalLength>(() =>
+    initialPrefs.cameraGear?.focalLengthMm ? `${Math.round(initialPrefs.cameraGear.focalLengthMm)}mm` : '14mm'
+  );
+  const [cameraGear, setCameraGear] = useState<CameraGearProfile>(() => ({
+    ...DEFAULT_CAMERA_GEAR,
+    ...(initialPrefs.cameraGear ?? {}),
+  }));
   const [calendarYear, setCalendarYear] = useState(2026);
   const [calendarMonth, setCalendarMonth] = useState(11);
   const [selectedCalendarDay, setSelectedCalendarDay] = useState(18);
@@ -193,12 +218,20 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     lat: 21.2981, lng: 104.4652, bortle: 3.5, sqm: 21.48, cloud: 12, name: 'Đỉnh Tà Xùa · Sơn La',
   });
 
-  const [settings, setSettings] = useState<AppSettings>({
-    unitSystem: 'metric', defaultMapLayer: 'bortle',
-    cameraProfile: 'Sony A7 IV · FE 14mm f/1.8 GM', cameraSpecs: 'Full-Frame · NPF 13.0s · Dual ISO 3200',
-    dewThreshold: 2.5, offlineCacheEnabled: true, startupLocation: 'gps',
-    compassReference: 'trueNorth', clearSkyAlertsEnabled: true, dailyAlertTime: '16:00', soundEnabled: true,
-  });
+  const [settings, setSettings] = useState<AppSettings>(() => ({
+    unitSystem: 'metric',
+    defaultMapLayer: 'bortle',
+    cameraProfile: 'Sony A7 IV · FE 14mm f/1.8 GM',
+    cameraSpecs: 'Full-Frame · NPF 13.0s · Dual ISO 3200',
+    dewThreshold: 2.5,
+    offlineCacheEnabled: true,
+    startupLocation: 'gps',
+    compassReference: 'trueNorth',
+    clearSkyAlertsEnabled: true,
+    dailyAlertTime: '16:00',
+    soundEnabled: true,
+    ...(initialPrefs.settings ?? {}),
+  }));
 
   const handleSyncUserProfile = useCallback((u: UserAccount) => {
     setSettings((prev) => ({
@@ -209,7 +242,18 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const auth = useAuthStateController(handleSyncUserProfile);
+  const locationCtrl = useLocationSearchController({ setSpots, setSelectedSpotId, setInspectedCoords });
   useEffect(() => { setSoundEnabled(settings.soundEnabled); }, [settings.soundEnabled]);
+  useEffect(() => {
+    patchLocalPrefs({
+      selectedSpotId,
+      basemap,
+      settings,
+      cameraGear,
+      favoriteOverrides: buildFavoriteOverrides(spots),
+      recentSpots: spots.filter((s) => isDynamicSpotId(s.id)),
+    });
+  }, [selectedSpotId, basemap, settings, cameraGear, spots]);
 
   const showToast = useCallback((_message: string, _type: ToastType = 'info') => {}, []);
   const dismissToast = useCallback(() => {}, []);
@@ -223,7 +267,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, [appliedDateLabel]);
 
   useEffect(() => {
-    apiClient.fetchSpots().then((res) => { if (res.spots?.length) setSpots(res.spots); }).catch(() => {});
+    apiClient
+      .fetchSpots()
+      .then((res) => {
+        if (!res.spots?.length) return;
+        const latestPrefs = readLocalPrefs();
+        setSpots((prev) => mergeFetchedSpots(res.spots, prev, latestPrefs.favoriteOverrides ?? {}));
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -362,6 +413,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     selectSpot: (id) => { const f = spots.find((s) => s.id === id); if (!f) return; setSelectedSpotId(id); setInspectedCoords({ lat: f.lat, lng: f.lng, bortle: f.bortle, sqm: f.sqm, cloud: 12, name: `${f.name} · ${f.province}` }); playUiSound('select'); },
     toggleFavoriteSpot: (id) => setSpots((prev) => prev.map((s) => (s.id === id ? { ...s, isFavorite: !s.isFavorite } : s))),
     addSpot, spotSearch, setSpotSearch, spotFilter, setSpotFilter,
+    ...locationCtrl,
     targets: CELESTIAL_TARGETS, selectedTarget, selectTarget: (id) => { setSelectedTargetId(id); playUiSound('select'); },
     hourIndex, setHourIndex: (idx) => { setHourIndex(idx); playUiSound('tick'); },
     hourlyForecast, currentForecast, dailyEvents, goldenWindows, tonightSlots, calendarDays, advisorSpec, skyScene, lightDomes, cloudSystems, observationSource,

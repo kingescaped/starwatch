@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiClient, readStoredSession, writeStoredSession } from '../services/apiClient';
-import { signInWithGooglePopup } from '../services/googleAuthClient';
+import { exchangeGoogleIdTokenForFirebase, signInWithGooglePopup } from '../services/googleAuthClient';
 import { playUiSound } from '../utils/soundEngine';
 import type { PlanTier, UserAccount } from './types';
 
@@ -68,6 +68,29 @@ export function useAuthStateController(onSyncProfile?: (u: UserAccount) => void)
       setAuthBusy(false);
     }
   }, [onSyncProfile]);
+
+  const loginWithGoogleCredential = useCallback(
+    async (googleIdToken: string) => {
+      setAuthBusy(true);
+      setAuthError(null);
+      try {
+        const { idToken } = await exchangeGoogleIdTokenForFirebase(googleIdToken);
+        const res = await apiClient.googleAuth(idToken);
+        setToken(res.token);
+        setUser(res.user);
+        writeStoredSession({ token: res.token, user: res.user });
+        onSyncProfile?.(res.user);
+        playUiSound('success');
+        return true;
+      } catch (err) {
+        setAuthError(err instanceof Error ? err.message : 'Không thể đăng nhập bằng Google lúc này.');
+        return false;
+      } finally {
+        setAuthBusy(false);
+      }
+    },
+    [onSyncProfile]
+  );
 
   const register = useCallback(async (email: string, password: string, displayName: string) => {
     setAuthBusy(true);
@@ -148,6 +171,7 @@ export function useAuthStateController(onSyncProfile?: (u: UserAccount) => void)
     authError,
     login,
     loginWithGoogle,
+    loginWithGoogleCredential,
     register,
     logout,
     updateProfile,

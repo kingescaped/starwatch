@@ -59,7 +59,7 @@ export function CameraProfileOverlay({ isMobileView = false }: CameraProfileOver
     borderRadius: 10,
     paddingHorizontal: 11,
     paddingVertical: 9,
-    fontSize: 12,
+    fontSize: isMobileView ? 16 : 12,
     fontFamily: FONT_FAMILIES.monoMedium,
     color: colors.textPrimary,
   };

@@ -46,20 +46,15 @@ export function ModalShell({
     return (
       <View style={{ flex: 1, minHeight: 0, backgroundColor: colors.bg }}>
         <View
-          style={[
-            {
-              paddingHorizontal: 16,
-              paddingTop: 12,
-              paddingBottom: 12,
-              gap: 6,
-              backgroundColor: colors.headerBg,
-              borderBottomWidth: 1,
-              borderBottomColor: colors.borderSubtle,
-            },
-            Platform.OS === 'web'
-              ? ({ backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)' } as never)
-              : null,
-          ]}
+          style={{
+            paddingHorizontal: 16,
+            paddingTop: 12,
+            paddingBottom: 12,
+            gap: 6,
+            backgroundColor: colors.bg,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.borderSubtle,
+          }}
         >
           {backLabel && onBack ? (
             <Pressable
