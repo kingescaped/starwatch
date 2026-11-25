@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { Linking, Platform, Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AppIcon, IconName } from '../../design-system/icons/AppIcon';
 import { TierBadge } from '../../design-system/primitives/TierBadge';
@@ -13,8 +13,23 @@ export interface AccountPlansSectionProps {
   effectivePlan: PlanTier;
   isAdmin: boolean;
   entitlementSource?: string;
+  userEmail?: string;
   authBusy: boolean;
   onSelectPlan: (tier: PlanTier) => void;
+}
+
+export function buildTelegramPurchaseUrl(tierTitle: string, fullPrice: string, userEmail?: string): string {
+  const emailPart = userEmail ? ` (tài khoản: ${userEmail})` : '';
+  const msg = `Chào Quang Vo, mình muốn mua gói ${tierTitle} (${fullPrice}) cho ứng dụng StarWatch${emailPart}.`;
+  return `https://t.me/kingescaped?text=${encodeURIComponent(msg)}`;
+}
+
+function openTelegramPurchase(url: string): void {
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    window.open(url, '_blank', 'noopener,noreferrer');
+    return;
+  }
+  void Linking.openURL(url);
 }
 
 interface PlanSpec {
@@ -103,8 +118,8 @@ function ActivePlanHeroCard({ activeTier, isAdmin, expanded, onToggle }: { activ
   );
 }
 
-function TierCardFooter({ tier, plan, currentRank, isAdmin, authBusy, palette, onSelectPlan }: {
-  tier: PlanSpec; plan: PlanTier; currentRank: number; isAdmin: boolean; authBusy: boolean; palette: TierBadgePalette; onSelectPlan: (tier: PlanTier) => void;
+function TierCardFooter({ tier, plan, currentRank, isAdmin, userEmail, authBusy, palette, onSelectPlan }: {
+  tier: PlanSpec; plan: PlanTier; currentRank: number; isAdmin: boolean; userEmail?: string; authBusy: boolean; palette: TierBadgePalette; onSelectPlan: (tier: PlanTier) => void;
 }) {
   const { colors } = useTheme();
   const isCurrent = tier.id === plan || (isAdmin && tier.id === 'expedition');
@@ -118,26 +133,37 @@ function TierCardFooter({ tier, plan, currentRank, isAdmin, authBusy, palette, o
     );
   }
   const isUpgrade = tier.rank > currentRank;
-  const label = isUpgrade
+  const routeToTelegram = !isAdmin && isUpgrade;
+  const label = routeToTelegram
+    ? tier.id === 'pro' ? 'Mua StarWatch PRO qua Telegram' : 'Mua Expedition MAX qua Telegram'
+    : isUpgrade
     ? tier.id === 'pro' ? 'Nâng cấp lên StarWatch PRO' : 'Nâng cấp lên Expedition MAX'
     : tier.id === 'free' ? 'Chuyển về Cơ Bản' : 'Chuyển về StarWatch PRO';
+
   return (
     <Pressable
-      disabled={authBusy}
-      onPress={() => onSelectPlan(tier.id)}
+      disabled={!routeToTelegram && authBusy}
+      onPress={() => {
+        if (routeToTelegram) {
+          openTelegramPurchase(buildTelegramPurchaseUrl(tier.title, tier.fullPrice, userEmail));
+          return;
+        }
+        onSelectPlan(tier.id);
+      }}
       style={({ pressed }) => [styles.ctaBase, {
         backgroundColor: isUpgrade ? colors.buttonPrimaryBg : 'transparent',
         borderColor: isUpgrade ? colors.buttonPrimaryBg : palette.surfaceBorder,
-        opacity: authBusy ? 0.45 : pressed ? 0.84 : 1,
+        opacity: (!routeToTelegram && authBusy) ? 0.45 : pressed ? 0.84 : 1,
       }]}
     >
+      {routeToTelegram ? <AppIcon name="send" size={13} color={colors.buttonPrimaryText} /> : null}
       <Text style={[isUpgrade ? styles.ctaTextBold : styles.ctaTextGhost, { color: isUpgrade ? colors.buttonPrimaryText : palette.text }]}>{label}</Text>
     </Pressable>
   );
 }
 
-function TierComparisonCard({ tier, plan, currentRank, isAdmin, authBusy, onSelectPlan }: {
-  tier: PlanSpec; plan: PlanTier; currentRank: number; isAdmin: boolean; authBusy: boolean; onSelectPlan: (tier: PlanTier) => void;
+function TierComparisonCard({ tier, plan, currentRank, isAdmin, userEmail, authBusy, onSelectPlan }: {
+  tier: PlanSpec; plan: PlanTier; currentRank: number; isAdmin: boolean; userEmail?: string; authBusy: boolean; onSelectPlan: (tier: PlanTier) => void;
 }) {
   const { mode } = useTheme();
   const palette = getTierBadgePalette(tier.id, mode);
@@ -170,12 +196,12 @@ function TierComparisonCard({ tier, plan, currentRank, isAdmin, authBusy, onSele
           </View>
         ))}
       </View>
-      <TierCardFooter tier={tier} plan={plan} currentRank={currentRank} isAdmin={isAdmin} authBusy={authBusy} palette={palette} onSelectPlan={onSelectPlan} />
+      <TierCardFooter tier={tier} plan={plan} currentRank={currentRank} isAdmin={isAdmin} userEmail={userEmail} authBusy={authBusy} palette={palette} onSelectPlan={onSelectPlan} />
     </LinearGradient>
   );
 }
 
-export function AccountPlansSection({ plan, effectivePlan, isAdmin, entitlementSource: _entitlementSource, authBusy, onSelectPlan }: AccountPlansSectionProps) {
+export function AccountPlansSection({ plan, effectivePlan, isAdmin, entitlementSource: _entitlementSource, userEmail, authBusy, onSelectPlan }: AccountPlansSectionProps) {
   const { colors } = useTheme();
   const [expanded, setExpanded] = useState(false);
   const currentRank = PLAN_SPECS.find((p) => p.id === plan)?.rank ?? 0;
@@ -187,10 +213,10 @@ export function AccountPlansSection({ plan, effectivePlan, isAdmin, entitlementS
         <View style={styles.listWrap}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Chọn gói dịch vụ</Text>
-            <Text style={[styles.sectionCaption, { color: colors.textMuted }]}>{isAdmin ? 'Admin đã mở khóa toàn quyền' : 'Áp dụng tức thì'}</Text>
+            <Text style={[styles.sectionCaption, { color: colors.textMuted }]}>{isAdmin ? 'Admin đã mở khóa toàn quyền' : 'Mua qua Telegram @kingescaped'}</Text>
           </View>
           {PLAN_SPECS.map((tier) => (
-            <TierComparisonCard key={tier.id} tier={tier} plan={plan} currentRank={currentRank} isAdmin={isAdmin} authBusy={authBusy} onSelectPlan={onSelectPlan} />
+            <TierComparisonCard key={tier.id} tier={tier} plan={plan} currentRank={currentRank} isAdmin={isAdmin} userEmail={userEmail} authBusy={authBusy} onSelectPlan={onSelectPlan} />
           ))}
         </View>
       ) : null}

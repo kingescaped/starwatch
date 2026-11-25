@@ -2,15 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --sw-bg: #05070d;
+  --app-height: 100%;
+  --visual-vh: 100%;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --ios-top-blur-clearance: 0px;
+  --top-bar-pt: calc(var(--sat) + var(--ios-top-blur-clearance));
+}
+
+@media (orientation: portrait) and (max-width: 767px) {
+  html.ios-standalone {
+    --ios-top-blur-clearance: 18px;
+  }
+}
+
 html,
-body,
-#root {
-  height: 100%;
-  background-color: #05070d;
+body {
+  height: var(--app-height, 100%);
+  background-color: var(--sw-bg, #05070d);
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
   overscroll-behavior-y: none;
+  touch-action: manipulation;
+}
+
+#root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  width: 100%;
+  height: var(--app-height, 100%);
+  background-color: var(--sw-bg, #05070d);
+  overflow: hidden;
+}
+
+canvas {
+  touch-action: none;
+}
+
+#ios-status-bar-shield {
+  display: none;
+}
+
+html.ios-standalone #ios-status-bar-shield {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--top-bar-pt);
+  background-color: var(--sw-bg, #05070d);
+  z-index: 90;
+  pointer-events: none;
+}
+
+#ios-blur-cover,
+#ios-blur-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.01);
+  z-index: 91;
+}
+
+#ios-blur-cover {
+  height: var(--top-bar-pt);
+}
+
+#ios-blur-panel {
+  height: calc(var(--top-bar-pt) + 1px);
+  z-index: 92;
 }
 
 input,
@@ -49,8 +119,8 @@ button:focus-visible,
   box-shadow: none !important;
 }
 
-/* Keep >= 16px on mobile inputs so iOS Safari never auto-zooms on focus */
-@media (max-width: 767px) {
+/* Keep >= 16px on mobile/coarse inputs so iOS Safari never auto-zooms on focus */
+@media (max-width: 767px), (pointer: coarse) {
   input,
   textarea,
   select {

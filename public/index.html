@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="StarWatch" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png" />
@@ -17,21 +17,70 @@
     <style id="expo-reset">
       html,
       body {
-        height: 100%;
+        height: var(--app-height, 100%);
       }
       body {
         overflow: hidden;
       }
       #root {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
         display: flex;
-        height: 100%;
+        width: 100%;
+        height: var(--app-height, 100%);
         flex: 1;
+        overflow: hidden;
       }
     </style>
+    <script>
+      (function () {
+        try {
+          var docEl = document.documentElement;
+          var nav = window.navigator || {};
+          var ua = nav.userAgent || '';
+          var isIos =
+            /iPhone|iPad|iPod/i.test(ua) ||
+            (nav.platform === 'MacIntel' && (nav.maxTouchPoints || 0) > 1);
+          var isStandalone =
+            nav.standalone === true ||
+            Boolean(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+
+          var probe = document.createElement('div');
+          probe.style.cssText =
+            'position:fixed;top:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top, 0px);';
+          docEl.appendChild(probe);
+          var satPx = parseFloat(window.getComputedStyle(probe).paddingTop) || 0;
+          docEl.removeChild(probe);
+
+          var innerH = window.innerHeight || 0;
+          var isPortrait = (window.innerWidth || 0) <= innerH;
+          var scr = window.screen || {};
+          var screenH = isPortrait
+            ? Math.max(scr.height || 0, scr.width || 0)
+            : Math.min(scr.height || 0, scr.width || 0);
+
+          var appH = innerH;
+          if (isIos && isStandalone && satPx > 0) {
+            docEl.classList.add('ios-standalone');
+            var diff = screenH - innerH;
+            if (diff > 0 && diff <= 110) {
+              appH = screenH;
+            }
+          }
+          if (appH > 0) {
+            docEl.style.setProperty('--app-height', appH + 'px');
+            docEl.style.setProperty('--visual-vh', innerH + 'px');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
 
   <body>
     <noscript> You need to enable JavaScript to run this app. </noscript>
     <div id="root"></div>
+    <div id="ios-status-bar-shield" aria-hidden="true"></div>
   </body>
 </html>

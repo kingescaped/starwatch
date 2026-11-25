@@ -85,7 +85,11 @@ export function ModalShell({
 
         <ScrollView
           style={{ flex: 1, minHeight: 0 }}
-          contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 14 }}
+          contentContainerStyle={{
+            padding: 16,
+            paddingBottom: Platform.OS === 'web' ? ('calc(120px + var(--sab, 0px))' as never) : 120,
+            gap: 14,
+          }}
           showsVerticalScrollIndicator={false}
         >
           {children}

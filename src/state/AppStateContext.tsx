@@ -17,6 +17,7 @@ import {
 } from '../services/localPrefsStorage';
 import { getEffectivePlan, hasUnlimitedAccess as checkUnlimitedAccess, isAdminUser } from '../utils/accessPolicy';
 import { playUiSound, setSoundEnabled } from '../utils/soundEngine';
+import { formatCurrentDateParts, resolveCurrentNightHourIndex } from '../utils/timeNowHelper';
 import { useAuthStateController } from './useAuthStateController';
 import { useLocationSearchController } from './useLocationSearchController';
 import type {
@@ -81,6 +82,7 @@ interface AppStateContextValue {
   togglePlayTime: () => void;
   playbackSpeed: '10m' | '60m';
   setPlaybackSpeed: (speed: '10m' | '60m') => void;
+  resetToCurrentTime: () => void;
   basemap: BasemapId;
   setBasemap: (bm: BasemapId) => void;
   showLightPollution: boolean;
@@ -418,6 +420,17 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     hourIndex, setHourIndex: (idx) => { setHourIndex(idx); playUiSound('tick'); },
     hourlyForecast, currentForecast, dailyEvents, goldenWindows, tonightSlots, calendarDays, advisorSpec, skyScene, lightDomes, cloudSystems, observationSource,
     isPlayingTime, togglePlayTime: () => setIsPlayingTime((v) => !v), playbackSpeed, setPlaybackSpeed,
+    resetToCurrentTime: () => {
+      const now = new Date();
+      const today = formatCurrentDateParts(now);
+      setIsPlayingTime(false);
+      setCalendarYear(today.year);
+      setCalendarMonth(today.month);
+      setSelectedCalendarDay(today.day);
+      setAppliedDateLabel(today.dateLabel);
+      setHourIndex(resolveCurrentNightHourIndex(now, hourlyForecast.map((item) => item.hour)));
+      playUiSound('select');
+    },
     basemap, setBasemap, showLightPollution, toggleLightPollution: () => setShowLightPollution((v) => !v),
     showCloudLayer, toggleCloudLayer: () => setShowCloudLayer((v) => !v), showAzimuthRays, toggleAzimuthRays: () => setShowAzimuthRays((v) => !v),
     mapZoom, zoomMap: (d) => setMapZoom((z) => Math.max(0.8, Math.min(2.0, Number((z + d).toFixed(1))))), resetMap: () => setMapZoom(1),

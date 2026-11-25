@@ -8,6 +8,7 @@ import { SegmentedControl, SegmentedTone } from '../../design-system/primitives/
 import { StatusPill } from '../../design-system/primitives/StatusPill';
 import { TierBadge } from '../../design-system/primitives/TierBadge';
 import { ActionButton } from '../../design-system/primitives/ActionButton';
+import { NeonShimmerButton } from '../../design-system/primitives/NeonShimmerButton';
 import { AppIcon } from '../../design-system/icons/AppIcon';
 import { useAppState } from '../../state/AppStateContext';
 import { formatPlanExpiryLabel } from '../../utils/accessPolicy';
@@ -188,7 +189,7 @@ export function SettingsOverlay({ isMobileView = false }: SettingsOverlayProps) 
       <SwitchSettingCard title="Hiệu ứng âm thanh UI" subtitle="Phản hồi âm thanh tinh tế khi chạm nút, chuyển tab & kéo biểu đồ" value={settings.soundEnabled} onValueChange={(soundEnabled) => updateSettings({ soundEnabled })} trackColor={colors.accentCyan} thumbColor={thumbColor} colors={colors} />
 
       <ActionButton label="Lưu cài đặt hệ thống" variant="primary" fullWidth onPress={() => { showToast('Đã lưu cài đặt hệ thống & đồng bộ đám mây thành công!', 'success'); if (!isMobileView) closeOverlay(); }} />
-      <ActionButton label="Thông tin ứng dụng & Tác giả (v1.2.0)" variant="ghost" fullWidth onPress={() => (isMobileView ? openMobileSubScreen('about') : openOverlay('about'))} />
+      <NeonShimmerButton label="Thông tin ứng dụng" onPress={() => (isMobileView ? openMobileSubScreen('about') : openOverlay('about'))} />
     </ModalShell>
   );
 }

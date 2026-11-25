@@ -6,6 +6,7 @@ import { FONT_FAMILIES } from '../../design-system/tokens/typography';
 import { AppIcon } from '../../design-system/icons/AppIcon';
 import { useAppState } from '../../state/AppStateContext';
 import { MobileBottomTabBar } from '../navigation/MobileBottomTabBar';
+import { MobileTopLocationBar } from '../navigation/MobileTopLocationBar';
 import { LocationScoreCard } from '../observation/LocationScoreCard';
 import { TimeControlBar } from '../observation/TimeControlBar';
 import { GisMapCard } from '../observation/GisMapCard';
@@ -31,13 +32,9 @@ export function MobileShell() {
   const insets = useSafeAreaInsets();
   const {
     mobileTab,
-    setMobileTab,
     mobileSubScreen,
-    selectedSpot,
-    locatingGps,
     gpsError,
     clearGpsError,
-    locateCurrentPosition,
   } = useAppState();
 
   const renderMainBody = () => {
@@ -57,88 +54,7 @@ export function MobileShell() {
 
     return (
       <View style={{ flex: 1, minHeight: 0 }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            paddingHorizontal: 16,
-            paddingVertical: 10,
-            backgroundColor: colors.bg,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.borderSubtle,
-          }}
-        >
-          <Pressable
-            onPress={() => setMobileTab('spots')}
-            style={({ pressed }) => ({
-              flex: 1,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingHorizontal: 14,
-              paddingVertical: 11,
-              borderRadius: 999,
-              backgroundColor: colors.card,
-              borderWidth: 1,
-              borderColor: colors.borderSubtle,
-              opacity: pressed ? 0.85 : 1,
-            })}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
-              <AppIcon name="map-pin" size={14} color={colors.accentCyan} />
-              <Text
-                numberOfLines={1}
-                style={{
-                  fontSize: 13,
-                  fontFamily: FONT_FAMILIES.sansSemiBold,
-                  color: colors.textPrimary,
-                  flexShrink: 1,
-                }}
-              >
-                {selectedSpot.name} · Bortle {selectedSpot.bortle}
-              </Text>
-            </View>
-            <AppIcon name="chevron-down" size={15} color={colors.textSecondary} />
-          </Pressable>
-
-          <Pressable
-            onPress={() => { void locateCurrentPosition(); }}
-            disabled={locatingGps}
-            accessibilityLabel="Lấy vị trí hiện tại"
-            style={({ pressed }) => ({
-              width: 42,
-              height: 42,
-              borderRadius: 999,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: locatingGps ? colors.pillActiveBg : colors.card,
-              borderWidth: 1,
-              borderColor: locatingGps ? colors.accentCyanBorder : colors.borderSubtle,
-              opacity: pressed ? 0.85 : 1,
-            })}
-          >
-            <AppIcon name="locate" size={16} color={colors.accentCyan} />
-          </Pressable>
-
-          <Pressable
-            onPress={() => setMobileTab('spots')}
-            accessibilityLabel="Tìm địa điểm"
-            style={({ pressed }) => ({
-              width: 42,
-              height: 42,
-              borderRadius: 999,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: colors.card,
-              borderWidth: 1,
-              borderColor: colors.borderSubtle,
-              opacity: pressed ? 0.85 : 1,
-            })}
-          >
-            <AppIcon name="search" size={16} color={colors.accentCyan} />
-          </Pressable>
-        </View>
+        <MobileTopLocationBar />
 
         {gpsError ? (
           <View
@@ -168,7 +84,11 @@ export function MobileShell() {
 
         <ScrollView
           style={{ flex: 1, minHeight: 0 }}
-          contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 14 }}
+          contentContainerStyle={{
+            padding: 16,
+            paddingBottom: Platform.OS === 'web' ? ('calc(140px + var(--sab, 0px))' as never) : 140,
+            gap: 14,
+          }}
           showsVerticalScrollIndicator={false}
         >
           <LocationScoreCard />
@@ -184,12 +104,16 @@ export function MobileShell() {
 
   const webSafeTop =
     Platform.OS === 'web'
-      ? ({ paddingTop: 'env(safe-area-inset-top, 0px)' } as never)
+      ? ({
+          paddingTop: 'var(--top-bar-pt, env(safe-area-inset-top, 0px))',
+          paddingLeft: 'var(--sal, 0px)',
+          paddingRight: 'var(--sar, 0px)',
+        } as never)
       : { paddingTop: insets.top };
 
   const webSafeBottom =
     Platform.OS === 'web'
-      ? ({ bottom: 'max(10px, env(safe-area-inset-bottom, 0px))' } as never)
+      ? ({ bottom: 'max(10px, var(--sab, env(safe-area-inset-bottom, 0px)))' } as never)
       : { bottom: Math.max(10, insets.bottom) };
 
   return (

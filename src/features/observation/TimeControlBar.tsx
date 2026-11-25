@@ -9,35 +9,13 @@ import { SegmentedControl } from '../../design-system/primitives/SegmentedContro
 import { AppIcon } from '../../design-system/icons/AppIcon';
 import { useAppState } from '../../state/AppStateContext';
 import { useResponsive } from '../../hooks/useResponsive';
-
-const TIMELINE_TICKS = [
-  { label: '17:38 Lặn', idx: 0 },
-  { label: '19:00 Ráng', idx: 1 },
-  { label: '21:00', idx: 3 },
-  { label: '00:00', idx: 6 },
-  { label: '01:30 Đỉnh', idx: 7 },
-  { label: '04:36 Rạng', idx: 10 },
-  { label: '05:54 Mọc', idx: 12 },
-];
-
-const MOBILE_TIMELINE_TICKS = [
-  { label: '18:00', idx: 0 },
-  { label: '21:00', idx: 3 },
-  { label: '00:00', idx: 6 },
-  { label: '03:00', idx: 9 },
-  { label: '06:00', idx: 12 },
-];
-
-const QUICK_TIMES = [
-  { label: '19:00 Ráng chiều', idx: 1 },
-  { label: '21:00 Đêm thiên văn', idx: 3 },
-  { label: '01:30 Đỉnh Ngân Hà', idx: 7 },
-];
-
-const SPEED_OPTIONS: { value: '10m' | '60m'; label: string }[] = [
-  { value: '10m', label: '10 phút/giây' },
-  { value: '60m', label: '60 phút/giây' },
-];
+import {
+  DESKTOP_SPEED_OPTIONS,
+  DESKTOP_TIMELINE_TICKS,
+  MOBILE_SPEED_OPTIONS,
+  MOBILE_TIMELINE_TICKS,
+  QUICK_TIME_PRESETS,
+} from '../../utils/timeNowHelper';
 
 export function TimeControlBar() {
   const { mode, colors } = useTheme();
@@ -51,6 +29,7 @@ export function TimeControlBar() {
     togglePlayTime,
     playbackSpeed,
     setPlaybackSpeed,
+    resetToCurrentTime,
     targets,
     selectedTarget,
     selectTarget,
@@ -80,9 +59,10 @@ export function TimeControlBar() {
           gap: 14,
         }}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: isMobile ? 6 : 8, flexShrink: 0 }}>
           <Pressable
             onPress={togglePlayTime}
+            accessibilityLabel={isPlayingTime ? 'Tạm dừng mô phỏng thời gian' : 'Chạy mô phỏng thời gian'}
             style={{
               width: 36,
               height: 36,
@@ -109,8 +89,18 @@ export function TimeControlBar() {
             tone="cyan"
             value={playbackSpeed}
             onChange={setPlaybackSpeed}
-            options={SPEED_OPTIONS}
+            options={isMobile ? MOBILE_SPEED_OPTIONS : DESKTOP_SPEED_OPTIONS}
           />
+
+          <View style={isMobile ? { marginLeft: 'auto' } : undefined}>
+            <StatusPill
+              label="Hiện tại"
+              tone="cyan"
+              small
+              leftIcon={<AppIcon name="rotate-ccw" size={11} color={colors.accentCyan} />}
+              onPress={resetToCurrentTime}
+            />
+          </View>
         </View>
 
         <View style={{ flex: isMobile ? undefined : 1, gap: 7 }}>
@@ -187,7 +177,7 @@ export function TimeControlBar() {
           </View>
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 4 }}>
-            {(isMobile ? MOBILE_TIMELINE_TICKS : TIMELINE_TICKS).map((tick) => {
+            {(isMobile ? MOBILE_TIMELINE_TICKS : DESKTOP_TIMELINE_TICKS).map((tick) => {
               const active = hourIndex === tick.idx;
               return (
                 <Pressable key={tick.label} onPress={() => setHourIndex(tick.idx)}>
@@ -266,7 +256,7 @@ export function TimeControlBar() {
         </View>
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
-          {QUICK_TIMES.map((qt) => (
+          {QUICK_TIME_PRESETS.map((qt) => (
             <StatusPill
               key={qt.label}
               label={qt.label}

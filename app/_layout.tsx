@@ -17,14 +17,21 @@ import {
 } from '@expo-google-fonts/jetbrains-mono';
 import { ThemeProvider, useTheme } from '../src/design-system/theme/ThemeContext';
 import { AppStateProvider } from '../src/state/AppStateContext';
+import { initViewportCalibration } from '../src/utils/viewportCalibration';
 
 function RootStack() {
   const { colors, isLight } = useTheme();
 
   useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    return initViewportCalibration();
+  }, []);
+
+  useEffect(() => {
     if (Platform.OS !== 'web' || typeof document === 'undefined') return;
     document.title = 'StarWatch · Chạm vào Vũ Trụ';
     document.documentElement.lang = 'vi';
+    document.documentElement.style.setProperty('--sw-bg', colors.bg);
     document.documentElement.style.backgroundColor = colors.bg;
     document.body.style.backgroundColor = colors.bg;
     document.body.style.margin = '0';

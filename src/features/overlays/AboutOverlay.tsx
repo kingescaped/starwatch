@@ -7,17 +7,16 @@ import { StarWatchLogo } from '../../design-system/icons/StarWatchLogo';
 import { StatusPill } from '../../design-system/primitives/StatusPill';
 import { AppIcon } from '../../design-system/icons/AppIcon';
 import { useAppState } from '../../state/AppStateContext';
+import { AboutLegalSection } from './AboutLegalSection';
 import { ModalShell } from './ModalShell';
 
 interface AboutOverlayProps {
   isMobileView?: boolean;
 }
 
-const LEGAL_ITEMS = ['Điều khoản sử dụng', 'Chính sách bảo mật', 'Gửi phản hồi / Báo lỗi'];
-
 export function AboutOverlay({ isMobileView = false }: AboutOverlayProps) {
   const { mode, colors } = useTheme();
-  const { closeOverlay, openOverlay, closeMobileSubScreen, showToast } = useAppState();
+  const { closeOverlay, openOverlay, closeMobileSubScreen } = useAppState();
 
   return (
     <ModalShell
@@ -144,34 +143,7 @@ export function AboutOverlay({ isMobileView = false }: AboutOverlayProps) {
         </Pressable>
       </View>
 
-      <View style={{ gap: 8 }}>
-        <Text style={{ fontSize: 10, fontFamily: FONT_FAMILIES.sansSemiBold, color: colors.textMuted, letterSpacing: 0.7 }}>
-          PHÁP LÝ & HỖ TRỢ
-        </Text>
-        {LEGAL_ITEMS.map((item) => (
-          <Pressable
-            key={item}
-            onPress={() => showToast(`Đang mở tài liệu: ${item}`, 'info')}
-            style={({ pressed }) => ({
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingHorizontal: 14,
-              paddingVertical: 11,
-              borderRadius: 12,
-              backgroundColor: colors.cardInner,
-              borderWidth: 1,
-              borderColor: colors.borderSubtle,
-              opacity: pressed ? 0.85 : 1,
-            })}
-          >
-            <Text style={{ fontSize: 13, fontFamily: FONT_FAMILIES.sansMedium, color: colors.textPrimary }}>
-              {item}
-            </Text>
-            <AppIcon name="chevron-right" size={15} color={colors.textSecondary} />
-          </Pressable>
-        ))}
-      </View>
+      <AboutLegalSection />
 
       <Text
         style={{

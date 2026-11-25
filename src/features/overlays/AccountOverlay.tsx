@@ -201,6 +201,7 @@ export function AccountOverlay({ isMobileView = false }: AccountOverlayProps) {
             effectivePlan={effectivePlan}
             isAdmin={isAdmin}
             entitlementSource={user.entitlementSource}
+            userEmail={user.email}
             authBusy={authBusy}
             onSelectPlan={changePlan}
           />

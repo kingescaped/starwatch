@@ -9,6 +9,7 @@ import { TierBadge } from '../../design-system/primitives/TierBadge';
 import { useAppState } from '../../state/AppStateContext';
 import { OverlayId } from '../../state/types';
 import { playUiSound } from '../../utils/soundEngine';
+import { DesktopInlineSearch } from './DesktopInlineSearch';
 
 interface NavTabItem {
   id: OverlayId;
@@ -61,16 +62,11 @@ export function DesktopHeader() {
   useEffect(() => {
     if (Platform.OS !== 'web') return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        openOverlay('spots');
-      } else if (e.key === 'Escape') {
-        closeOverlay();
-      }
+      if (e.key === 'Escape') closeOverlay();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [openOverlay, closeOverlay]);
+  }, [closeOverlay]);
 
   const accountActive = activeOverlay === 'settings' || activeOverlay === 'account' || activeOverlay === 'about';
 
@@ -87,13 +83,15 @@ export function DesktopHeader() {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 16,
+          zIndex: 50,
+          overflow: 'visible',
         },
         Platform.OS === 'web'
           ? ({ backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)' } as never)
           : null,
       ]}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, zIndex: 100 }}>
         <Pressable onPress={closeOverlay} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <StarWatchLogo size={30} mode={mode} />
           <Text style={{ fontSize: 17, fontFamily: FONT_FAMILIES.sansBold, color: colors.textPrimary, letterSpacing: -0.3 }}>
@@ -101,32 +99,7 @@ export function DesktopHeader() {
           </Text>
         </Pressable>
 
-        <Pressable
-          onPress={() => openOverlay('spots')}
-          style={({ pressed }) => ({
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: 224,
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            borderRadius: 999,
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.borderSubtle,
-            opacity: pressed ? 0.85 : 1,
-          })}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <AppIcon name="search" size={14} color={colors.textMuted} />
-            <Text style={{ fontSize: 12, fontFamily: FONT_FAMILIES.sansRegular, color: colors.textMuted }}>
-              Tìm điểm săn ảnh...
-            </Text>
-          </View>
-          <Text style={{ fontSize: 11, fontFamily: FONT_FAMILIES.monoMedium, color: colors.textMuted }}>
-            ⌘ K
-          </Text>
-        </Pressable>
+        <DesktopInlineSearch />
 
         <Pressable
           accessibilityLabel="Lấy vị trí hiện tại"

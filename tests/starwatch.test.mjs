@@ -36,6 +36,12 @@ import { projectSpotToMap } from '../src/features/observation/gisMapHelpers.ts';
 import { buildDynamicSpot, parseCoordinateQuery } from '../src/services/locationClient.ts';
 import { mergeFetchedSpots } from '../src/services/localPrefsStorage.ts';
 import { isSoundEnabled, playUiSound, setSoundEnabled } from '../src/utils/soundEngine.ts';
+import {
+  computeCalibratedAppHeight,
+  isIosPlatform,
+  isVirtualKeyboardOpen,
+} from '../src/utils/viewportCalibration.ts';
+import { formatCurrentDateParts, resolveCurrentNightHourIndex } from '../src/utils/timeNowHelper.ts';
 import { previewCameraGearLocally } from '../src/data/cameraCatalog.ts';
 import { estimateBortleAtCoords } from '../server/src/domain/bortle.ts';
 import { computeAstroAdvisor } from '../server/src/domain/scoring.ts';
@@ -243,9 +249,10 @@ test('Mobile headers are pinned outside ScrollView and CalendarOverlay supports 
   assert.ok(modalTitleIdx > modalMobileIdx && modalTitleIdx < modalScrollIdx, 'ModalShell header must be pinned above ScrollView');
 
   const mobileShellSrc = readSrc('src/features/shells/MobileShell.tsx');
-  const obsIdx = mobileShellSrc.indexOf('selectedSpot.name');
+  const obsIdx = mobileShellSrc.indexOf('<MobileTopLocationBar');
   const obsScrollIdx = mobileShellSrc.indexOf('<ScrollView', mobileShellSrc.indexOf('renderMainBody'));
   assert.ok(obsIdx > 0 && obsScrollIdx > 0 && obsIdx < obsScrollIdx, 'MobileShell observe header must stay outside ScrollView');
+  assert.ok(readSrc('src/features/navigation/MobileTopLocationBar.tsx').includes('selectedSpot.name'));
 
   const calSrc = readSrc('src/features/overlays/CalendarOverlay.tsx');
   assert.ok(calSrc.includes('Tháng trước') && calSrc.includes('Tháng sau') && calSrc.includes('Chọn nhanh tháng'));
@@ -575,11 +582,11 @@ test('Google auth endpoint validates tokens and UI wires header displayName and 
 
   const widgetSrc = readSrc('src/features/overlays/GoogleSignInWidget.tsx');
   assert.ok(widgetSrc.includes('use_fedcm_for_prompt: true'));
-  assert.ok(widgetSrc.includes('renderButton'));
   assert.ok(widgetSrc.includes('gsi.prompt()'));
   assert.ok(widgetSrc.includes('GoogleGIcon'));
   assert.ok(widgetSrc.includes('Đăng nhập bằng Google'));
   assert.ok(widgetSrc.includes('Đăng ký bằng Google'));
+  assert.ok(widgetSrc.includes('colors.buttonSecondaryBg'));
   assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(widgetSrc));
   assert.ok(widgetSrc.split('\n').length <= 300);
 
@@ -716,8 +723,9 @@ test('GPS coordinate parser, dynamic spot merge, mobile blur/zoom fixes, and web
   assert.equal(merged.find((s) => s.id === 'ta-xua')?.isFavorite, false);
 
   const mobileShell = readSrc('src/features/shells/MobileShell.tsx');
-  assert.ok(!mobileShell.includes('backdropFilter'), 'MobileShell top header must not use blur backdropFilter');
-  assert.ok(mobileShell.includes('locateCurrentPosition'), 'MobileShell must wire GPS locate button');
+  const mobileBar = readSrc('src/features/navigation/MobileTopLocationBar.tsx');
+  assert.ok(!mobileShell.includes('backdropFilter') && !mobileBar.includes('backdropFilter'), 'Mobile top header must not use blur backdropFilter');
+  assert.ok(mobileShell.includes('<MobileTopLocationBar') && mobileBar.includes('locateCurrentPosition'), 'Mobile top bar must wire GPS locate button');
   assert.ok(readSrc('src/features/navigation/DesktopHeader.tsx').includes('locateCurrentPosition'));
 
   const modalShell = readSrc('src/features/overlays/ModalShell.tsx');
@@ -755,6 +763,93 @@ test('GPS coordinate parser, dynamic spot merge, mobile blur/zoom fixes, and web
     'src/features/shells/MobileShell.tsx',
     'src/features/shells/DesktopShell.tsx',
     'src/features/navigation/DesktopHeader.tsx',
+  ]) {
+    const src = readSrc(relPath);
+    assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(src), `${relPath} must not hardcode hex colors`);
+    assert.ok(src.split('\n').length <= 300, `${relPath} must stay <= 300 lines`);
+  }
+});
+
+test('iOS Standalone 5-layer safe-area calibration preserves layout and tokens', () => {
+  assert.equal(isIosPlatform('Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)', 'iPhone', 5), true);
+  assert.equal(isIosPlatform('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', 'MacIntel', 5), true);
+  assert.equal(isIosPlatform('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', 'MacIntel', 0), false);
+  assert.equal(isIosPlatform('Mozilla/5.0 (Linux; Android 15)', 'Linux', 5), false);
+
+  assert.equal(computeCalibratedAppHeight(793, 852, 393, true, true), 852);
+  assert.equal(computeCalibratedAppHeight(400, 852, 393, true, true), 400);
+  assert.equal(computeCalibratedAppHeight(793, 852, 393, false, true), 793);
+  assert.equal(computeCalibratedAppHeight(350, 852, 393, true, false), 393);
+
+  assert.equal(isVirtualKeyboardOpen(852, 520), true);
+  assert.equal(isVirtualKeyboardOpen(852, 793), false);
+
+  const indexHtml = readSrc('public/index.html');
+  assert.ok(indexHtml.includes('name="apple-mobile-web-app-status-bar-style" content="black"'));
+  assert.ok(indexHtml.includes('ios-standalone'));
+  assert.ok(indexHtml.includes('<div id="ios-status-bar-shield"'));
+  assert.ok(indexHtml.indexOf('<div id="ios-status-bar-shield"') > indexHtml.indexOf('<div id="root"></div>'));
+
+  const normalizedCss = readSrc('global.css').replace(/\r\n/g, '\n');
+  for (const token of [
+    '--sat: env(safe-area-inset-top, 0px)',
+    '--sab: env(safe-area-inset-bottom, 0px)',
+    '--ios-top-blur-clearance',
+    '--top-bar-pt',
+    'html.ios-standalone #ios-status-bar-shield',
+    '@media (max-width: 767px), (pointer: coarse)',
+    'canvas {\n  touch-action: none;',
+  ]) {
+    assert.ok(normalizedCss.includes(token), `global.css missing ${token}`);
+  }
+  assert.ok(!/--sat:\s*\d+px/.test(normalizedCss) && !/--sab:\s*\d+px/.test(normalizedCss), 'Do not hardcode --sat or --sab');
+
+  const mobileShell = readSrc('src/features/shells/MobileShell.tsx');
+  assert.ok(mobileShell.includes('var(--top-bar-pt'));
+  assert.ok(mobileShell.includes('var(--sab'));
+  assert.ok(mobileShell.includes("position: 'absolute'"));
+  assert.ok(mobileShell.includes('TonightSummaryCard'));
+  assert.ok(mobileShell.includes('MobileBottomTabBar'));
+  assert.ok(mobileShell.includes('MobileTopLocationBar'));
+
+  const layoutSrc = readSrc('app/_layout.tsx');
+  assert.ok(layoutSrc.includes('initViewportCalibration'));
+  assert.ok(layoutSrc.includes("'--sw-bg'"));
+  assert.ok(readSrc('src/utils/viewportCalibration.ts').split('\n').length <= 300);
+});
+
+test('Inline Desktop/Mobile search, Neon About button, 3 legal tabs, Telegram upgrades, and Hiện tại button are wired', () => {
+  const hours = HOURLY_FORECAST.map((item) => item.hour);
+  assert.equal(resolveCurrentNightHourIndex(new Date(2026, 10, 25, 23, 39), hours), 5);
+  assert.equal(resolveCurrentNightHourIndex(new Date(2026, 10, 25, 1, 20), hours), 7);
+  assert.equal(resolveCurrentNightHourIndex(new Date(2026, 10, 25, 14, 15), hours), 0);
+  const formatted = formatCurrentDateParts(new Date(2026, 10, 25, 23, 39));
+  assert.equal(formatted.dateLabel, '25/11/2026');
+
+  assert.ok(readSrc('src/features/navigation/DesktopHeader.tsx').includes('DesktopInlineSearch'));
+  assert.ok(readSrc('src/features/navigation/MobileTopLocationBar.tsx').includes('locateCurrentPosition'));
+  assert.ok(readSrc('src/features/observation/TimeControlBar.tsx').includes('resetToCurrentTime'));
+  assert.ok(readSrc('src/features/observation/TimeControlBar.tsx').includes('Hiện tại'));
+  assert.ok(readSrc('src/features/overlays/SettingsOverlay.tsx').includes('NeonShimmerButton'));
+  assert.ok(readSrc('src/features/overlays/SettingsOverlay.tsx').includes('"Thông tin ứng dụng"'));
+
+  const legalSrc = readSrc('src/features/overlays/AboutLegalSection.tsx');
+  assert.ok(legalSrc.includes('Điều khoản') && legalSrc.includes('Chính sách') && legalSrc.includes('Báo lỗi'));
+  assert.ok(legalSrc.includes('https://t.me/kingescaped'));
+
+  const plansSrc = readSrc('src/features/overlays/AccountPlansSection.tsx');
+  assert.ok(plansSrc.includes('https://t.me/kingescaped'));
+  assert.ok(plansSrc.includes('Mua StarWatch PRO qua Telegram'));
+
+  for (const relPath of [
+    'src/design-system/primitives/NeonShimmerButton.tsx',
+    'src/features/navigation/DesktopInlineSearch.tsx',
+    'src/features/navigation/MobileTopLocationBar.tsx',
+    'src/features/navigation/MobileLocationDropdown.tsx',
+    'src/features/overlays/AboutLegalSection.tsx',
+    'src/features/overlays/AboutOverlay.tsx',
+    'src/features/overlays/AccountPlansSection.tsx',
+    'src/features/shells/MobileShell.tsx',
   ]) {
     const src = readSrc(relPath);
     assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(src), `${relPath} must not hardcode hex colors`);
