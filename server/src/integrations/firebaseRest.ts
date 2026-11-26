@@ -10,8 +10,13 @@ export interface AuthSessionResult {
   email: string;
   displayName: string;
   idToken: string;
+  refreshToken: string;
   provider: 'firebase' | 'local';
 }
+
+export type FirebaseRefreshResult =
+  | { ok: true; uid: string; idToken: string; refreshToken: string }
+  | { ok: false; reason: 'invalid' | 'unavailable' };
 
 export async function firebaseSignUp(
   env: ServerEnv,
@@ -29,7 +34,13 @@ export async function firebaseSignUp(
       signal: AbortSignal.timeout(5000),
     }
   );
-  const body = (await res.json()) as { localId?: string; idToken?: string; email?: string; error?: { message?: string } };
+  const body = (await res.json()) as {
+    localId?: string;
+    idToken?: string;
+    refreshToken?: string;
+    email?: string;
+    error?: { message?: string };
+  };
   if (!res.ok || !body.localId || !body.idToken) {
     throw new Error(mapFirebaseError(body.error?.message));
   }
@@ -41,7 +52,14 @@ export async function firebaseSignUp(
       body: JSON.stringify({ idToken: body.idToken, displayName }),
     }
   ).catch(() => {});
-  return { uid: body.localId, email: body.email ?? email, displayName, idToken: body.idToken, provider: 'firebase' };
+  return {
+    uid: body.localId,
+    email: body.email ?? email,
+    displayName,
+    idToken: body.idToken,
+    refreshToken: body.refreshToken ?? '',
+    provider: 'firebase',
+  };
 }
 
 export async function firebaseSignIn(env: ServerEnv, email: string, password: string): Promise<AuthSessionResult> {
@@ -58,6 +76,7 @@ export async function firebaseSignIn(env: ServerEnv, email: string, password: st
   const body = (await res.json()) as {
     localId?: string;
     idToken?: string;
+    refreshToken?: string;
     email?: string;
     displayName?: string;
     error?: { message?: string };
@@ -70,8 +89,48 @@ export async function firebaseSignIn(env: ServerEnv, email: string, password: st
     email: body.email ?? email,
     displayName: body.displayName || email.split('@')[0],
     idToken: body.idToken,
+    refreshToken: body.refreshToken ?? '',
     provider: 'firebase',
   };
+}
+
+export async function firebaseRefreshIdToken(
+  env: ServerEnv,
+  refreshToken: string
+): Promise<FirebaseRefreshResult> {
+  if (!env.firebaseApiKey) return { ok: false, reason: 'unavailable' };
+  const trimmed = refreshToken.trim();
+  if (!trimmed) return { ok: false, reason: 'invalid' };
+  try {
+    const res = await fetch(
+      `https://securetoken.googleapis.com/v1/token?key=${encodeURIComponent(env.firebaseApiKey)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: trimmed }),
+        signal: AbortSignal.timeout(5000),
+      }
+    );
+    const body = (await res.json().catch(() => ({}))) as {
+      id_token?: string;
+      refresh_token?: string;
+      user_id?: string;
+    };
+    if (res.ok && typeof body.id_token === 'string' && typeof body.user_id === 'string') {
+      return {
+        ok: true,
+        uid: body.user_id,
+        idToken: body.id_token,
+        refreshToken: typeof body.refresh_token === 'string' && body.refresh_token ? body.refresh_token : trimmed,
+      };
+    }
+    if (res.status === 400 || res.status === 401 || res.status === 403) {
+      return { ok: false, reason: 'invalid' };
+    }
+    return { ok: false, reason: 'unavailable' };
+  } catch {
+    return { ok: false, reason: 'unavailable' };
+  }
 }
 
 export async function verifyFirebaseIdToken(

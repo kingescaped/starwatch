@@ -1,4 +1,3 @@
-import { Platform } from 'react-native';
 import type {
   CalendarDay,
   DailyAstroEvent,
@@ -14,32 +13,36 @@ import type {
 } from '../state/types';
 import type { AstroSetupSpec } from '../data/advisor';
 import type { CameraGearProfile } from '../data/cameraCatalog';
+import {
+  readSessionDriver,
+  readSessionDriverSync,
+  writeSessionDriver,
+} from './nativeSecureStorage';
+import type { StoredSession } from './sessionStorage';
 
 const API_BASE =
   (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_BASE_URL) ||
   'http://127.0.0.1:8787';
 
-const SESSION_KEY = 'starwatch_session_v1';
-
-export function readStoredSession(): { token: string; user: UserAccount } | null {
-  if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
-  try {
-    const raw = window.localStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as { token: string; user: UserAccount }) : null;
-  } catch {
-    return null;
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+  constructor(status: number, message: string, code?: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.code = code;
   }
 }
 
-export function writeStoredSession(session: { token: string; user: UserAccount } | null): void {
-  if (Platform.OS !== 'web' || typeof window === 'undefined') return;
-  try {
-    if (session) window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    else window.localStorage.removeItem(SESSION_KEY);
-  } catch {
-    // Ignore storage restriction
-  }
+export function isUnauthorizedError(err: unknown): boolean {
+  return err instanceof ApiError && err.status === 401;
 }
+
+export type { StoredSession };
+export const readStoredSessionSync = readSessionDriverSync;
+export const readStoredSession = readSessionDriver;
+export const writeStoredSession = writeSessionDriver;
 
 async function requestJson<T>(path: string, init?: RequestInit, token?: string | null): Promise<T> {
   const headers: Record<string, string> = {
@@ -50,8 +53,8 @@ async function requestJson<T>(path: string, init?: RequestInit, token?: string |
     ...init,
     headers: { ...headers, ...(init?.headers as Record<string, string> | undefined) },
   });
-  const body = (await res.json().catch(() => ({}))) as T & { message?: string };
-  if (!res.ok) throw new Error(body.message || `Lỗi máy chủ (${res.status})`);
+  const body = (await res.json().catch(() => ({}))) as T & { message?: string; code?: string };
+  if (!res.ok) throw new ApiError(res.status, body.message || `Lỗi máy chủ (${res.status})`, body.code);
   return body;
 }
 
@@ -117,11 +120,19 @@ export const apiClient = {
   fetchCalendar: (year: number, month: number, lat: number, lng: number, bortle: number) =>
     requestJson<{ days: CalendarDay[] }>(`/v1/calendar?year=${year}&month=${month}&lat=${lat}&lng=${lng}&bortle=${bortle}`),
   registerUser: (payload: { email: string; password: string; displayName: string }) =>
-    requestJson<{ token: string; user: UserAccount }>('/v1/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
+    requestJson<{ token: string; refreshToken?: string; user: UserAccount }>('/v1/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
   loginUser: (payload: { email: string; password: string }) =>
-    requestJson<{ token: string; user: UserAccount }>('/v1/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
-  googleAuth: (idToken: string) =>
-    requestJson<{ token: string; user: UserAccount }>('/v1/auth/google', { method: 'POST', body: JSON.stringify({ idToken }) }),
+    requestJson<{ token: string; refreshToken?: string; user: UserAccount }>('/v1/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
+  googleAuth: (idToken: string, refreshToken?: string) =>
+    requestJson<{ token: string; refreshToken?: string; user: UserAccount }>('/v1/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ idToken, ...(refreshToken ? { refreshToken } : {}) }),
+    }),
+  refreshSession: (refreshToken: string) =>
+    requestJson<{ token: string; refreshToken: string; user: UserAccount }>('/v1/auth/refresh', {
+      method: 'POST',
+      body: JSON.stringify({ refreshToken }),
+    }),
   fetchMe: (token: string) => requestJson<{ user: UserAccount }>('/v1/me', undefined, token),
   updateMe: (token: string, patch: Partial<Pick<UserAccount, 'displayName' | 'bio' | 'cameraProfile' | 'cameraSpecs'>>) =>
     requestJson<{ user: UserAccount }>('/v1/me', { method: 'PATCH', body: JSON.stringify(patch) }, token),

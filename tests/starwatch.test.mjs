@@ -10,16 +10,26 @@ import { NOV_2026_CALENDAR } from '../src/data/calendar.ts';
 import { loadServerEnv } from '../server/src/env.ts';
 import { resolveUserCapabilities } from '../server/src/domain/accessPolicy.ts';
 import { buildFirestorePatchUrl, decodeFields } from '../server/src/integrations/firestore.ts';
-import { createLocalToken, hashPassword } from '../server/src/integrations/firebaseAuth.ts';
+import { createLocalRefreshToken, createLocalToken, firebaseRefreshIdToken, hashPassword } from '../server/src/integrations/firebaseAuth.ts';
 import { upsertLocalUser } from '../server/src/integrations/localStore.ts';
 import {
   handleAdminOverview,
   handleChangePlan,
+  handleGetMe,
   handleGoogleAuth,
+  handleLogin,
+  handleRefreshSession,
   handleRegister,
   handleUpdateMe,
   resolvePlanExpiresAt,
 } from '../server/src/routes/accountRoutes.ts';
+import {
+  SECURE_SESSION_KEYS,
+  decodeTokenExpiryMs,
+  isTokenExpiringSoon,
+  parseStoredSession,
+  serializeStoredSession,
+} from '../src/services/sessionStorage.ts';
 import { handleCreateSpot, handleDeleteSpot } from '../server/src/routes/observationRoutes.ts';
 import { handleWorkerFetch } from '../server/src/worker/index.ts';
 import { THEMES, getTierBadgePalette } from '../src/design-system/tokens/colors.ts';
@@ -855,4 +865,184 @@ test('Inline Desktop/Mobile search, Neon About button, 3 legal tabs, Telegram up
     assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(src), `${relPath} must not hardcode hex colors`);
     assert.ok(src.split('\n').length <= 300, `${relPath} must stay <= 300 lines`);
   }
+});
+
+test('Session storage helpers decode JWT/local expiries and validate stored sessions', () => {
+  const sampleUser = {
+    uid: 'u-session-1',
+    email: 'session@example.com',
+    displayName: 'Session User',
+    bio: 'Milky Way',
+    plan: 'free',
+    cameraProfile: 'Sony A7 IV',
+    cameraSpecs: 'Full-Frame',
+    updatedAt: '2026-11-26T00:00:00.000Z',
+  };
+  const serialized = serializeStoredSession({ token: 'tok-123', refreshToken: 'ref-456', user: sampleUser });
+  const parsed = parseStoredSession(serialized);
+  assert.deepEqual(parsed, { token: 'tok-123', refreshToken: 'ref-456', user: sampleUser });
+  assert.equal(parseStoredSession('not-json'), null);
+  assert.equal(parseStoredSession(JSON.stringify({ token: '', user: sampleUser })), null);
+  assert.equal(parseStoredSession(JSON.stringify({ token: 'abc', user: {} })), null);
+
+  const nowMs = 1_800_000_000_000;
+  const jwtPayloadFresh = Buffer.from(JSON.stringify({ exp: Math.floor((nowMs + 30 * 60_000) / 1000) })).toString('base64url');
+  const jwtFresh = `hdr.${jwtPayloadFresh}.sig`;
+  assert.equal(decodeTokenExpiryMs(jwtFresh), Math.floor((nowMs + 30 * 60_000) / 1000) * 1000);
+  assert.equal(isTokenExpiringSoon(jwtFresh, 5 * 60_000, nowMs), false);
+
+  const jwtPayloadSoon = Buffer.from(JSON.stringify({ exp: Math.floor((nowMs + 3 * 60_000) / 1000) })).toString('base64url');
+  const jwtSoon = `hdr.${jwtPayloadSoon}.sig`;
+  assert.equal(isTokenExpiringSoon(jwtSoon, 5 * 60_000, nowMs), true);
+  assert.equal(isTokenExpiringSoon(jwtSoon, 0, nowMs), false);
+
+  const localTok = createLocalToken('u-local', 'local@example.com');
+  const localExp = decodeTokenExpiryMs(localTok);
+  assert.ok(typeof localExp === 'number' && localExp > Date.now() + 6 * 86_400_000);
+  assert.equal(isTokenExpiringSoon(localTok), false);
+  assert.equal(decodeTokenExpiryMs('invalid'), null);
+  assert.equal(isTokenExpiringSoon('invalid'), false);
+  assert.match(SECURE_SESSION_KEYS.token, /^[a-z0-9_]+$/i);
+  assert.match(SECURE_SESSION_KEYS.refreshToken, /^[a-z0-9_]+$/i);
+  assert.match(SECURE_SESSION_KEYS.user, /^[a-z0-9_]+$/i);
+});
+
+test('Node and Worker refresh endpoints exchange refresh tokens and distinguish 401 vs 503', async () => {
+  const storePath = path.join(root, 'server', 'data', 'store.json');
+  const hadStore = fs.existsSync(storePath);
+  const originalStore = hadStore ? fs.readFileSync(storePath, 'utf8') : null;
+  const localEnv = {
+    ...loadServerEnv(),
+    firebaseApiKey: '',
+    firebaseProjectId: '',
+    googleServiceAccountEmail: '',
+    googleServiceAccountPrivateKey: '',
+  };
+
+  try {
+    const reg = await handleRegister(
+      makeMockReq({ email: 'refresh-test@example.com', password: 'secret123', displayName: 'Refresh Test' }),
+      localEnv
+    );
+    assert.ok(reg.refreshToken.startsWith('swr.'), 'handleRegister must return swr. local refresh token');
+
+    const logged = await handleLogin(
+      makeMockReq({ email: 'refresh-test@example.com', password: 'secret123' }),
+      localEnv
+    );
+    assert.ok(logged.refreshToken.startsWith('swr.'), 'handleLogin must return swr. local refresh token');
+
+    await assert.rejects(
+      () => handleRefreshSession(makeMockReq({}), localEnv),
+      (err) => err?.status === 400 && err?.code === 'missing_refresh_token'
+    );
+    await assert.rejects(
+      () => handleRefreshSession(makeMockReq({ refreshToken: 'bad-refresh-token' }), localEnv),
+      (err) => err?.status === 401 && err?.code === 'invalid_refresh_token'
+    );
+
+    const validRefresh = createLocalRefreshToken(reg.user.uid, reg.user.email);
+    const refreshed = await handleRefreshSession(makeMockReq({ refreshToken: validRefresh }), localEnv);
+    assert.ok(refreshed.token.startsWith('sw.'));
+    assert.ok(refreshed.refreshToken.startsWith('swr.'));
+    assert.equal(refreshed.user.uid, reg.user.uid);
+    const me = await handleGetMe(makeMockReq(undefined, refreshed.token), localEnv);
+    assert.equal(me.user.email, reg.user.email);
+  } finally {
+    if (hadStore && originalStore !== null) fs.writeFileSync(storePath, originalStore, 'utf8');
+    else if (!hadStore && fs.existsSync(storePath)) fs.unlinkSync(storePath);
+  }
+
+  const missingWorkerRes = await handleWorkerFetch(
+    new Request('https://api.example/v1/auth/refresh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    }),
+    { FIREBASE_API_KEY: 'test-key', FIREBASE_PROJECT_ID: 'test-proj' }
+  );
+  assert.equal(missingWorkerRes.status, 400);
+
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () =>
+      new Response(JSON.stringify({ id_token: 'fb-id-new', refresh_token: 'fb-ref-new', user_id: 'uid-fb-1' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    const parsedFb = await firebaseRefreshIdToken({ ...localEnv, firebaseApiKey: 'test-key' }, 'fb-ref-old');
+    assert.deepEqual(parsedFb, {
+      ok: true,
+      uid: 'uid-fb-1',
+      idToken: 'fb-id-new',
+      refreshToken: 'fb-ref-new',
+    });
+
+    globalThis.fetch = async () =>
+      new Response(JSON.stringify({ error: { message: 'TOKEN_EXPIRED' } }), { status: 400 });
+    const workerInvalidRes = await handleWorkerFetch(
+      new Request('https://api.example/v1/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: 'expired-token' }),
+      }),
+      { FIREBASE_API_KEY: 'test-key', FIREBASE_PROJECT_ID: 'test-proj' }
+    );
+    assert.equal(workerInvalidRes.status, 401);
+
+    globalThis.fetch = async () => new Response('upstream error', { status: 500 });
+    const worker503Res = await handleWorkerFetch(
+      new Request('https://api.example/v1/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: 'valid-token' }),
+      }),
+      { FIREBASE_API_KEY: 'test-key', FIREBASE_PROJECT_ID: 'test-proj' }
+    );
+    assert.equal(worker503Res.status, 503);
+
+    globalThis.fetch = async () => {
+      throw new Error('network down');
+    };
+    const workerNetworkRes = await handleWorkerFetch(
+      new Request('https://api.example/v1/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: 'valid-token' }),
+      }),
+      { FIREBASE_API_KEY: 'test-key', FIREBASE_PROJECT_ID: 'test-proj' }
+    );
+    assert.equal(workerNetworkRes.status, 503);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+
+  for (const relPath of [
+    'src/services/sessionStorage.ts',
+    'src/services/nativeSecureStorage.ts',
+    'src/services/nativeSecureStorage.web.ts',
+    'src/services/apiClient.ts',
+    'src/services/googleAuthClient.ts',
+    'src/state/useAuthStateController.ts',
+    'server/src/integrations/firebaseRest.ts',
+    'server/src/integrations/firebaseAuth.ts',
+    'server/src/routes/accountRoutes.ts',
+    'server/src/worker/workerAccountRoutes.ts',
+  ]) {
+    const src = readSrc(relPath);
+    assert.ok(src.split('\n').length <= 300, `${relPath} must stay <= 300 lines`);
+    if (relPath.startsWith('src/')) {
+      assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(src), `${relPath} must not hardcode hex colors`);
+    }
+  }
+  const nativeDriver = readSrc('src/services/nativeSecureStorage.ts');
+  const webDriver = readSrc('src/services/nativeSecureStorage.web.ts');
+  assert.ok(nativeDriver.includes('expo-secure-store') && nativeDriver.includes('SECURE_SESSION_KEYS'));
+  assert.ok(!webDriver.includes('expo-secure-store'));
+
+  const controllerSrc = readSrc('src/state/useAuthStateController.ts');
+  assert.ok(controllerSrc.includes('visibilitychange'));
+  assert.ok(controllerSrc.includes('AppState'));
+  assert.ok(controllerSrc.includes('isUnauthorizedError'));
+  assert.ok(readSrc('app.json').includes('expo-secure-store'));
 });

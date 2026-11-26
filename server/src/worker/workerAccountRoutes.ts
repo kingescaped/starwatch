@@ -4,7 +4,7 @@ import {
   normalizeRole,
   resolvePlanExpiresAt,
 } from '../domain/accessPolicy.ts';
-import { firebaseSignIn, firebaseSignUp, verifyFirebaseIdToken } from '../integrations/firebaseRest.ts';
+import { firebaseRefreshIdToken, firebaseSignIn, firebaseSignUp, verifyFirebaseIdToken } from '../integrations/firebaseRest.ts';
 import { readFirestoreUser, writeFirestorePlan, writeFirestoreProfile } from '../integrations/firestore.ts';
 import { countFirestoreUsers, listFirestoreSpots } from '../integrations/firestoreSpots.ts';
 import type { PlanTier, StoredUserRecord } from '../integrations/localStore.ts';
@@ -103,7 +103,7 @@ export async function workerRegister(req: Request, env: ServerEnv) {
     }),
     writeFirestorePlan(env, fb.uid, record.plan, null),
   ]);
-  return { token: fb.idToken, user: formatPublicUser(record, env) };
+  return { token: fb.idToken, refreshToken: fb.refreshToken, user: formatPublicUser(record, env) };
 }
 
 export async function workerLogin(req: Request, env: ServerEnv) {
@@ -119,12 +119,13 @@ export async function workerLogin(req: Request, env: ServerEnv) {
     throw new WorkerHttpError(401, 'invalid_credentials', err instanceof Error ? err.message : 'Email hoặc mật khẩu chưa chính xác.');
   }
   const user = await loadCloudProfile(env, fb.uid, { email: fb.email, fallbackName: fb.displayName, updatedNow: true });
-  return { token: fb.idToken, user: formatPublicUser(user, env) };
+  return { token: fb.idToken, refreshToken: fb.refreshToken, user: formatPublicUser(user, env) };
 }
 
 export async function workerGoogleAuth(req: Request, env: ServerEnv) {
   const body = await readWorkerJson(req);
   const idToken = typeof body.idToken === 'string' ? body.idToken.trim() : '';
+  const refreshToken = typeof body.refreshToken === 'string' ? body.refreshToken.trim() : '';
   if (!idToken) throw new WorkerHttpError(400, 'missing_token', 'Thiếu mã xác thực Google.');
   const verified = await verifyFirebaseIdToken(env, idToken);
   if (!verified) throw new WorkerHttpError(401, 'invalid_google_token', 'Phiên xác thực Google không hợp lệ hoặc đã hết hạn.');
@@ -144,7 +145,35 @@ export async function workerGoogleAuth(req: Request, env: ServerEnv) {
       writeFirestorePlan(env, user.uid, user.plan, user.planExpiresAt),
     ]);
   }
-  return { token: idToken, user: formatPublicUser(user, env) };
+  return { token: idToken, ...(refreshToken ? { refreshToken } : {}), user: formatPublicUser(user, env) };
+}
+
+export async function workerRefreshSession(req: Request, env: ServerEnv) {
+  const body = await readWorkerJson(req);
+  const refreshToken = typeof body.refreshToken === 'string' ? body.refreshToken.trim() : '';
+  if (!refreshToken) {
+    throw new WorkerHttpError(400, 'missing_refresh_token', 'Thiếu mã làm mới phiên đăng nhập.');
+  }
+  const refreshed = await firebaseRefreshIdToken(env, refreshToken);
+  if (!refreshed.ok) {
+    if (refreshed.reason === 'invalid') {
+      throw new WorkerHttpError(401, 'invalid_refresh_token', 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    }
+    throw new WorkerHttpError(503, 'auth_service_unavailable', 'Không thể kết nối máy chủ xác thực lúc này.');
+  }
+  const verified = await verifyFirebaseIdToken(env, refreshed.idToken);
+  if (!verified) {
+    throw new WorkerHttpError(401, 'invalid_refresh_token', 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+  }
+  const user = await loadCloudProfile(env, verified.uid, {
+    email: verified.email,
+    fallbackName: verified.displayName,
+  });
+  return {
+    token: refreshed.idToken,
+    refreshToken: refreshed.refreshToken,
+    user: formatPublicUser(user, env),
+  };
 }
 
 export async function workerGetMe(req: Request, env: ServerEnv) {

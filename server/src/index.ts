@@ -17,6 +17,7 @@ import {
   handleGetMe,
   handleGoogleAuth,
   handleLogin,
+  handleRefreshSession,
   handleRegister,
   handleUpdateMe,
 } from './routes/accountRoutes.ts';
@@ -73,6 +74,8 @@ export const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, await handleLogin(req, env), origin, env);
       case 'POST /v1/auth/google':
         return sendJson(res, 200, await handleGoogleAuth(req, env), origin, env);
+      case 'POST /v1/auth/refresh':
+        return sendJson(res, 200, await handleRefreshSession(req, env), origin, env);
       case 'POST /v1/auth/logout':
         return sendJson(res, 200, { ok: true }, origin, env);
       case 'GET /v1/me':

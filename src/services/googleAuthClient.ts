@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import { getApp, getApps, initializeApp } from 'firebase/app';
-import { GoogleAuthProvider, getAuth, signInWithCredential, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, getAuth, signInWithCredential, signInWithPopup, signOut } from 'firebase/auth';
 
 const DEFAULT_GOOGLE_WEB_CLIENT_ID =
   '844069530611-givs2i2ppopgobb6plqtkthj1i8ljemv.apps.googleusercontent.com';
@@ -137,6 +137,7 @@ export function loadGoogleIdentityScript(): Promise<GoogleAccountsId> {
 
 export async function exchangeGoogleIdTokenForFirebase(googleIdToken: string): Promise<{
   idToken: string;
+  refreshToken: string;
   email: string;
   displayName: string;
 }> {
@@ -150,6 +151,7 @@ export async function exchangeGoogleIdTokenForFirebase(googleIdToken: string): P
     const idToken = await cred.user.getIdToken();
     return {
       idToken,
+      refreshToken: cred.user.refreshToken ?? '',
       email: cred.user.email ?? '',
       displayName: cred.user.displayName ?? '',
     };
@@ -160,6 +162,7 @@ export async function exchangeGoogleIdTokenForFirebase(googleIdToken: string): P
 
 export async function signInWithGooglePopup(): Promise<{
   idToken: string;
+  refreshToken: string;
   email: string;
   displayName: string;
 }> {
@@ -174,10 +177,43 @@ export async function signInWithGooglePopup(): Promise<{
     const idToken = await cred.user.getIdToken();
     return {
       idToken,
+      refreshToken: cred.user.refreshToken ?? '',
       email: cred.user.email ?? '',
       displayName: cred.user.displayName ?? '',
     };
   } catch (err) {
     throw new Error(mapGoogleAuthError(err));
+  }
+}
+
+export async function refreshFirebaseClientIdToken(): Promise<{
+  idToken: string;
+  refreshToken: string;
+} | null> {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
+  const config = getFirebaseWebConfig();
+  if (!config.apiKey || !config.projectId) return null;
+  try {
+    const auth = getFirebaseAuthInstance();
+    await auth.authStateReady();
+    if (!auth.currentUser) return null;
+    const idToken = await auth.currentUser.getIdToken(true);
+    return {
+      idToken,
+      refreshToken: auth.currentUser.refreshToken ?? '',
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function signOutFirebaseClient(): Promise<void> {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+  const config = getFirebaseWebConfig();
+  if (!config.apiKey || !config.projectId) return;
+  try {
+    await signOut(getFirebaseAuthInstance());
+  } catch {
+    // Ignore Firebase client sign-out errors
   }
 }

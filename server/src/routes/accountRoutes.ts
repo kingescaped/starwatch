@@ -10,12 +10,15 @@ import {
 export { resolvePlanExpiresAt };
 import { HttpError, readJsonBody } from '../http/helpers.ts';
 import {
+  createLocalRefreshToken,
   createLocalToken,
+  firebaseRefreshIdToken,
   firebaseSignIn,
   firebaseSignUp,
   hashPassword,
   verifyBearerSession,
   verifyFirebaseIdToken,
+  verifyLocalRefreshToken,
 } from '../integrations/firebaseAuth.ts';
 import { readFirestoreUser, writeFirestorePlan, writeFirestoreProfile } from '../integrations/firestore.ts';
 import {
@@ -80,15 +83,18 @@ export async function handleRegister(req: http.IncomingMessage, env: ServerEnv) 
 
   let uid = `sw-${crypto.randomUUID().slice(0, 12)}`;
   let token = '';
+  let refreshToken = '';
   try {
     const fb = await firebaseSignUp(env, email, password, displayName);
     uid = fb.uid;
     token = fb.idToken;
+    refreshToken = fb.refreshToken;
   } catch (err) {
     const msg = err instanceof Error ? err.message : '';
     if (msg.includes('Email này') || msg.includes('Mật khẩu') || msg.includes('Định dạng')) throw new HttpError(400, 'auth_rejected', msg);
     if (findLocalUserByEmail(email)) throw new HttpError(400, 'email_exists', 'Email này đã được đăng ký trước đó.');
     token = createLocalToken(uid, email);
+    refreshToken = createLocalRefreshToken(uid, email);
   }
 
   const record: StoredUserRecord = {
@@ -101,7 +107,7 @@ export async function handleRegister(req: http.IncomingMessage, env: ServerEnv) 
     writeFirestoreProfile(env, uid, { displayName: record.displayName, email: record.email, bio: record.bio, cameraProfile: record.cameraProfile, cameraSpecs: record.cameraSpecs, updatedAt: record.updatedAt }),
     writeFirestorePlan(env, uid, record.plan),
   ]);
-  return { token, user: toPublicUser(record, env) };
+  return { token, refreshToken, user: toPublicUser(record, env) };
 }
 
 export async function handleLogin(req: http.IncomingMessage, env: ServerEnv) {
@@ -113,27 +119,32 @@ export async function handleLogin(req: http.IncomingMessage, env: ServerEnv) {
   let uid = '';
   let displayName = email.split('@')[0];
   let token = '';
+  let refreshToken = '';
   try {
     const fb = await firebaseSignIn(env, email, password);
     uid = fb.uid;
     displayName = fb.displayName;
     token = fb.idToken;
+    refreshToken = fb.refreshToken;
   } catch (err) {
     const local = findLocalUserByEmail(email);
     if (local && local.passwordHash === hashPassword(password)) {
       uid = local.uid;
       displayName = local.displayName;
       token = createLocalToken(local.uid, local.email);
+      refreshToken = createLocalRefreshToken(local.uid, local.email);
     } else {
       throw new HttpError(401, 'invalid_credentials', (err instanceof Error ? err.message : '') || 'Email hoặc mật khẩu chưa chính xác.');
     }
   }
   const merged = await syncUserFromRemote(env, uid, { email, fallbackName: displayName, updatedNow: true, fallbackPasswordHash: hashPassword(password) });
-  return { token, user: toPublicUser(merged, env) };
+  return { token, refreshToken, user: toPublicUser(merged, env) };
 }
 
 export async function handleGoogleAuth(req: http.IncomingMessage, env: ServerEnv) {
-  const { idToken } = await readJsonBody(req);
+  const body = await readJsonBody(req);
+  const idToken = body.idToken;
+  const refreshToken = typeof body.refreshToken === 'string' ? body.refreshToken.trim() : '';
   if (!idToken || typeof idToken !== 'string' || !idToken.trim()) {
     throw new HttpError(400, 'missing_token', 'Thiếu mã xác thực Google.');
   }
@@ -163,7 +174,31 @@ export async function handleGoogleAuth(req: http.IncomingMessage, env: ServerEnv
       writeFirestorePlan(env, merged.uid, merged.plan, merged.planExpiresAt),
     ]);
   }
-  return { token, user: toPublicUser(merged, env) };
+  return { token, ...(refreshToken ? { refreshToken } : {}), user: toPublicUser(merged, env) };
+}
+
+export async function handleRefreshSession(req: http.IncomingMessage, env: ServerEnv) {
+  const body = await readJsonBody(req);
+  const refreshToken = typeof body.refreshToken === 'string' ? body.refreshToken.trim() : '';
+  if (!refreshToken) throw new HttpError(400, 'missing_refresh_token', 'Thiếu mã làm mới phiên đăng nhập.');
+
+  const local = verifyLocalRefreshToken(refreshToken);
+  if (local) {
+    const user = await syncUserFromRemote(env, local.uid, { email: local.email });
+    return { token: createLocalToken(local.uid, local.email), refreshToken: createLocalRefreshToken(local.uid, local.email), user: toPublicUser(user, env) };
+  }
+  if (!env.firebaseApiKey) {
+    throw new HttpError(401, 'invalid_refresh_token', 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+  }
+  const refreshed = await firebaseRefreshIdToken(env, refreshToken);
+  if (!refreshed.ok) {
+    if (refreshed.reason === 'invalid') throw new HttpError(401, 'invalid_refresh_token', 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    throw new HttpError(503, 'auth_service_unavailable', 'Không thể kết nối máy chủ xác thực lúc này.');
+  }
+  const verified = await verifyFirebaseIdToken(env, refreshed.idToken);
+  if (!verified) throw new HttpError(401, 'invalid_refresh_token', 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+  const user = await syncUserFromRemote(env, verified.uid, { email: verified.email, fallbackName: verified.displayName });
+  return { token: refreshed.idToken, refreshToken: refreshed.refreshToken, user: toPublicUser(user, env) };
 }
 
 export async function handleGetMe(req: http.IncomingMessage, env: ServerEnv) {

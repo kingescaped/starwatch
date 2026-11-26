@@ -7,6 +7,7 @@ import {
   workerGoogleAuth,
   WorkerHttpError,
   workerLogin,
+  workerRefreshSession,
   workerRegister,
   workerUpdateMe,
 } from './workerAccountRoutes.ts';
@@ -88,6 +89,8 @@ async function dispatchRoute(request: Request, url: URL, env: ServerEnv): Promis
       return { status: 200, body: await workerLogin(request, env) };
     case 'POST /v1/auth/google':
       return { status: 200, body: await workerGoogleAuth(request, env) };
+    case 'POST /v1/auth/refresh':
+      return { status: 200, body: await workerRefreshSession(request, env) };
     case 'POST /v1/auth/logout':
       return { status: 200, body: { ok: true } };
     case 'GET /v1/me':
